@@ -1,0 +1,91 @@
+{
+  "as_of": "2026-08-06",
+  "bundle": "invalid",
+  "concept_count": 3,
+  "core_kb_0_1": "fail-with-errors",
+  "findings": [
+    {
+      "code": "KB-W503",
+      "message": "The profile bundle has no root index.md.",
+      "path": "index.md",
+      "profile": "core-kb/0.1",
+      "remediation": "Add a progressive root index declaring okf_version 0.2.",
+      "severity": "warning"
+    },
+    {
+      "code": "KB-E123",
+      "field": "created_at",
+      "line": 7,
+      "message": "created_at is later than updated_at.",
+      "path": "invalid-timestamp.md",
+      "profile": "core-kb/0.1",
+      "remediation": "Restore the immutable creation time or correct the update time.",
+      "severity": "error"
+    },
+    {
+      "code": "KB-E124",
+      "field": "created_at",
+      "line": 7,
+      "message": "'2026-08-06T12:00:00-06:00' does not match '^\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}(?:\\\\.\\\\d+)?Z$'",
+      "path": "invalid-timestamp.md",
+      "profile": "core-kb/0.1",
+      "remediation": "Update frontmatter to satisfy schemas/knowledge-item.schema.yaml.",
+      "severity": "error"
+    },
+    {
+      "code": "KB-W503",
+      "message": "The profile bundle has no root log.md.",
+      "path": "log.md",
+      "profile": "core-kb/0.1",
+      "remediation": "Add a newest-first human-facing update log.",
+      "severity": "warning"
+    },
+    {
+      "code": "KB-E201",
+      "field": "sources",
+      "message": "'sources' is a required property",
+      "path": "missing-provenance.md",
+      "profile": "core-kb/0.1",
+      "remediation": "Update frontmatter to satisfy schemas/knowledge-item.schema.yaml.",
+      "severity": "error"
+    },
+    {
+      "code": "KB-E400",
+      "field": "supersedes",
+      "line": 13,
+      "message": "supersedes cannot target the item's own ID.",
+      "path": "self-supersession.md",
+      "profile": "core-kb/0.1",
+      "remediation": "Remove the self-reference and identify the actual related item.",
+      "severity": "error"
+    },
+    {
+      "code": "KB-E401",
+      "field": "supersedes",
+      "line": 13,
+      "message": "Supersession is not reciprocal on the predecessor.",
+      "path": "self-supersession.md",
+      "profile": "core-kb/0.1",
+      "severity": "error"
+    },
+    {
+      "code": "KB-E402",
+      "field": "supersedes",
+      "line": 13,
+      "message": "Supersession graph contains a cycle.",
+      "path": "self-supersession.md",
+      "profile": "core-kb/0.1",
+      "severity": "error"
+    },
+    {
+      "code": "KB-E403",
+      "field": "supersedes",
+      "line": 13,
+      "message": "A replacement must be stable and currently effective.",
+      "path": "self-supersession.md",
+      "profile": "core-kb/0.1",
+      "severity": "error"
+    }
+  ],
+  "okf_v0_2": "pass"
+}

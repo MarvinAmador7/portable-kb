@@ -1,0 +1,66 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: urn:core-kb:schema:bundle-config:0.1
+title: Core KB bundle configuration
+type: object
+additionalProperties: false
+required:
+  - profile
+  - okf
+  - active_types
+  - default_sensitivity
+  - inbox_review_days
+  - freshness_days
+  - authorized_reviewers
+properties:
+  profile:
+    const: core-kb/0.1
+  okf:
+    type: object
+    additionalProperties: false
+    required:
+      - version
+      - commit
+    properties:
+      version:
+        const: "0.2"
+      commit:
+        const: 374e0bc4c644310ff56cdf9c0fe81eccdec862b0
+  active_types:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      enum: [concept, decision, procedure, policy, system, source-summary, question]
+  default_sensitivity:
+    enum: [public, internal, confidential, restricted]
+  inbox_review_days:
+    type: integer
+    minimum: 1
+  documented_extensions:
+    type: array
+    uniqueItems: true
+    items:
+      type: string
+      pattern: '^x-[a-z0-9][a-z0-9-]*$'
+  freshness_days:
+    type: object
+    additionalProperties: false
+    properties:
+      procedure: { type: integer, minimum: 1 }
+      policy: { type: integer, minimum: 1 }
+      system: { type: integer, minimum: 1 }
+  authorized_reviewers:
+    type: object
+    additionalProperties: false
+    properties:
+      decision: { $ref: '#/$defs/reviewers' }
+      procedure: { $ref: '#/$defs/reviewers' }
+      policy: { $ref: '#/$defs/reviewers' }
+      system: { $ref: '#/$defs/reviewers' }
+$defs:
+  reviewers:
+    type: array
+    uniqueItems: true
+    items:
+      type: string
+      pattern: '^human:[a-z0-9][a-z0-9._-]{1,127}$'

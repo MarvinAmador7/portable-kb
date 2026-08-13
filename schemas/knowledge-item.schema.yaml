@@ -1,0 +1,389 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: urn:core-kb:schema:knowledge-item:0.1
+title: Core KB knowledge-item frontmatter
+description: >-
+  Strict authoring profile layered on Open Knowledge Format v0.2.
+  This schema validates parsed frontmatter only. Corpus, Markdown body,
+  transition, and date-ordering rules are defined in docs/validation.md.
+type: object
+additionalProperties: false
+patternProperties:
+  '^x-[a-z0-9][a-z0-9-]*$': true
+required:
+  - type
+  - id
+  - title
+  - description
+  - status
+  - created_at
+  - updated_at
+  - generated
+properties:
+  type:
+    enum:
+      - concept
+      - decision
+      - procedure
+      - policy
+      - system
+      - source-summary
+      - question
+  id:
+    $ref: '#/$defs/uuid_urn'
+  title:
+    type: string
+    minLength: 3
+    maxLength: 120
+    pattern: '^[^\r\n]+$'
+  description:
+    type: string
+    minLength: 10
+    maxLength: 240
+    pattern: '^[^\r\n]+$'
+  status:
+    enum:
+      - draft
+      - stable
+      - deprecated
+  created_at:
+    $ref: '#/$defs/utc_datetime'
+  updated_at:
+    $ref: '#/$defs/utc_datetime'
+  generated:
+    type: object
+    additionalProperties: false
+    required:
+      - by
+      - at
+      - method
+    properties:
+      by:
+        $ref: '#/$defs/actor'
+      at:
+        $ref: '#/$defs/utc_datetime'
+      method:
+        enum:
+          - human-authored
+          - imported
+          - transformed
+          - agent-generated
+          - calculated
+  tags:
+    type: array
+    minItems: 1
+    maxItems: 12
+    uniqueItems: true
+    items:
+      type: string
+      minLength: 2
+      maxLength: 40
+      pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+  sources:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      $ref: '#/$defs/source'
+  usage_window:
+    $ref: '#/$defs/date_window'
+  verified:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      $ref: '#/$defs/verification'
+  confidence:
+    $ref: '#/$defs/confidence'
+  valid_from:
+    $ref: '#/$defs/date'
+  stale_after:
+    $ref: '#/$defs/date'
+  related:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      $ref: '#/$defs/uuid_urn'
+  supersedes:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      $ref: '#/$defs/uuid_urn'
+  superseded_by:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      $ref: '#/$defs/uuid_urn'
+  sensitivity:
+    enum:
+      - public
+      - internal
+      - confidential
+      - restricted
+  archived:
+    type: object
+    additionalProperties: false
+    required:
+      - at
+      - reason
+    properties:
+      at:
+        $ref: '#/$defs/utc_datetime'
+      reason:
+        type: string
+        minLength: 10
+        maxLength: 280
+        pattern: '^[^\r\n]+$'
+allOf:
+  - if:
+      required:
+        - generated
+      properties:
+        generated:
+          required:
+            - method
+          properties:
+            method:
+              enum:
+                - imported
+                - transformed
+                - agent-generated
+                - calculated
+    then:
+      required:
+        - sources
+  - if:
+      properties:
+        type:
+          const: source-summary
+      required:
+        - type
+    then:
+      required:
+        - sources
+  - if:
+      properties:
+        generated:
+          required:
+            - method
+          properties:
+            method:
+              const: agent-generated
+      required:
+        - generated
+    then:
+      required:
+        - confidence
+  - if:
+      properties:
+        type:
+          const: decision
+        status:
+          const: stable
+      required:
+        - type
+        - status
+    then:
+      required:
+        - valid_from
+        - verified
+      properties:
+        verified:
+          $ref: '#/$defs/human_verified_list'
+  - if:
+      properties:
+        type:
+          const: procedure
+        status:
+          const: stable
+      required:
+        - type
+        - status
+    then:
+      required:
+        - stale_after
+        - verified
+      properties:
+        verified:
+          $ref: '#/$defs/human_verified_list'
+  - if:
+      properties:
+        type:
+          const: policy
+        status:
+          const: stable
+      required:
+        - type
+        - status
+    then:
+      required:
+        - sources
+        - valid_from
+        - stale_after
+        - verified
+      properties:
+        verified:
+          $ref: '#/$defs/human_verified_list'
+  - if:
+      properties:
+        type:
+          const: system
+        status:
+          const: stable
+      required:
+        - type
+        - status
+    then:
+      required:
+        - stale_after
+  - if:
+      properties:
+        generated:
+          required:
+            - method
+          properties:
+            method:
+              const: agent-generated
+        status:
+          const: stable
+      required:
+        - generated
+        - status
+    then:
+      required:
+        - verified
+      properties:
+        verified:
+          $ref: '#/$defs/human_verified_list'
+  - if:
+      required:
+        - superseded_by
+    then:
+      properties:
+        status:
+          const: deprecated
+  - if:
+      required:
+        - archived
+    then:
+      anyOf:
+        - properties:
+            status:
+              const: deprecated
+          required:
+            - status
+        - properties:
+            type:
+              const: question
+            status:
+              const: draft
+          required:
+            - type
+            - status
+$defs:
+  actor:
+    type: string
+    minLength: 3
+    maxLength: 160
+    anyOf:
+      - pattern: '^human:[a-z0-9][a-z0-9._-]{1,127}$'
+      - pattern: '^process:[a-z0-9][a-z0-9._-]{1,127}$'
+      - pattern: '^[a-z0-9][a-z0-9._-]{1,63}/[A-Za-z0-9][A-Za-z0-9._+-]{0,127}$'
+  utc_datetime:
+    type: string
+    format: date-time
+    pattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$'
+  date:
+    type: string
+    format: date
+    pattern: '^\d{4}-\d{2}-\d{2}$'
+  uuid_urn:
+    type: string
+    pattern: '^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+  date_window:
+    type: object
+    additionalProperties: false
+    required:
+      - from
+      - to
+    properties:
+      from:
+        $ref: '#/$defs/date'
+      to:
+        $ref: '#/$defs/date'
+  source:
+    type: object
+    additionalProperties: false
+    patternProperties:
+      '^x-[a-z0-9][a-z0-9-]*$': true
+    required:
+      - resource
+    properties:
+      id:
+        type: string
+        minLength: 2
+        maxLength: 64
+        pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+      resource:
+        type: string
+        minLength: 1
+        maxLength: 2048
+        pattern: '^[^\r\n]+$'
+      title:
+        type: string
+        minLength: 3
+        maxLength: 240
+        pattern: '^[^\r\n]+$'
+      author:
+        $ref: '#/$defs/actor'
+      usage_count:
+        type: integer
+        minimum: 0
+      last_modified:
+        $ref: '#/$defs/date'
+      usage_window:
+        $ref: '#/$defs/date_window'
+  verification:
+    type: object
+    additionalProperties: false
+    required:
+      - by
+      - at
+    properties:
+      by:
+        $ref: '#/$defs/actor'
+      at:
+        $ref: '#/$defs/utc_datetime'
+  human_verification:
+    allOf:
+      - $ref: '#/$defs/verification'
+      - properties:
+          by:
+            pattern: '^human:'
+  human_verified_list:
+    type: array
+    minItems: 1
+    items:
+      $ref: '#/$defs/verification'
+    contains:
+      $ref: '#/$defs/human_verification'
+    minContains: 1
+  confidence:
+    type: object
+    additionalProperties: false
+    required:
+      - level
+      - basis
+    properties:
+      level:
+        enum:
+          - low
+          - medium
+          - high
+      basis:
+        type: string
+        minLength: 10
+        maxLength: 280
+        pattern: '^[^\r\n]+$'

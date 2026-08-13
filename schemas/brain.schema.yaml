@@ -1,0 +1,29 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: urn:portable-kb:schema:brain:1
+title: Portable KB brain manifest
+type: object
+additionalProperties: false
+required:
+  - schema_version
+  - id
+  - slug
+  - name
+  - bundle
+properties:
+  schema_version:
+    const: 1
+  id:
+    type: string
+    pattern: '^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
+  slug:
+    type: string
+    minLength: 2
+    maxLength: 63
+    pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+  name:
+    type: string
+    minLength: 2
+    maxLength: 100
+    pattern: '^\S(?:.*\S)?$'
+  bundle:
+    const: knowledge

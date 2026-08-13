@@ -1,0 +1,18 @@
+profile: core-kb/0.1
+okf:
+  version: "0.2"
+  commit: 374e0bc4c644310ff56cdf9c0fe81eccdec862b0
+active_types:
+  - concept
+default_sensitivity: internal
+inbox_review_days: 30
+documented_extensions: []
+freshness_days:
+  procedure: 180
+  policy: 365
+  system: 90
+authorized_reviewers:
+  decision: []
+  procedure: []
+  policy: []
+  system: []

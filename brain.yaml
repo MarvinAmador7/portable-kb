@@ -1,0 +1,5 @@
+schema_version: 1
+id: urn:uuid:6e7cc12e-b3f7-49da-875d-32b714fdc1e8
+slug: portable-kb-core
+name: Portable KB Core
+bundle: knowledge

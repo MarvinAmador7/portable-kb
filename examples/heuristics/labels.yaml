@@ -1,0 +1,11 @@
+pairs:
+  - left: duplicate-candidate-a.md
+    right: duplicate-candidate-b.md
+    label: duplicate-candidate
+    expected_rule: KB-W601
+    rationale: Both summaries claim the same canonical source and deliberately overlap in scope.
+  - left: ../valid/conflicting-policy-90-days.md
+    right: ../valid/conflicting-policy-180-days.md
+    label: conflict
+    expected_rule: KB-W605
+    rationale: Both policies cover the same synthetic scope with incompatible review intervals.
