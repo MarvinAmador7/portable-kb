@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,7 @@ from portable_kb.brains import (
     init_brain,
     load_catalog,
     publish_brain_to_github,
+    push_brain,
     read_manifest,
     save_catalog,
     sync_brain,
@@ -169,6 +171,120 @@ def test_publish_brain_creates_github_repo_pushes_and_updates_distribution_state
     checkout = initialized.brain.checkout_path(settings)
     assert _git_output(checkout, "remote", "get-url", "origin").strip() == str(remote)
     assert brain_status(settings, as_of="2026-08-13")["ok"] is True
+
+
+def test_push_brain_shares_only_validated_fast_forward_history(
+    tmp_path: Path,
+) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    repository = tmp_path / "authoring"
+    initialized, catalog, _report = init_brain(
+        str(repository),
+        "Shared Business",
+        "shared-business",
+        settings,
+        as_of="2026-08-13",
+    )
+    remote = tmp_path / "organization.git"
+    remote_url = remote.as_uri()
+    _git(tmp_path, "init", "--quiet", "--bare", "--initial-branch=main", str(remote))
+    _git(repository, "remote", "add", "origin", remote_url)
+    _git(repository, "push", "--quiet", "--set-upstream", "origin", "main")
+    checkout = initialized.brain.checkout_path(settings)
+    _git(checkout, "remote", "set-url", "origin", remote_url)
+    published = replace(initialized.brain, source=remote_url)
+    save_catalog(catalog.updating(published), settings)
+
+    item = repository / "knowledge/inbox/shared-note.md"
+    item.parent.mkdir()
+    item.write_text("temporary\n", encoding="utf-8")
+    with pytest.raises(BrainError, match="unfinished local change"):
+        push_brain(settings, as_of="2026-08-13")
+    item.unlink()
+
+    _git(
+        repository,
+        "-c",
+        "user.name=Test",
+        "-c",
+        "user.email=test@example.invalid",
+        "commit",
+        "--quiet",
+        "--allow-empty",
+        "-m",
+        "Saved version",
+    )
+    saved = _git_output(repository, "rev-parse", "HEAD").strip()
+    _git(checkout, "fetch", "--quiet", repository.as_uri(), saved)
+    _git(checkout, "merge", "--quiet", "--ff-only", saved)
+    save_catalog(catalog.updating(replace(published, commit=saved)), settings)
+
+    result = push_brain(settings, as_of="2026-08-13")
+
+    assert result["changed"] is True
+    assert result["previous_published_commit"] == initialized.brain.commit
+    assert result["published_commit"] == saved
+    assert _git_output(remote, "rev-parse", "refs/heads/main").strip() == saved
+    assert push_brain(settings, as_of="2026-08-13")["changed"] is False
+
+    repository.joinpath("private.txt").write_text("must not be shared\n", encoding="utf-8")
+    _git(repository, "add", "private.txt")
+    _git(repository, "commit", "--quiet", "-m", "Unrelated local file")
+    unsafe = _git_output(repository, "rev-parse", "HEAD").strip()
+    _git(checkout, "fetch", "--quiet", repository.as_uri(), unsafe)
+    _git(checkout, "merge", "--quiet", "--ff-only", unsafe)
+    active = load_catalog(settings).get("shared-business")
+    save_catalog(load_catalog(settings).updating(replace(active, commit=unsafe)), settings)
+    with pytest.raises(BrainError, match="outside the brain boundary"):
+        push_brain(settings, as_of="2026-08-13")
+    assert _git_output(remote, "rev-parse", "refs/heads/main").strip() == saved
+
+
+def test_push_brain_refuses_unpublished_and_newer_organization_history(
+    tmp_path: Path,
+) -> None:
+    empty = Settings(data_dir=tmp_path / "empty-data", cache_dir=tmp_path / "empty-cache")
+    with pytest.raises(BrainError, match="No active brain"):
+        push_brain(empty, as_of="2026-08-13")
+
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    repository = tmp_path / "authoring"
+    initialized, catalog, _report = init_brain(
+        str(repository),
+        "Guarded Business",
+        "guarded-business",
+        settings,
+        as_of="2026-08-13",
+    )
+    with pytest.raises(BrainError, match="has not been published"):
+        push_brain(settings, as_of="2026-08-13")
+
+    remote = tmp_path / "organization.git"
+    remote_url = remote.as_uri()
+    _git(tmp_path, "init", "--quiet", "--bare", "--initial-branch=main", str(remote))
+    _git(repository, "remote", "add", "origin", remote_url)
+    _git(repository, "push", "--quiet", "--set-upstream", "origin", "main")
+    checkout = initialized.brain.checkout_path(settings)
+    _git(checkout, "remote", "set-url", "origin", remote_url)
+    save_catalog(catalog.updating(replace(initialized.brain, source=remote_url)), settings)
+    collaborator = tmp_path / "collaborator"
+    _git(tmp_path, "clone", "--quiet", remote_url, str(collaborator))
+    _git(
+        collaborator,
+        "-c",
+        "user.name=Collaborator",
+        "-c",
+        "user.email=collaborator@example.invalid",
+        "commit",
+        "--quiet",
+        "--allow-empty",
+        "-m",
+        "New organization version",
+    )
+    _git(collaborator, "push", "--quiet", "origin", "main")
+
+    with pytest.raises(BrainError, match="organization has newer knowledge"):
+        push_brain(settings, as_of="2026-08-13")
 
 
 def test_publish_brain_validates_target_and_preserves_local_brain_without_gh(

@@ -422,6 +422,129 @@ def publish_brain_to_github(
     return result, updated_catalog
 
 
+def push_brain(
+    settings: Settings,
+    slug: str | None = None,
+    *,
+    as_of: str | None = None,
+) -> dict[str, Any]:
+    """Publish the active validated local version without rewriting remote history."""
+
+    catalog = load_catalog(settings)
+    selected = slug or catalog.active
+    if selected is None:
+        raise BrainError("No active brain. Initialize or select one first.")
+    brain = catalog.get(selected)
+    if not _is_remote_source(brain.source):
+        raise BrainError(
+            "Brain has not been published yet. Run `pkb brain publish --to org/repo` first."
+        )
+    resolved, repository, manifest = authoring_repository(settings, selected)
+    current = clean_repository_head(repository)
+    if resolved != brain or current != brain.commit:
+        raise BrainError("Local authoring repository does not match the active saved version.")
+    report = validate_bundle(repository / manifest.bundle, as_of=as_of)
+    if not report.profile_passes:
+        codes = ", ".join(finding.code for finding in report.errors[:8])
+        raise BrainError(f"Local knowledge bundle failed validation: {codes}")
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to share a brain.")
+    if not _git_remote_exists(git, repository, "origin"):
+        raise BrainError("Local authoring repository has no organization remote.")
+    origin = _normalize_source(
+        _run_git(git, "-C", str(repository), "remote", "get-url", "origin").strip()
+    )
+    if origin != brain.source:
+        raise BrainError("Local authoring repository origin differs from the brain source.")
+    _run_git(
+        git,
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        str(repository),
+        "fetch",
+        "--quiet",
+        "--no-tags",
+        "origin",
+        "refs/heads/main",
+    )
+    published = _run_git(git, "-C", str(repository), "rev-parse", "FETCH_HEAD").strip()
+    if not COMMIT.fullmatch(published):
+        raise BrainError("Git returned an invalid published version identifier.")
+    if published == current:
+        return _push_result(brain, published, current, report, changed=False)
+    if not _git_is_ancestor(git, repository, published, current):
+        if _git_is_ancestor(git, repository, current, published):
+            raise BrainError(
+                "The organization has newer knowledge. Synchronize before sharing local work."
+            )
+        raise BrainError(
+            "Local and organization knowledge have diverged; refusing to overwrite either."
+        )
+    changed_paths = tuple(
+        path
+        for path in _run_git(
+            git,
+            "-c",
+            "core.quotepath=false",
+            "-C",
+            str(repository),
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            "-m",
+            "-z",
+            f"{published}..{current}",
+        ).split("\0")
+        if path
+    )
+    allowed_prefix = f"{manifest.bundle}/"
+    unsafe = tuple(
+        path for path in changed_paths if path != "brain.yaml" and not path.startswith(allowed_prefix)
+    )
+    if unsafe:
+        raise BrainError(
+            "Saved history contains files outside the brain boundary; refusing to share: "
+            + ", ".join(unsafe[:8])
+        )
+    _run_git(
+        git,
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        str(repository),
+        "push",
+        "--quiet",
+        "origin",
+        f"{current}:refs/heads/main",
+    )
+    return _push_result(brain, published, current, report, changed=True)
+
+
+def _push_result(
+    brain: InstalledBrain,
+    previous: str,
+    current: str,
+    report: ValidationReport,
+    *,
+    changed: bool,
+) -> dict[str, Any]:
+    """Build the stable result contract for an organizational push."""
+
+    return {
+        "slug": brain.slug,
+        "name": brain.name,
+        "source": brain.source,
+        "previous_published_commit": previous,
+        "published_commit": current,
+        "changed": changed,
+        "validation_warnings": [finding.as_dict() for finding in report.warnings],
+        "ok": report.profile_passes,
+    }
+
+
 def add_brain(
     source: str,
     settings: Settings,

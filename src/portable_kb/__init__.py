@@ -14,6 +14,7 @@ from .authoring import (
     plan_knowledge_create,
     save_knowledge_create,
 )
+from .brains import push_brain
 from .models import Finding, KnowledgeItem, Severity, ValidationReport
 from .operations import (
     OperationError,
@@ -55,6 +56,7 @@ __all__ = [
     "plan_reverify",
     "plan_supersede",
     "plan_update",
+    "push_brain",
     "get_knowledge_item",
     "index_keyword_brain",
     "install_agent_skill",

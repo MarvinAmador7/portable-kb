@@ -1,12 +1,20 @@
 ---
 name: portable-kb
-description: Search and retrieve governed organizational knowledge from an installed Portable KB brain. Use when answering questions from a business worldview, locating decisions or procedures, checking what the organization knows, comparing explicitly named brains, or grounding work in Portable KB citations with lifecycle and provenance signals.
+description: Search, retrieve, and create governed organizational knowledge in an installed Portable KB brain, then share it when explicitly authorized. Use when answering from a business worldview, locating decisions or procedures, capturing reusable knowledge, checking what the organization knows, comparing explicitly named brains, or grounding work in Portable KB citations with lifecycle and provenance signals.
 ---
 
 # Portable KB
 
-Use `pkb` as the only retrieval interface. Search the selected pinned brain,
-retrieve complete items, and keep authority separate from relevance.
+Use `pkb` as the knowledge interface. Search the selected pinned brain, retrieve
+complete items, create honest drafts, and keep authority separate from relevance.
+
+## Choose the workflow
+
+- For questions about organizational knowledge, use the retrieval workflow.
+- When the user explicitly asks to remember, capture, document, or add reusable
+  knowledge, use the creation workflow.
+- Share saved knowledge only when the user explicitly asks to publish, push,
+  share, or distribute it to the organization.
 
 ## Retrieval workflow
 
@@ -63,6 +71,65 @@ retrieve complete items, and keep authority separate from relevance.
   authorized by the user under the current agent's normal safety rules.
 - Never silently combine different brains. When comparison is explicit, query
   each named brain separately and label every claim with its originating brain.
+
+## Creation workflow
+
+1. Search first to avoid silently duplicating or conflicting with existing
+   knowledge. If a close item exists, retrieve it and report that `create` is
+   not the correct lifecycle operation; do not overwrite it.
+2. Prepare a UTF-8 Markdown body without YAML frontmatter and a JSON array of
+   real sources. Agent-generated knowledge must use an agent producer/version,
+   `--method agent-generated`, at least one source, and a confidence level plus
+   plain-language basis. Never use a `human:` actor for yourself.
+3. Plan without writing:
+
+   ```console
+   pkb knowledge create \
+     --type procedure \
+     --title "Review stale knowledge" \
+     --description "Defines the draft procedure for reviewing stale knowledge." \
+     --actor "openai/codex" \
+     --method agent-generated \
+     --body-file ./body.md \
+     --sources-file ./sources.json \
+     --confidence medium \
+     --confidence-basis "The cited policy supports the draft, but it remains untested." \
+     --sensitivity internal \
+     --json
+   ```
+
+4. Inspect the complete plan, warnings, brain, and paths. If it matches the
+   user's request, repeat the exact command with `--apply`. This saves a local
+   draft, versions only its validated files, and updates the active brain. Do
+   not run raw Git commands or `pkb brain sync` afterward.
+5. Report the saved item as a draft and state that it is local, not shared.
+   Remove temporary body/source files you created outside the brain when safe.
+
+Creation never authorizes promotion, verification, supersession, archival, or
+deletion. If those are needed, explain that the current CLI does not expose the
+operation. Never fabricate sources, human review, or authority.
+
+## Sharing and synchronization
+
+Saving locally and sharing with the organization are separate authority
+boundaries. Only after explicit sharing intent, run:
+
+```console
+pkb brain push --json
+```
+
+The command validates the active saved version and accepts only a fast-forward
+organization update. Never use raw `git push`, force push, or bypass a refusal.
+If the organization is newer or histories diverged, stop and report the exact
+blocker. Do not resolve it implicitly.
+
+When the user asks to receive organization updates, run:
+
+```console
+pkb brain sync --json
+```
+
+Sync is also explicit. Do not turn either action into background behavior.
 
 ## Index recovery
 

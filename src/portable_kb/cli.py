@@ -28,6 +28,7 @@ from .brains import (
     init_brain,
     load_catalog,
     publish_brain_to_github,
+    push_brain,
     sync_brain,
     use_brain,
 )
@@ -457,6 +458,47 @@ def brain_list(
     for brain in catalog.brains:
         marker = "*" if brain.slug == catalog.active else " "
         typer.echo(f"{marker:<7} {brain.slug:<20} {brain.commit[:12]}  {brain.name}")
+
+
+@brain_app.command("push")
+def brain_push(
+    slug: Annotated[
+        str | None,
+        typer.Argument(help="Published brain slug; defaults to the active brain."),
+    ] = None,
+    config_path: Annotated[
+        Path | None,
+        typer.Option("--config", help="Override the user configuration path."),
+    ] = None,
+    as_of: Annotated[
+        str | None,
+        typer.Option("--as-of", help="Explicit ISO date for pre-publish validation."),
+    ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit machine-readable publication details."),
+    ] = False,
+) -> None:
+    """Share the active saved version without rewriting organization history."""
+
+    settings = _load_cli_settings(config_path)
+    try:
+        result = push_brain(settings, slug, as_of=as_of)
+    except (BrainError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if json_output:
+        typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        return
+    if result["changed"]:
+        typer.echo(f"◆ Shared brain: {result['name']}")
+        typer.echo(f"◇ Published version: {result['published_commit']}")
+        typer.echo("◇ Organization members can update with `pkb brain sync`")
+    else:
+        typer.echo(f"Brain is already shared: {result['slug']}")
+        typer.echo(f"Published version: {result['published_commit']}")
+    if result["validation_warnings"]:
+        typer.echo(f"Validation warnings: {len(result['validation_warnings'])}")
 
 
 @knowledge_app.command("create")

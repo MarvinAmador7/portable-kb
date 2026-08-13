@@ -266,6 +266,27 @@ Without `--apply`, this returns a validated plan and changes no files. Add
 bounded to 1 MiB and must not include YAML frontmatter because the lifecycle
 operation generates identity and governed metadata exactly once.
 
+## Organization publication
+
+After an initialized brain has been published once, an explicitly authorized
+agent can share the active saved version with:
+
+```console
+pkb brain push --json
+```
+
+This is a separate authority boundary from local draft creation. The command
+requires the local authoring repository, installed checkout, catalog pin, and
+validated bundle to agree. It fetches `origin/main`, accepts only a local
+fast-forward from the current organization version, checks every outgoing
+commit for paths outside `brain.yaml` and the configured knowledge bundle, and
+pushes the exact saved commit to `main`. It does not merge, rebase, force-push,
+or infer permission from draft creation.
+
+If the organization is ahead or histories diverge, the command stops without
+changing either side. Other installations continue to receive explicitly
+published versions with `pkb brain sync --json`.
+
 ## Keyword index and search
 
 QMD must already resolve through the configured command; Portable KB does not
