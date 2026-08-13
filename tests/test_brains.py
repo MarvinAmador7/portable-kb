@@ -158,8 +158,10 @@ def test_publish_brain_creates_github_repo_pushes_and_updates_distribution_state
     assert result.github_repository == "acme/remote-business"
     assert result.visibility is GitHubVisibility.PRIVATE
     assert result.brain.source == str(remote)
+    assert result.brain.authoring == str(repository)
     assert catalog.active == "remote-business"
     assert load_catalog(settings).get("remote-business").source == str(remote)
+    assert load_catalog(settings).get("remote-business").authoring == str(repository)
     assert _git_output(remote, "rev-parse", "refs/heads/main").strip() == initialized.brain.commit
     assert "slug: remote-business" in _git_output(
         remote, "show", "refs/heads/main:brain.yaml"

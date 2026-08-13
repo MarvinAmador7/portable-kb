@@ -6,9 +6,11 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
+from portable_kb.authoring import GenerationMethod, KnowledgeType, Sensitivity
 from portable_kb.brain_prompt import BrainInitInputs, BrainPublishChoice
 from portable_kb.brains import BrainError, BrainPublishResult, GitHubVisibility, load_catalog
 from portable_kb.cli import app
+from portable_kb.knowledge_prompt import KnowledgeCreateInputs
 from portable_kb.parsing import discover_concepts
 from portable_kb.settings import SearchMode, Settings, load_settings, save_settings
 from portable_kb.skills import SkillError
@@ -413,6 +415,186 @@ def test_brain_init_keeps_local_result_when_explicit_publication_fails(
     )
     assert conflicting.exit_code == 2
     assert "cannot be used together" in conflicting.output
+
+
+def test_knowledge_create_cli_plans_then_explicitly_applies_draft(tmp_path: Path) -> None:
+    config = tmp_path / "config.yaml"
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    save_settings(settings, config)
+    repository = tmp_path / "authoring"
+    initialized = runner.invoke(
+        app,
+        [
+            "brain",
+            "init",
+            str(repository),
+            "--name",
+            "Authoring Brain",
+            "--slug",
+            "authoring-brain",
+            "--config",
+            str(config),
+            "--as-of",
+            "2026-08-13",
+            "--json",
+        ],
+    )
+    assert initialized.exit_code == 0, initialized.output
+    body = tmp_path / "body.md"
+    body.write_text(
+        """# Customer activation
+
+## Definition
+
+Activation is the first customer realization of the product's core value.
+
+## Context
+
+This definition gives product and customer-success teams a shared milestone.
+""",
+        encoding="utf-8",
+    )
+    arguments = [
+        "knowledge",
+        "create",
+        "--type",
+        "concept",
+        "--title",
+        "Customer activation",
+        "--description",
+        "Defines the first customer realization of the product's core value.",
+        "--actor",
+        "human:marvin",
+        "--body-file",
+        str(body),
+        "--tag",
+        "customer-success",
+        "--timestamp",
+        "2026-08-13T15:00:00Z",
+        "--config",
+        str(config),
+        "--as-of",
+        "2026-08-13",
+        "--json",
+    ]
+
+    planned = runner.invoke(app, arguments)
+    assert planned.exit_code == 0, planned.output
+    plan_payload = json.loads(planned.output)
+    assert plan_payload["applied"] is False
+    assert plan_payload["path"] == "inbox/customer-activation.md"
+    target = repository / "knowledge/inbox/customer-activation.md"
+    assert not target.exists()
+
+    applied = runner.invoke(app, [*arguments, "--apply"])
+    assert applied.exit_code == 0, applied.output
+    assert json.loads(applied.output)["applied"] is True
+    assert target.is_file()
+    assert "status: draft" in target.read_text(encoding="utf-8")
+    assert "customer-activation.md" in (
+        repository / "knowledge/inbox/index.md"
+    ).read_text(encoding="utf-8")
+
+
+def test_knowledge_create_cli_rejects_partial_inputs_and_frontmatter(tmp_path: Path) -> None:
+    config = tmp_path / "config.yaml"
+    save_settings(Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache"), config)
+    partial = runner.invoke(
+        app,
+        ["knowledge", "create", "--title", "Partial", "--config", str(config)],
+    )
+    assert partial.exit_code == 2
+    assert "Provide all of" in partial.output
+
+    body = tmp_path / "frontmatter.md"
+    body.write_text("---\ntype: concept\n---\n\n# Duplicate metadata\n", encoding="utf-8")
+    rejected = runner.invoke(
+        app,
+        [
+            "knowledge",
+            "create",
+            "--type",
+            "concept",
+            "--title",
+            "Duplicate metadata",
+            "--description",
+            "Rejects a body file that already contains YAML frontmatter.",
+            "--actor",
+            "human:marvin",
+            "--body-file",
+            str(body),
+            "--config",
+            str(config),
+        ],
+    )
+    assert rejected.exit_code == 2
+    assert "without YAML frontmatter" in rejected.output
+
+    missing = runner.invoke(app, ["knowledge", "create", "--config", str(config)])
+    assert missing.exit_code == 2
+    assert "requires --type" in missing.output
+
+
+def test_knowledge_create_cli_interactive_preview_and_apply(tmp_path: Path, monkeypatch) -> None:
+    config = tmp_path / "config.yaml"
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    save_settings(settings, config)
+    repository = tmp_path / "interactive-authoring"
+    initialized = runner.invoke(
+        app,
+        [
+            "brain",
+            "init",
+            str(repository),
+            "--name",
+            "Interactive Authoring",
+            "--slug",
+            "interactive-authoring",
+            "--config",
+            str(config),
+            "--as-of",
+            "2026-08-13",
+            "--json",
+        ],
+    )
+    assert initialized.exit_code == 0, initialized.output
+    monkeypatch.setattr("portable_kb.cli._interactive_terminal", lambda: True)
+    monkeypatch.setattr(
+        "portable_kb.cli.run_knowledge_create_prompts",
+        lambda **_kwargs: KnowledgeCreateInputs(
+            item_type=KnowledgeType.QUESTION,
+            title="Which onboarding checkpoint matters",
+            description="Captures an unresolved question about the primary onboarding checkpoint.",
+            actor="human:marvin",
+            method=GenerationMethod.HUMAN_AUTHORED,
+            body="""# Which onboarding checkpoint matters
+
+## Question
+
+Which checkpoint best predicts activation?
+
+## Why it matters
+
+The answer changes how the team measures onboarding.
+""",
+            relative_path="inbox/onboarding-checkpoint.md",
+            sources=(),
+            confidence_level=None,
+            confidence_basis=None,
+            sensitivity=Sensitivity.INTERNAL,
+        ),
+    )
+    monkeypatch.setattr("portable_kb.cli.confirm_knowledge_apply", lambda **_kwargs: True)
+
+    result = runner.invoke(
+        app,
+        ["knowledge", "create", "--config", str(config), "--as-of", "2026-08-13"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Validated draft plan: inbox/onboarding-checkpoint.md" in result.output
+    assert "Draft applied locally" in result.output
+    assert (repository / "knowledge/inbox/onboarding-checkpoint.md").is_file()
 
 
 def test_search_cli_indexes_and_returns_json_citations(

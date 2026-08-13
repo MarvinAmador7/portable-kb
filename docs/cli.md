@@ -216,8 +216,53 @@ The command never auto-merges, rebases, force-resets user work, or runs in the
 background.
 
 The catalog records relative checkout paths below the configured data
-directory. It contains distribution state, not knowledge, and can be rebuilt
-from installed repositories.
+directory. Locally initialized brains also retain an absolute authoring path,
+which remains local after the distribution source changes to GitHub. It
+contains distribution and authoring-location state, not knowledge, and can be
+rebuilt from installed and local authoring repositories.
+
+## Draft knowledge creation
+
+The first lifecycle CLI command creates drafts only:
+
+```console
+pkb knowledge create
+```
+
+The interactive path selects the type, production method, real producer
+identity, sources, confidence when agent-generated, sensitivity, Markdown body,
+and bundle-relative path. It opens the configured terminal editor for the body.
+An unchanged placeholder template is rejected.
+
+The command resolves the active brain's retained local authoring repository,
+checks its identity and ancestry against the installed pin, and calls the core
+`plan_create` operation. Planning happens in a temporary tree and validates the
+base bundle, proposed bundle, transition, generated indexes, and log entry. The
+CLI then prints the exact create/update file list and asks before applying the
+optimistic change set. It never writes to the installed read-only checkout,
+creates stable knowledge, commits, or pushes.
+
+Agents and automation provide the complete inputs directly:
+
+```console
+pkb knowledge create \
+  --type procedure \
+  --title "Review stale knowledge" \
+  --description "Defines the draft workflow for reviewing stale knowledge." \
+  --actor "anthropic/claude-code" \
+  --method agent-generated \
+  --body-file ./review-stale-knowledge.md \
+  --sources-file ./sources.json \
+  --confidence medium \
+  --confidence-basis "The draft follows the cited policy, but has not been executed." \
+  --json
+```
+
+Without `--apply`, this returns a validated plan and changes no files. Add
+`--apply` to write the draft, indexes, and log atomically. `--sources-file`
+must be a UTF-8 JSON array of OKF source objects. Body input is bounded to 1 MiB
+and must not include YAML frontmatter because the lifecycle operation generates
+identity and governed metadata exactly once.
 
 ## Keyword index and search
 

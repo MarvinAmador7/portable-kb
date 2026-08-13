@@ -5,11 +5,19 @@ from __future__ import annotations
 import json
 import shutil
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Annotated
 
 import typer
 
+from .authoring import (
+    ConfidenceLevel,
+    GenerationMethod,
+    KnowledgeType,
+    Sensitivity,
+    plan_knowledge_create,
+)
 from .brain_prompt import run_brain_init_prompts, run_brain_publish_prompt
 from .brains import (
     BrainError,
@@ -22,6 +30,9 @@ from .brains import (
     sync_brain,
     use_brain,
 )
+from .changes import ConcurrentChangeError
+from .knowledge_prompt import confirm_knowledge_apply, run_knowledge_create_prompts
+from .operations import OperationError
 from .search import SearchError, get_knowledge_item, index_keyword_brain, search_keyword
 from .settings import (
     SearchMode,
@@ -47,6 +58,8 @@ search_app = typer.Typer(help="Build and query disposable local search indexes."
 app.add_typer(search_app, name="search")
 skill_app = typer.Typer(help="Install the Portable KB workflow for coding agents.")
 app.add_typer(skill_app, name="skill")
+knowledge_app = typer.Typer(help="Plan and apply governed knowledge lifecycle changes.")
+app.add_typer(knowledge_app, name="knowledge")
 
 
 @app.command()
@@ -445,6 +458,179 @@ def brain_list(
         typer.echo(f"{marker:<7} {brain.slug:<20} {brain.commit[:12]}  {brain.name}")
 
 
+@knowledge_app.command("create")
+def knowledge_create(
+    item_type: Annotated[
+        KnowledgeType | None,
+        typer.Option("--type", help="Draft knowledge type."),
+    ] = None,
+    title: Annotated[
+        str | None,
+        typer.Option("--title", help="Knowledge title."),
+    ] = None,
+    description: Annotated[
+        str | None,
+        typer.Option("--description", help="One-sentence scope or summary."),
+    ] = None,
+    actor: Annotated[
+        str | None,
+        typer.Option("--actor", help="Producer identity: human:id, process:id, or producer/version."),
+    ] = None,
+    method: Annotated[
+        GenerationMethod,
+        typer.Option("--method", help="How substantive content was produced."),
+    ] = GenerationMethod.HUMAN_AUTHORED,
+    body_file: Annotated[
+        Path | None,
+        typer.Option("--body-file", help="UTF-8 Markdown body without YAML frontmatter."),
+    ] = None,
+    relative_path: Annotated[
+        str | None,
+        typer.Option("--path", help="Bundle-relative Markdown path; defaults under inbox/."),
+    ] = None,
+    sources_file: Annotated[
+        Path | None,
+        typer.Option("--sources-file", help="JSON array of OKF source mappings."),
+    ] = None,
+    confidence_level: Annotated[
+        ConfidenceLevel | None,
+        typer.Option("--confidence", help="Producer confidence for agent-generated content."),
+    ] = None,
+    confidence_basis: Annotated[
+        str | None,
+        typer.Option("--confidence-basis", help="Plain-language confidence basis."),
+    ] = None,
+    tags: Annotated[
+        list[str] | None,
+        typer.Option("--tag", help="Repeatable lowercase kebab-case tag."),
+    ] = None,
+    sensitivity: Annotated[
+        Sensitivity | None,
+        typer.Option("--sensitivity", help="Handling classification; bundle default if omitted."),
+    ] = None,
+    timestamp: Annotated[
+        str | None,
+        typer.Option("--timestamp", help="Strict UTC RFC 3339 production time."),
+    ] = None,
+    slug: Annotated[
+        str | None,
+        typer.Option("--brain", help="Installed brain slug; defaults to the active brain."),
+    ] = None,
+    apply: Annotated[
+        bool,
+        typer.Option("--apply", help="Apply the validated change plan."),
+    ] = False,
+    config_path: Annotated[
+        Path | None,
+        typer.Option("--config", help="Override the user configuration path."),
+    ] = None,
+    as_of: Annotated[
+        str | None,
+        typer.Option("--as-of", help="Explicit ISO date for deterministic validation."),
+    ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit the plan or applied result as JSON."),
+    ] = False,
+) -> None:
+    """Plan a new governed draft and apply it only after explicit approval."""
+
+    settings = _load_cli_settings(config_path)
+    interactive = _interactive_terminal() and not json_output
+    core_inputs = (item_type, title, description, actor, body_file)
+    if not any(value is not None for value in core_inputs):
+        if not interactive:
+            typer.echo(
+                "Knowledge create requires --type, --title, --description, --actor, and "
+                "--body-file outside an interactive terminal.",
+                err=True,
+            )
+            raise typer.Exit(2)
+        try:
+            inputs = run_knowledge_create_prompts(write=typer.echo)
+        except SetupPromptError as exc:
+            typer.echo(str(exc), err=True)
+            raise typer.Exit(2) from None
+        if inputs is None:
+            return
+        item_type = inputs.item_type
+        title = inputs.title
+        description = inputs.description
+        actor = inputs.actor
+        method = inputs.method
+        body = inputs.body
+        relative_path = inputs.relative_path
+        sources = inputs.sources
+        confidence_level = inputs.confidence_level
+        confidence_basis = inputs.confidence_basis
+        sensitivity = inputs.sensitivity
+    elif not all(value is not None for value in core_inputs):
+        typer.echo(
+            "Provide all of --type, --title, --description, --actor, and --body-file, "
+            "or omit all five to use interactive authoring.",
+            err=True,
+        )
+        raise typer.Exit(2)
+    else:
+        try:
+            body = _read_text_input(body_file, label="Body file")
+            sources = _read_sources_input(sources_file)
+        except ValueError as exc:
+            typer.echo(str(exc), err=True)
+            raise typer.Exit(2) from None
+
+    try:
+        plan = plan_knowledge_create(
+            settings,
+            item_type=item_type,
+            title=title,
+            description=description,
+            actor=actor,
+            method=method,
+            body=body,
+            relative_path=relative_path,
+            sources=sources,
+            confidence_level=confidence_level,
+            confidence_basis=confidence_basis,
+            tags=tags,
+            sensitivity=sensitivity,
+            timestamp=timestamp,
+            slug=slug,
+            as_of=as_of,
+        )
+    except (BrainError, OperationError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+
+    if not json_output:
+        typer.echo(f"Validated draft plan: {plan.relative_path}")
+        for change in plan.change_set.changes:
+            typer.echo(f"  {change.kind:<6} {change.relative_path}")
+        if plan.change_set.validation.warnings:
+            typer.echo(f"Validation warnings: {len(plan.change_set.validation.warnings)}")
+
+    should_apply = apply
+    if interactive and not apply:
+        try:
+            should_apply = confirm_knowledge_apply(write=typer.echo)
+        except SetupPromptError as exc:
+            typer.echo(str(exc), err=True)
+            raise typer.Exit(2) from None
+    if should_apply:
+        try:
+            plan.change_set.apply()
+        except (ConcurrentChangeError, OSError) as exc:
+            typer.echo(f"Draft plan could not be applied: {exc}", err=True)
+            raise typer.Exit(1) from None
+    payload = plan.as_dict(applied=should_apply)
+    if json_output:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    elif should_apply:
+        typer.echo("Draft applied locally; review and commit the authoring repository when ready.")
+    else:
+        typer.echo("Plan only; no files changed. Re-run with --apply to write it.")
+
+
 @brain_app.command("use")
 def brain_use(
     slug: Annotated[str, typer.Argument(help="Installed brain slug.")],
@@ -668,6 +854,38 @@ def _initial_settings(path: Path) -> Settings:
 
 def _interactive_terminal() -> bool:
     return sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def _read_text_input(path: Path | None, *, label: str) -> str:
+    if path is None:
+        raise ValueError(f"{label} is required.")
+    source = path.expanduser().absolute()
+    if source.is_symlink() or not source.is_file():
+        raise ValueError(f"{label} must be a regular file: {source}")
+    if source.stat().st_size > 1_048_576:
+        raise ValueError(f"{label} exceeds the 1 MiB authoring limit: {source}")
+    try:
+        content = source.read_text(encoding="utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"{label} must use UTF-8: {source}") from exc
+    if not content.strip():
+        raise ValueError(f"{label} must not be empty: {source}")
+    if content.startswith("---\n"):
+        raise ValueError(f"{label} must contain Markdown body only, without YAML frontmatter.")
+    return content
+
+
+def _read_sources_input(path: Path | None) -> tuple[Mapping[str, object], ...]:
+    if path is None:
+        return ()
+    content = _read_text_input(path, label="Sources file")
+    try:
+        payload = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Sources file is not valid JSON: {path.expanduser().absolute()}") from exc
+    if not isinstance(payload, list) or not all(isinstance(item, dict) for item in payload):
+        raise ValueError("Sources file must contain a JSON array of source objects.")
+    return tuple(payload)
 
 
 def _load_cli_settings(path: Path | None) -> Settings:

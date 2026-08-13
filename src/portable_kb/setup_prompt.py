@@ -60,6 +60,8 @@ class PromptBackend(Protocol):
 
     def confirm(self, message: str, *, default: bool) -> bool | None: ...
 
+    def editor(self, message: str, *, default: str) -> str | None: ...
+
 
 class QuestionaryBackend:
     """Arrow-key terminal prompts that leave completed answers in scrollback."""
@@ -119,6 +121,14 @@ class QuestionaryBackend:
 
     def confirm(self, message: str, *, default: bool) -> bool | None:
         return self._questionary.confirm(
+            message,
+            default=default,
+            qmark="◆",
+            style=self._style,
+        ).ask()
+
+    def editor(self, message: str, *, default: str) -> str | None:
+        return self._questionary.editor(
             message,
             default=default,
             qmark="◆",

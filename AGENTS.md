@@ -8,9 +8,11 @@ setup, inline terminal prompts, an installable brain manifest, and safe Git-back
 installation, catalog, selection, status, and explicit fast-forward
 synchronization, plus isolated QMD BM25 indexing and cited keyword queries.
 Complete-item retrieval and standalone or setup-integrated installation of the
-bundled read-only workflow skill for Codex and Claude Code are also authorized.
+bundled read-only workflow skill for Codex and Claude Code are also authorized,
+as is explicitly approved, plan-first creation of new draft knowledge through
+the existing lifecycle API.
 Do not expand into automatic QMD installation, embeddings, semantic/hybrid
-querying, vector databases, lifecycle CLI mutation, MCP servers, APIs,
+querying, vector databases, other lifecycle CLI mutations, MCP servers, APIs,
 native/web UI, authentication/authorization, multitenancy, background agents,
 infrastructure, or third-party integrations unless a later user request
 explicitly changes the phase and scope.

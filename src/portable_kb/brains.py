@@ -65,9 +65,13 @@ class InstalledBrain:
     source: str
     checkout: str
     commit: str
+    authoring: str | None = None
 
     def checkout_path(self, settings: Settings) -> Path:
         return settings.data_dir / PurePosixPath(self.checkout)
+
+    def authoring_path(self) -> Path | None:
+        return Path(self.authoring).expanduser().absolute() if self.authoring else None
 
     def as_dict(self, *, active: bool = False) -> dict[str, Any]:
         return {
@@ -75,6 +79,7 @@ class InstalledBrain:
             "slug": self.slug,
             "name": self.name,
             "source": self.source,
+            "authoring": self.authoring,
             "checkout": self.checkout,
             "commit": self.commit,
             "active": active,
@@ -195,6 +200,7 @@ def save_catalog(catalog: BrainCatalog, settings: Settings) -> Path:
                 "slug": brain.slug,
                 "name": brain.name,
                 "source": brain.source,
+                "authoring": brain.authoring,
                 "checkout": brain.checkout,
                 "commit": DoubleQuotedScalarString(brain.commit),
             }
@@ -350,7 +356,9 @@ def publish_brain_to_github(
     brain = catalog.get(selected)
     if _is_remote_source(brain.source):
         raise BrainError(f"Brain is already published from: {brain.source}")
-    repository = Path(brain.source).expanduser().absolute()
+    repository = brain.authoring_path()
+    if repository is None:
+        raise BrainError("Brain has no local authoring repository to publish.")
     if repository.is_symlink() or not repository.is_dir():
         raise BrainError(f"Local authoring repository is unavailable: {repository}")
     manifest = read_manifest(repository)
@@ -465,6 +473,7 @@ def add_brain(
             source=normalized_source,
             checkout=f"brains/{manifest.slug}",
             commit=commit,
+            authoring=normalized_source if not _is_remote_source(normalized_source) else None,
         )
         updated = catalog.with_brain(entry)
         os.replace(checkout, destination)
@@ -491,6 +500,42 @@ def use_brain(slug: str, settings: Settings) -> InstalledBrain:
         raise BrainError("Installed brain identity does not match the local catalog.")
     save_catalog(catalog.selecting(slug), settings)
     return brain
+
+
+def authoring_repository(
+    settings: Settings,
+    slug: str | None = None,
+) -> tuple[InstalledBrain, Path, BrainManifest]:
+    """Resolve and verify the local repository used to author a brain."""
+
+    catalog = load_catalog(settings)
+    selected = slug or catalog.active
+    if selected is None:
+        raise BrainError("No active brain. Initialize or select one first.")
+    brain = catalog.get(selected)
+    repository = brain.authoring_path()
+    if repository is None:
+        raise BrainError(
+            "Brain has no local authoring repository. Clone it locally and initialize or "
+            "reinstall it from that path before authoring."
+        )
+    if repository.is_symlink() or not repository.is_dir():
+        raise BrainError(f"Local authoring repository is unavailable: {repository}")
+    manifest = read_manifest(repository)
+    if manifest.id != brain.id or manifest.slug != brain.slug:
+        raise BrainError("Local authoring repository identity does not match the catalog.")
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to verify an authoring repository.")
+    current = _run_git(git, "-C", str(repository), "rev-parse", "HEAD").strip()
+    if not COMMIT.fullmatch(current) or not _git_is_ancestor(
+        git,
+        repository,
+        brain.commit,
+        current,
+    ):
+        raise BrainError("Local authoring repository does not contain the installed commit.")
+    return brain, repository, manifest
 
 
 def brain_status(
@@ -729,10 +774,15 @@ def _catalog_from_payload(payload: Any) -> BrainCatalog:
     brains: list[InstalledBrain] = []
     expected = {"id", "slug", "name", "source", "checkout", "commit"}
     for raw in raw_brains:
-        if not isinstance(raw, Mapping) or set(raw) != expected:
+        if not isinstance(raw, Mapping) or set(raw) not in (expected, expected | {"authoring"}):
             raise BrainError("Brain catalog contains an invalid entry.")
         if not all(isinstance(raw[key], str) and raw[key] for key in expected):
             raise BrainError("Brain catalog entry fields must be non-empty strings.")
+        raw_authoring = raw.get("authoring")
+        if raw_authoring is not None and (
+            not isinstance(raw_authoring, str) or not raw_authoring.strip()
+        ):
+            raise BrainError("Brain catalog authoring path must be a non-empty string or null.")
         checkout = str(raw["checkout"])
         slug = str(raw["slug"])
         try:
@@ -751,14 +801,21 @@ def _catalog_from_payload(payload: Any) -> BrainCatalog:
             raise BrainError("Brain catalog checkout path is unsafe.")
         if not COMMIT.fullmatch(str(raw["commit"])):
             raise BrainError("Brain catalog commit is invalid.")
+        source = str(raw["source"])
+        authoring = (
+            str(raw_authoring)
+            if raw_authoring is not None
+            else source if not _is_remote_source(source) else None
+        )
         brains.append(
             InstalledBrain(
                 id=str(raw["id"]),
                 slug=slug,
                 name=str(raw["name"]),
-                source=str(raw["source"]),
+                source=source,
                 checkout=checkout,
                 commit=str(raw["commit"]),
+                authoring=authoring,
             )
         )
     if len({brain.slug for brain in brains}) != len(brains) or len(

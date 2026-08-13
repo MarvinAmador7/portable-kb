@@ -4,6 +4,14 @@ The deterministic Python API remains the core seam. Optional consumers such as
 the CLI and inline setup prompts call this API rather than reimplementing its rules.
 """
 
+from .authoring import (
+    ConfidenceLevel,
+    GenerationMethod,
+    KnowledgeCreatePlan,
+    KnowledgeType,
+    Sensitivity,
+    plan_knowledge_create,
+)
 from .models import Finding, KnowledgeItem, Severity, ValidationReport
 from .operations import (
     OperationError,
@@ -21,17 +29,23 @@ from .skills import SkillError, SkillTarget, install_agent_skill
 from .validation import validate_bundle, validate_transition
 
 __all__ = [
+    "ConfidenceLevel",
     "Finding",
+    "GenerationMethod",
+    "KnowledgeCreatePlan",
     "KnowledgeItem",
+    "KnowledgeType",
     "OperationError",
     "OperationValidationError",
     "Severity",
     "SearchError",
+    "Sensitivity",
     "SkillError",
     "SkillTarget",
     "ValidationReport",
     "plan_archive",
     "plan_create",
+    "plan_knowledge_create",
     "plan_move",
     "plan_promote",
     "plan_reverify",

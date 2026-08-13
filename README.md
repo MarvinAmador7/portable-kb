@@ -12,9 +12,11 @@ lifecycle change planning, index generation, and regression tests. A first
 consumer slice adds the `pkb` command, inline terminal setup prompts, and safe
 Git-backed brain installation and synchronization. It also provides isolated
 QMD BM25 indexing, cited keyword search, complete-item retrieval, and one
-portable workflow skill for Codex and Claude Code without model downloads.
-Semantic search, MCP, native UI, authentication/authorization, connectors,
-hosted services, and automatic background agents are not yet implemented.
+portable workflow skill for Codex and Claude Code without model downloads. A
+plan-first authoring command can create validated local drafts without silently
+committing or publishing them. Semantic search, MCP, native UI,
+authentication/authorization, connectors, hosted services, and automatic
+background agents are not yet implemented.
 
 ## Implemented core
 
@@ -211,6 +213,18 @@ it to a GitHub `org/repo`; declining leaves a fully usable local brain. The
 separate `brain publish` command uses the authenticated GitHub CLI, defaults to
 private visibility, pushes `main`, and updates the installed distribution source.
 
+Create a governed draft in the retained local authoring repository:
+
+```console
+pkb knowledge create
+```
+
+The interactive flow collects provenance and sensitivity, opens an editor for
+the Markdown body, validates a complete change plan, previews every affected
+file, and asks before applying. It creates drafts only and never commits or
+pushes. Agents can use `--body-file`, `--sources-file`, `--json`, and the
+explicit `--apply` flag for the same deterministic workflow.
+
 Build and query the disposable keyword index after installing QMD separately:
 
 ```console
@@ -247,7 +261,8 @@ Primary references:
 
 Semantic and hybrid retrieval, model installation, embeddings, vector
 databases, knowledge-graph databases, background brain synchronization,
-lifecycle CLI commands, MCP, APIs, web/native UI, authentication,
+lifecycle CLI commands beyond draft creation, MCP, APIs, web/native UI,
+authentication,
 authorization, multitenancy, automatic background agents, production
 infrastructure, and third-party connectors are not yet implemented. The file
 model exposes stable seams for them without depending on them.

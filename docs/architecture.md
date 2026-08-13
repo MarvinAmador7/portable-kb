@@ -13,9 +13,10 @@ The design intentionally separates three layers:
 1. **Canonical knowledge:** Markdown files, sources, indexes, and Git history.
 2. **Deterministic governance:** a profile schema and corpus-level validation.
 3. **Consumers:** inline CLI setup, Git-backed brain distribution, disposable
-   keyword search, complete-item retrieval, and a coding-agent workflow skill
-   are implemented consumers; MCP, APIs, graphs, native apps, and external
-   platforms remain rebuildable from the canonical layer.
+   keyword search, complete-item retrieval, plan-first draft creation, and a
+   coding-agent workflow skill are implemented consumers; MCP, APIs, graphs,
+   native apps, and external platforms remain rebuildable from the canonical
+   layer.
 
 Baseline OKF conformance and local governance are different contracts. An OKF
 consumer must be permissive. The local authoring gate can be stricter so that a
