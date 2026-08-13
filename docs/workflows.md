@@ -5,7 +5,9 @@ acting as an assistant, not an autonomous authority. The CLI implements only
 the none-to-draft creation workflow through the existing validated change-plan
 API. After one explicit confirmation, it versions only the planned files and
 refreshes the active local brain without exposing Git commands; it does not
-push the result. Other lifecycle commands, background agents, external
+push the result. A separately authorized `brain push` validates and shares the
+active saved version only as a fast-forward, without exposing Git commands or
+force-pushing. Other lifecycle commands, background agents, external
 integrations, and hosted workflows are not yet implemented.
 
 ## Responsibility matrix

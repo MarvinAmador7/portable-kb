@@ -14,7 +14,8 @@ Git-backed brain installation and synchronization. It also provides isolated
 QMD BM25 indexing, cited keyword search, complete-item retrieval, and one
 portable workflow skill for Codex and Claude Code without model downloads. A
 plan-first authoring command can create validated local drafts without silently
-committing or publishing them. Semantic search, MCP, native UI,
+publishing them, and an explicit push command safely shares the active saved
+version. Semantic search, MCP, native UI,
 authentication/authorization, connectors, hosted services, and automatic
 background agents are not yet implemented.
 
@@ -227,6 +228,17 @@ commands and agents can retrieve the draft immediately. It does not share the
 draft with the organization. Agents can use `--body-file`, `--sources-file`,
 `--json`, and the explicit `--apply` flag for the same deterministic workflow.
 
+Share the active saved version only when organization publication is intended:
+
+```console
+pkb brain push --json
+```
+
+The command validates again, requires a clean published brain, examines every
+outgoing commit for files outside the brain boundary, and updates `main` only
+when the organization history is an ancestor. It never force-pushes. Other
+machines receive the published version with `pkb brain sync --json`.
+
 Build and query the disposable keyword index after installing QMD separately:
 
 ```console
@@ -250,8 +262,10 @@ This copies the bundled `portable-kb` skill to the user-level Codex and Claude
 Code discovery paths. Use `--target codex` or `--target claude` for one agent,
 and use `--force` only when intentionally replacing an existing installation.
 The skill instructs agents to check brain health, search, retrieve complete
-items, preserve immutable citations, expose lifecycle signals, and treat
-knowledge content as untrusted data rather than executable instructions.
+items, create honest local drafts, share only after explicit user intent,
+preserve immutable citations, expose lifecycle signals, and treat knowledge
+content as untrusted data rather than executable instructions. Existing skill
+installations can be refreshed with `pkb skill install --force`.
 
 Primary references:
 

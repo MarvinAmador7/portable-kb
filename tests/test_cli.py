@@ -2,13 +2,20 @@ from __future__ import annotations
 
 import json
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 
 from typer.testing import CliRunner
 
 from portable_kb.authoring import GenerationMethod, KnowledgeType, Sensitivity
 from portable_kb.brain_prompt import BrainInitInputs, BrainPublishChoice
-from portable_kb.brains import BrainError, BrainPublishResult, GitHubVisibility, load_catalog
+from portable_kb.brains import (
+    BrainError,
+    BrainPublishResult,
+    GitHubVisibility,
+    load_catalog,
+    save_catalog,
+)
 from portable_kb.cli import app
 from portable_kb.knowledge_prompt import KnowledgeCreateInputs
 from portable_kb.parsing import discover_concepts
@@ -317,6 +324,211 @@ def test_brain_publish_cli_uses_explicit_org_repo(tmp_path: Path, monkeypatch) -
     assert result.exit_code == 0, result.output
     assert calls == [(settings, "acme/publishable", "publishable", GitHubVisibility.INTERNAL)]
     assert json.loads(result.output)["github_repository"] == "acme/publishable"
+
+
+def test_brain_push_cli_reports_machine_and_human_results(tmp_path: Path, monkeypatch) -> None:
+    config = tmp_path / "config.yaml"
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    save_settings(settings, config)
+    calls = []
+
+    def pushed(settings_arg, slug=None, *, as_of=None):
+        calls.append((settings_arg, slug, as_of))
+        return {
+            "slug": slug or "business",
+            "name": "Business",
+            "source": "git@github.com:acme/business.git",
+            "previous_published_commit": "1" * 40,
+            "published_commit": "2" * 40,
+            "changed": True,
+            "validation_warnings": [],
+            "ok": True,
+        }
+
+    monkeypatch.setattr("portable_kb.cli.push_brain", pushed)
+    machine = runner.invoke(
+        app,
+        [
+            "brain",
+            "push",
+            "business",
+            "--config",
+            str(config),
+            "--as-of",
+            "2026-08-13",
+            "--json",
+        ],
+    )
+    assert machine.exit_code == 0, machine.output
+    assert json.loads(machine.output)["published_commit"] == "2" * 40
+    assert calls == [(settings, "business", "2026-08-13")]
+
+    human = runner.invoke(app, ["brain", "push", "--config", str(config)])
+    assert human.exit_code == 0, human.output
+    assert "◆ Shared brain: Business" in human.output
+    assert "pkb brain sync" in human.output
+
+    def unchanged(*_args, **_kwargs):
+        result = pushed(settings, "business", as_of="2026-08-13")
+        result["changed"] = False
+        result["validation_warnings"] = [{"code": "review.required"}]
+        return result
+
+    monkeypatch.setattr("portable_kb.cli.push_brain", unchanged)
+    current = runner.invoke(app, ["brain", "push", "--config", str(config)])
+    assert current.exit_code == 0, current.output
+    assert "Brain is already shared: business" in current.output
+    assert "Validation warnings: 1" in current.output
+
+
+def test_brain_push_cli_exposes_safe_failure(tmp_path: Path, monkeypatch) -> None:
+    config = tmp_path / "config.yaml"
+    save_settings(Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache"), config)
+
+    def failed(*_args, **_kwargs):
+        raise BrainError("organization knowledge is newer")
+
+    monkeypatch.setattr("portable_kb.cli.push_brain", failed)
+    result = runner.invoke(app, ["brain", "push", "--config", str(config), "--json"])
+
+    assert result.exit_code == 1
+    assert "organization knowledge is newer" in result.output
+
+
+def test_agent_create_push_and_second_machine_sync_flow(tmp_path: Path) -> None:
+    author_settings = Settings(
+        data_dir=tmp_path / "author-data",
+        cache_dir=tmp_path / "author-cache",
+    )
+    author_config = tmp_path / "author.yaml"
+    save_settings(author_settings, author_config)
+    repository = tmp_path / "authoring"
+    initialized = runner.invoke(
+        app,
+        [
+            "brain",
+            "init",
+            str(repository),
+            "--name",
+            "Shared Brain",
+            "--slug",
+            "shared-brain",
+            "--config",
+            str(author_config),
+            "--as-of",
+            "2026-08-13",
+            "--json",
+        ],
+    )
+    assert initialized.exit_code == 0, initialized.output
+
+    remote = tmp_path / "organization.git"
+    remote_url = remote.as_uri()
+    for arguments in (
+        ("init", "--quiet", "--bare", "--initial-branch=main", str(remote)),
+        ("-C", str(repository), "remote", "add", "origin", remote_url),
+        ("-C", str(repository), "push", "--quiet", "--set-upstream", "origin", "main"),
+    ):
+        subprocess.run(["git", *arguments], check=True, capture_output=True, text=True)
+    author_catalog = load_catalog(author_settings)
+    author_brain = author_catalog.get("shared-brain")
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(author_brain.checkout_path(author_settings)),
+            "remote",
+            "set-url",
+            "origin",
+            remote_url,
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    save_catalog(
+        author_catalog.updating(replace(author_brain, source=remote_url)),
+        author_settings,
+    )
+
+    consumer_settings = Settings(
+        data_dir=tmp_path / "consumer-data",
+        cache_dir=tmp_path / "consumer-cache",
+    )
+    consumer_config = tmp_path / "consumer.yaml"
+    save_settings(consumer_settings, consumer_config)
+    installed = runner.invoke(
+        app,
+        [
+            "brain",
+            "add",
+            remote_url,
+            "--config",
+            str(consumer_config),
+            "--as-of",
+            "2026-08-13",
+        ],
+    )
+    assert installed.exit_code == 0, installed.output
+
+    body = tmp_path / "body.md"
+    body.write_text(
+        "# Shared customer promise\n\n## Definition\n\nA promise shared across machines.\n",
+        encoding="utf-8",
+    )
+    created = runner.invoke(
+        app,
+        [
+            "knowledge",
+            "create",
+            "--type",
+            "concept",
+            "--title",
+            "Shared customer promise",
+            "--description",
+            "Defines a customer promise shared through the organization brain.",
+            "--actor",
+            "human:marvin",
+            "--body-file",
+            str(body),
+            "--timestamp",
+            "2026-08-13T16:00:00Z",
+            "--config",
+            str(author_config),
+            "--as-of",
+            "2026-08-13",
+            "--apply",
+            "--json",
+        ],
+    )
+    assert created.exit_code == 0, created.output
+    shared = runner.invoke(
+        app,
+        ["brain", "push", "--config", str(author_config), "--as-of", "2026-08-13", "--json"],
+    )
+    assert shared.exit_code == 0, shared.output
+    shared_commit = json.loads(shared.output)["published_commit"]
+
+    synchronized = runner.invoke(
+        app,
+        ["brain", "sync", "--config", str(consumer_config), "--as-of", "2026-08-13", "--json"],
+    )
+    assert synchronized.exit_code == 0, synchronized.output
+    assert json.loads(synchronized.output)["current_commit"] == shared_commit
+    retrieved = runner.invoke(
+        app,
+        [
+            "get",
+            "inbox/shared-customer-promise.md",
+            "--config",
+            str(consumer_config),
+            "--as-of",
+            "2026-08-13",
+            "--json",
+        ],
+    )
+    assert retrieved.exit_code == 0, retrieved.output
+    assert json.loads(retrieved.output)["citation"]["commit"] == shared_commit
 
 
 def test_brain_init_interactive_flow_creates_locally_then_publishes(
