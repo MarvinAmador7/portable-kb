@@ -1,6 +1,6 @@
 ---
 name: portable-kb
-description: Search, retrieve, and create governed organizational knowledge in an installed Portable KB brain, then share it when explicitly authorized. Use when answering from a business worldview, locating decisions or procedures, capturing reusable knowledge, checking what the organization knows, comparing explicitly named brains, or grounding work in Portable KB citations with lifecycle and provenance signals.
+description: Search, retrieve, create, and update governed organizational knowledge in an installed Portable KB brain, then share it when explicitly authorized. Use when answering from a business worldview, locating decisions or procedures, capturing or revising reusable knowledge, checking what the organization knows, comparing explicitly named brains, or grounding work in Portable KB citations with lifecycle and provenance signals.
 ---
 
 # Portable KB
@@ -13,6 +13,8 @@ complete items, create honest drafts, and keep authority separate from relevance
 - For questions about organizational knowledge, use the retrieval workflow.
 - When the user explicitly asks to remember, capture, document, or add reusable
   knowledge, use the creation workflow.
+- When the user asks to correct, revise, clarify, or extend an existing item,
+  use the update workflow and preserve its immutable identity.
 - Share saved knowledge only when the user explicitly asks to publish, push,
   share, or distribute it to the organization.
 
@@ -108,6 +110,38 @@ complete items, create honest drafts, and keep authority separate from relevance
 Creation never authorizes promotion, verification, supersession, archival, or
 deletion. If those are needed, explain that the current CLI does not expose the
 operation. Never fabricate sources, human review, or authority.
+
+## Update workflow
+
+1. Search and retrieve the complete existing item. Target updates by immutable
+   item ID whenever possible. Confirm that the request changes this item rather
+   than requiring a distinct scope or superseding identity.
+2. Prepare a replacement Markdown body without frontmatter and/or a JSON object
+   containing only metadata fields that materially change. Preserve meaningful
+   content, sources, limitations, and unknown metadata unless the user or
+   evidence specifically changes them.
+3. Plan without writing:
+
+   ```console
+   pkb knowledge update "urn:uuid:..." \
+     --actor "openai/codex" \
+     --method agent-generated \
+     --body-file ./revised-body.md \
+     --metadata-file ./metadata-updates.json \
+     --json
+   ```
+
+4. Inspect `item_id`, status changes, verification invalidation, warnings, and
+   every affected path. If correct, repeat the exact command with `--apply`.
+   The command preserves `id` and `created_at`, updates provenance, versions
+   only validated files, and refreshes the active brain automatically.
+5. Report the resulting lifecycle state and that the change remains local.
+   Share only through the separately authorized publishing workflow.
+
+For agent-generated revisions, retain or provide real sources and confidence.
+Never lower sensitivity as an agent, claim human verification, use update to
+revive deprecated knowledge, or bypass a validation refusal. Use a new item or
+request a future supersession workflow when identity or scope materially changes.
 
 ## Sharing and synchronization
 

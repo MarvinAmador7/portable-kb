@@ -10,8 +10,9 @@ consumer state and never enter the `knowledge/` bundle.
 
 The implemented consumer foundation covers local configuration plus installing,
 listing, selecting, inspecting, and explicitly synchronizing Git-backed
-brains. It does not install QMD, download models, execute lifecycle changes, or
-synchronize in the background. When QMD is already installed, it can build
+brains. It does not install QMD, download models, bypass lifecycle validation,
+apply a planned change without explicit intent, or synchronize in the
+background. When QMD is already installed, it can build
 isolated BM25 indexes and execute cited keyword queries; semantic and hybrid
 retrieval remain deferred.
 
@@ -265,6 +266,38 @@ Without `--apply`, this returns a validated plan and changes no files. Add
 `--sources-file` must be a UTF-8 JSON array of OKF source objects. Body input is
 bounded to 1 MiB and must not include YAML frontmatter because the lifecycle
 operation generates identity and governed metadata exactly once.
+
+## Material knowledge update
+
+Agents can revise an existing item by immutable ID or bundle-relative path:
+
+```console
+pkb knowledge update "urn:uuid:..." \
+  --actor "openai/codex" \
+  --method agent-generated \
+  --body-file ./revised-body.md \
+  --metadata-file ./metadata-updates.json \
+  --json
+```
+
+At least one of `--body-file` or `--metadata-file` is required. The body is a
+complete replacement Markdown body without YAML frontmatter. The metadata file
+is a JSON object containing only fields to replace. Identity, type, status,
+production timestamps, verification, supersession, and archive fields are
+lifecycle-controlled and cannot be supplied through this operation.
+
+Without `--apply`, the command resolves the current item, validates the base
+and proposed corpus, and returns a plan without writing. Repeating the exact
+command with `--apply` saves, locally versions, and activates the update. The
+core planner preserves immutable identity and unknown fields, replaces current
+production provenance, removes prior verification, and returns stable
+decisions, procedures, and policies to draft after material change. Sensitivity
+can be lowered only by an explicit human actor with
+`--approve-sensitivity-lowering`; agents must never use that authority path.
+
+The result exposes previous/resulting lifecycle status, whether verification
+was invalidated, the exact affected paths, validation warnings, and the saved
+version. Updating locally never authorizes organization publication.
 
 ## Organization publication
 

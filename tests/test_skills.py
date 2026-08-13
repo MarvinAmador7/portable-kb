@@ -24,6 +24,7 @@ def test_install_agent_skill_for_both_agents_and_force_replace(tmp_path: Path) -
         assert (destination / "SKILL.md").read_bytes() == (source / "SKILL.md").read_bytes()
         installed_text = (destination / "SKILL.md").read_text(encoding="utf-8")
         assert "pkb knowledge create" in installed_text
+        assert "pkb knowledge update" in installed_text
         assert "pkb brain push --json" in installed_text
         assert "Only after explicit sharing intent" in installed_text
 

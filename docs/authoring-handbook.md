@@ -9,9 +9,10 @@
 4. Add sources for imported, transformed, calculated, summarized, and
    agent-generated content. Cite consequential claims with matching footnotes.
 5. Use a readable lowercase kebab-case filename and normal Markdown links.
-6. Run `portable_kb.validate_bundle()` with an explicit review date. The core
-   intentionally provides a library API; a CLI is deferred.
-7. Submit a focused Git change using the pull-request checklist.
+6. Use `pkb knowledge create` or `pkb knowledge update` to preview a validated
+   plan, then repeat with `--apply` to save and refresh the active local brain.
+7. Share only after separate publication intent with `pkb brain push`; Git
+   remains an inspectable persistence layer rather than a required user task.
 
 ## Review
 

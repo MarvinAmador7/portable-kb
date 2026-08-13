@@ -13,8 +13,8 @@ The design intentionally separates three layers:
 1. **Canonical knowledge:** Markdown files, sources, indexes, and Git history.
 2. **Deterministic governance:** a profile schema and corpus-level validation.
 3. **Consumers:** inline CLI setup, Git-backed brain distribution, disposable
-   keyword search, complete-item retrieval, plan-first draft creation, and a
-   coding-agent workflow skill are implemented consumers; MCP, APIs, graphs,
+   keyword search, complete-item retrieval, plan-first draft creation and
+   material update, and a coding-agent workflow skill are implemented consumers; MCP, APIs, graphs,
    native apps, and external platforms remain rebuildable from the canonical
    layer.
 
@@ -339,7 +339,8 @@ The CLI consumer phase has started without changing the canonical model.
 QMD BM25 indexing and cited keyword queries are implemented as isolated,
 deletable consumer state. Detailed implementation is still deferred for model
 installation, semantic/hybrid retrieval, embeddings, vector databases, graph
-databases, lifecycle CLI commands, MCP, APIs, web/native UI, hosted services,
+databases, lifecycle CLI commands beyond creation and material update, MCP,
+APIs, web/native UI, hosted services,
 authentication, authorization, multitenancy, background agents, production
 infrastructure, and third-party connectors. See [cli.md](cli.md) for the active
 consumer boundary.

@@ -12,7 +12,7 @@ describe retrieval/integrations. Phases are gates, not calendar estimates.
 | 2 — Validation | Implemented | `portable_kb.validate_bundle()` covers the rule catalog with stable structured findings and offline explicit-date behavior. |
 | 3 — Lifecycle operations | Implemented | Reviewable planners cover create, update, promote, reverify, move, supersede, and archive with base/proposed validation and optimistic application. |
 | 4 — Test corpus | Implemented | Focused fixtures and transition/operation tests assert every catalog rule; time and network behavior are deterministic. |
-| 5 — Retrieval and CLI consumers | In progress | Inline/non-interactive setup, local-first brain initialization with optional GitHub publication, plan-first draft creation, explicit validated fast-forward push/sync, brain distribution, QMD BM25 search, complete-item retrieval, and setup-integrated Codex/Claude skill installation are implemented. Semantic/hybrid retrieval, trust filtering, and retrieval evaluation remain pending. |
+| 5 — Retrieval and CLI consumers | In progress | Inline/non-interactive setup, local-first brain initialization with optional GitHub publication, plan-first draft creation and material update, explicit validated fast-forward push/sync, brain distribution, QMD BM25 search, complete-item retrieval, and setup-integrated Codex/Claude skill installation are implemented. Semantic/hybrid retrieval, trust filtering, and retrieval evaluation remain pending. |
 | 6+ — Applications and integrations | Deferred | MCP, native UI, authentication/authorization, and connectors remain outside the current implementation. |
 
 Technical implementation does not substitute for human governance. When a
