@@ -22,6 +22,16 @@ class QuietHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
+def _subprocess_environment(**updates: str) -> dict[str, str]:
+    """Return an environment that does not start a nested pytest-cov session."""
+
+    environment = {
+        key: value for key, value in os.environ.items() if not key.startswith("COV_CORE_")
+    }
+    environment.update(updates)
+    return environment
+
+
 def _release_target() -> str:
     operating_system = {"Darwin": "darwin", "Linux": "linux"}[platform.system()]
     architecture = {
@@ -61,12 +71,11 @@ def test_installer_verifies_release_preserves_failure_and_uninstalls(tmp_path: P
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     install_dir = tmp_path / "bin"
-    environment = {
-        **os.environ,
-        "PKB_INSTALL_DIR": str(install_dir),
-        "PKB_RELEASE_BASE_URL": f"http://127.0.0.1:{server.server_port}",
-        "PKB_VERSION": __version__,
-    }
+    environment = _subprocess_environment(
+        PKB_INSTALL_DIR=str(install_dir),
+        PKB_RELEASE_BASE_URL=f"http://127.0.0.1:{server.server_port}",
+        PKB_VERSION=__version__,
+    )
     try:
         installed = subprocess.run(
             ["sh", "install"],
@@ -116,6 +125,7 @@ def test_release_version_matches_cli() -> None:
         check=True,
         capture_output=True,
         text=True,
+        env=_subprocess_environment(),
     )
     assert release.stdout == f"version={__version__}\ntag=v{__version__}\n"
 
@@ -124,5 +134,6 @@ def test_release_version_matches_cli() -> None:
         check=True,
         capture_output=True,
         text=True,
+        env=_subprocess_environment(),
     )
     assert cli.stdout.strip() == f"pkb {__version__}"
