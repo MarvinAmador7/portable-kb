@@ -11,6 +11,7 @@ from typing import Annotated
 
 import typer
 
+from . import __version__
 from .authoring import (
     ConfidenceLevel,
     GenerationMethod,
@@ -64,6 +65,29 @@ skill_app = typer.Typer(help="Install the Portable KB workflow for coding agents
 app.add_typer(skill_app, name="skill")
 knowledge_app = typer.Typer(help="Plan and apply governed knowledge lifecycle changes.")
 app.add_typer(knowledge_app, name="knowledge")
+
+
+def _version_callback(value: bool) -> None:
+    """Print the installed CLI version before command dispatch."""
+
+    if value:
+        typer.echo(f"pkb {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            callback=_version_callback,
+            is_eager=True,
+            help="Show the installed Portable KB version and exit.",
+        ),
+    ] = False,
+) -> None:
+    """Portable, governed knowledge for humans and agents."""
 
 
 @app.command()

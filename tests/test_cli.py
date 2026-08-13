@@ -7,6 +7,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
+from portable_kb import __version__
 from portable_kb.authoring import GenerationMethod, KnowledgeType, Sensitivity
 from portable_kb.brain_prompt import BrainInitInputs, BrainPublishChoice
 from portable_kb.brains import (
@@ -23,6 +24,13 @@ from portable_kb.settings import SearchMode, Settings, load_settings, save_setti
 from portable_kb.skills import SkillError
 
 runner = CliRunner()
+
+
+def test_cli_reports_package_version() -> None:
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.output.strip() == f"pkb {__version__}"
 
 
 def test_non_interactive_setup_and_doctor(tmp_path: Path, monkeypatch) -> None:

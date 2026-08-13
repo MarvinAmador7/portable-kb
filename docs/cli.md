@@ -16,6 +16,12 @@ background. When QMD is already installed, it can build
 isolated BM25 indexes and execute cited keyword queries; semantic and hybrid
 retrieval remain deferred.
 
+Standalone CLI archives are built from the Python wheel for macOS and Linux on
+Intel and ARM. The root `install` script selects the matching artifact,
+verifies its SHA-256 digest, and replaces the user-local executable only after
+verification succeeds. See [releases.md](releases.md) for the CI and release
+contract.
+
 ## Setup contract
 
 Interactive setup runs as a sequence of inline terminal prompts:

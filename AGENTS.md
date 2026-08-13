@@ -12,11 +12,13 @@ bundled workflow skill for Codex and Claude Code are also authorized, as is
 explicitly approved, plan-first creation of new draft knowledge through the
 existing lifecycle API, material updates that preserve identity and invalidate
 prior verification through the existing update planner, and explicit validated
-fast-forward publication of the active saved brain version.
+fast-forward publication of the active saved brain version. Standalone CLI
+packaging, checksum-verifying installation, CI, and version-driven GitHub
+release automation are authorized distribution work.
 Do not expand into automatic QMD installation, embeddings, semantic/hybrid
 querying, vector databases, other lifecycle CLI mutations, MCP servers, APIs,
 native/web UI, authentication/authorization, multitenancy, background agents,
-infrastructure, or third-party integrations unless a later user request
+production infrastructure, or third-party integrations unless a later user request
 explicitly changes the phase and scope.
 
 The future OKF bundle boundary is `knowledge/`. Repository files under `docs/`,

@@ -1,0 +1,216 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/portable_kb/__init__.py
+  workflow_dispatch:
+
+concurrency:
+  group: portable-kb-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Resolve release version
+    runs-on: ubuntu-24.04
+    outputs:
+      release_needed: ${{ steps.release.outputs.release_needed }}
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Check out source and tags
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Require the default branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "Releases can only be dispatched from main." >&2
+          exit 1
+      - name: Read version
+        id: version
+        run: python scripts/release_info.py --github-output "$GITHUB_OUTPUT"
+      - name: Refuse duplicate or orphaned versions
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; nothing to publish."
+            echo "release_needed=false" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG exists without a release; refusing to overwrite it." >&2
+            exit 1
+          else
+            echo "release_needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    name: Release gate
+    needs: prepare
+    if: needs.prepare.outputs.release_needed == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install test dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Verify release candidate
+        run: |
+          python -m ruff check .
+          python -m pytest -q --cov=portable_kb --cov-report=term-missing
+          sh -n install
+
+  python-package:
+    name: Python distributions
+    needs:
+      - prepare
+      - test
+    if: needs.prepare.outputs.release_needed == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Build and inspect distributions
+        run: |
+          python -m pip install "build>=1.2,<2" "twine>=7,<8"
+          python -m build
+          python -m twine check dist/*
+      - name: Upload Python distributions
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: python-package
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 5
+
+  standalone:
+    name: Standalone (${{ matrix.target }})
+    needs:
+      - prepare
+      - test
+    if: needs.prepare.outputs.release_needed == 'true'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x86_64
+            runner: ubuntu-22.04
+          - target: linux-arm64
+            runner: ubuntu-22.04-arm
+          - target: darwin-x86_64
+            runner: macos-15-intel
+          - target: darwin-arm64
+            runner: macos-15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install build tools and packaged application
+        run: |
+          python -m pip install "build>=1.2,<2" "pyinstaller>=6.11,<7"
+          python -m build --wheel
+          python -m pip install --force-reinstall dist/*.whl
+      - name: Build and smoke-test standalone archive
+        run: python scripts/build_standalone.py --target "${{ matrix.target }}"
+      - name: Upload standalone archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: standalone-${{ matrix.target }}
+          path: release/*.tar.gz
+          if-no-files-found: error
+          retention-days: 5
+
+  publish:
+    name: Publish GitHub release
+    needs:
+      - prepare
+      - python-package
+      - standalone
+    if: needs.prepare.outputs.release_needed == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      url: ${{ steps.publish.outputs.url }}
+    steps:
+      - name: Download all release artifacts
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          path: release
+          merge-multiple: true
+      - name: Generate checksums
+        working-directory: release
+        run: sha256sum portable_kb_core-* pkb-*.tar.gz > SHA256SUMS
+      - name: Publish versioned assets
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: |
+          gh release create "$TAG" release/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --generate-notes
+          echo "url=https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}" >> "$GITHUB_OUTPUT"
+
+  smoke-install:
+    name: Released installer (${{ matrix.name }})
+    needs:
+      - prepare
+      - publish
+    if: needs.prepare.outputs.release_needed == 'true'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux Intel
+            runner: ubuntu-24.04
+          - name: Linux ARM
+            runner: ubuntu-24.04-arm
+          - name: macOS Intel
+            runner: macos-15-intel
+          - name: macOS ARM
+            runner: macos-15
+    steps:
+      - name: Check out installer
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Install the published release
+        env:
+          PKB_INSTALL_DIR: ${{ runner.temp }}/pkb-bin
+          PKB_VERSION: ${{ needs.prepare.outputs.tag }}
+          RELEASE_TOKEN: ${{ github.token }}
+          REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          if [ "$REPOSITORY_PRIVATE" = "true" ]; then
+            export GH_TOKEN="$RELEASE_TOKEN"
+          else
+            unset GH_TOKEN
+          fi
+          sh install
+          "${PKB_INSTALL_DIR}/pkb" --version
+          "${PKB_INSTALL_DIR}/pkb" --help >/dev/null
