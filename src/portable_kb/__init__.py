@@ -8,9 +8,11 @@ from .authoring import (
     ConfidenceLevel,
     GenerationMethod,
     KnowledgeCreatePlan,
+    KnowledgeCreateResult,
     KnowledgeType,
     Sensitivity,
     plan_knowledge_create,
+    save_knowledge_create,
 )
 from .models import Finding, KnowledgeItem, Severity, ValidationReport
 from .operations import (
@@ -33,6 +35,7 @@ __all__ = [
     "Finding",
     "GenerationMethod",
     "KnowledgeCreatePlan",
+    "KnowledgeCreateResult",
     "KnowledgeItem",
     "KnowledgeType",
     "OperationError",
@@ -46,6 +49,7 @@ __all__ = [
     "plan_archive",
     "plan_create",
     "plan_knowledge_create",
+    "save_knowledge_create",
     "plan_move",
     "plan_promote",
     "plan_reverify",

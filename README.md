@@ -221,9 +221,11 @@ pkb knowledge create
 
 The interactive flow collects provenance and sensitivity, opens an editor for
 the Markdown body, validates a complete change plan, previews every affected
-file, and asks before applying. It creates drafts only and never commits or
-pushes. Agents can use `--body-file`, `--sources-file`, `--json`, and the
-explicit `--apply` flag for the same deterministic workflow.
+file, and asks once before saving. Portable KB versions the exact change and
+refreshes the active local brain automatically, so users do not need Git
+commands and agents can retrieve the draft immediately. It does not share the
+draft with the organization. Agents can use `--body-file`, `--sources-file`,
+`--json`, and the explicit `--apply` flag for the same deterministic workflow.
 
 Build and query the disposable keyword index after installing QMD separately:
 

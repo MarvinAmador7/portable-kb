@@ -10,7 +10,14 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
-from .brains import BrainManifest, InstalledBrain, authoring_repository
+from .brains import (
+    BrainManifest,
+    InstalledBrain,
+    authoring_repository,
+    clean_repository_head,
+    commit_authoring_changes,
+    refresh_brain_from_authoring,
+)
 from .changes import ChangeSet
 from .operations import plan_create
 from .settings import Settings
@@ -63,6 +70,7 @@ class KnowledgeCreatePlan:
     repository: Path
     manifest: BrainManifest
     relative_path: str
+    base_commit: str
     change_set: ChangeSet
 
     def as_dict(self, *, applied: bool) -> dict[str, Any]:
@@ -72,6 +80,8 @@ class KnowledgeCreatePlan:
             "path": self.relative_path,
             "operation": self.change_set.operation,
             "applied": applied,
+            "saved_version": None,
+            "active_brain_updated": False,
             "changes": [
                 {"path": change.relative_path, "kind": change.kind}
                 for change in self.change_set.changes
@@ -80,6 +90,24 @@ class KnowledgeCreatePlan:
                 finding.as_dict() for finding in self.change_set.validation.warnings
             ],
         }
+
+
+@dataclass(frozen=True, slots=True)
+class KnowledgeCreateResult:
+    """A locally saved draft that is immediately available to consumers."""
+
+    plan: KnowledgeCreatePlan
+    commit: str
+    refresh: Mapping[str, Any]
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a stable machine-readable save result."""
+
+        payload = self.plan.as_dict(applied=True)
+        payload["saved_version"] = self.commit
+        payload["active_brain_updated"] = True
+        payload["previous_version"] = self.refresh["previous_commit"]
+        return payload
 
 
 def plan_knowledge_create(
@@ -104,6 +132,7 @@ def plan_knowledge_create(
     """Plan a new draft in a verified local authoring repository."""
 
     brain, repository, manifest = authoring_repository(settings, slug)
+    base_commit = clean_repository_head(repository)
     path = relative_path or f"inbox/{slugify(title)}.md"
     confidence = None
     if confidence_level is not None or confidence_basis is not None:
@@ -132,8 +161,41 @@ def plan_knowledge_create(
         repository=repository,
         manifest=manifest,
         relative_path=path,
+        base_commit=base_commit,
         change_set=change_set,
     )
+
+
+def save_knowledge_create(
+    settings: Settings,
+    plan: KnowledgeCreatePlan,
+    *,
+    as_of: str | None = None,
+) -> KnowledgeCreateResult:
+    """Apply, locally version, and activate a validated draft in one action."""
+
+    current = clean_repository_head(plan.repository)
+    if current != plan.base_commit:
+        raise ValueError("The brain changed while this knowledge was being prepared.")
+    plan.change_set.apply()
+    repository_paths = tuple(
+        f"{plan.manifest.bundle}/{change.relative_path}"
+        for change in plan.change_set.changes
+    )
+    title = " ".join(plan.relative_path.rsplit("/", 1)[-1].removesuffix(".md").split("-"))
+    commit = commit_authoring_changes(
+        plan.repository,
+        repository_paths,
+        expected_head=plan.base_commit,
+        message=f"Add {title} draft",
+    )
+    refresh = refresh_brain_from_authoring(
+        settings,
+        plan.brain.slug,
+        commit,
+        as_of=as_of,
+    )
+    return KnowledgeCreateResult(plan=plan, commit=commit, refresh=refresh)
 
 
 def slugify(value: str) -> str:

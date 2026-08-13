@@ -3,9 +3,10 @@
 The workflows operate on files and reviewed changes. “Agent” means a tool or AI
 acting as an assistant, not an autonomous authority. The CLI implements only
 the none-to-draft creation workflow through the existing validated change-plan
-API; it never commits or pushes the result. Other lifecycle commands,
-background agents, external integrations, and hosted workflows are not yet
-implemented.
+API. After one explicit confirmation, it versions only the planned files and
+refreshes the active local brain without exposing Git commands; it does not
+push the result. Other lifecycle commands, background agents, external
+integrations, and hosted workflows are not yet implemented.
 
 ## Responsibility matrix
 

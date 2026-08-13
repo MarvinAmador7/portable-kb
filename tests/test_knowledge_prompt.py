@@ -143,7 +143,7 @@ def test_unchanged_template_and_apply_decline_do_not_write() -> None:
         backend=FakeBackend(confirmations=[False]),
         write=output.append,
     ) is False
-    assert output[-1] == "└  Draft plan not applied"
+    assert output[-1] == "└  Draft not saved"
     assert confirm_knowledge_apply(
         backend=FakeBackend(confirmations=[True]),
         write=lambda _: None,

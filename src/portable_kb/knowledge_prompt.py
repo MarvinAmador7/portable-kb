@@ -45,7 +45,7 @@ def run_knowledge_create_prompts(
     write("┌  portable-kb")
     write("│")
     write("◇  New knowledge draft")
-    write("│  Draft only · validated before write · no automatic commit or push")
+    write("│  Validated before save · available to your agents immediately")
     try:
         raw_type = prompts.select(
             "Knowledge type",
@@ -177,11 +177,11 @@ def confirm_knowledge_apply(
 
     prompts = backend or QuestionaryBackend()
     try:
-        confirmed = prompts.confirm("Apply this validated draft?", default=True)
+        confirmed = prompts.confirm("Save this draft to the active brain?", default=True)
     except (EOFError, KeyboardInterrupt):
         confirmed = False
     if confirmed is not True:
-        write("└  Draft plan not applied")
+        write("└  Draft not saved")
         return False
     return True
 

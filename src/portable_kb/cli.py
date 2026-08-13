@@ -17,6 +17,7 @@ from .authoring import (
     KnowledgeType,
     Sensitivity,
     plan_knowledge_create,
+    save_knowledge_create,
 )
 from .brain_prompt import run_brain_init_prompts, run_brain_publish_prompt
 from .brains import (
@@ -518,7 +519,7 @@ def knowledge_create(
     ] = None,
     apply: Annotated[
         bool,
-        typer.Option("--apply", help="Apply the validated change plan."),
+        typer.Option("--apply", help="Save and activate the validated draft."),
     ] = False,
     config_path: Annotated[
         Path | None,
@@ -533,7 +534,7 @@ def knowledge_create(
         typer.Option("--json", help="Emit the plan or applied result as JSON."),
     ] = False,
 ) -> None:
-    """Plan a new governed draft and apply it only after explicit approval."""
+    """Create a governed draft and make it immediately available locally."""
 
     settings = _load_cli_settings(config_path)
     interactive = _interactive_terminal() and not json_output
@@ -616,17 +617,21 @@ def knowledge_create(
         except SetupPromptError as exc:
             typer.echo(str(exc), err=True)
             raise typer.Exit(2) from None
+    saved = None
     if should_apply:
         try:
-            plan.change_set.apply()
-        except (ConcurrentChangeError, OSError) as exc:
-            typer.echo(f"Draft plan could not be applied: {exc}", err=True)
+            saved = save_knowledge_create(settings, plan, as_of=as_of)
+        except (BrainError, ConcurrentChangeError, OSError, ValueError) as exc:
+            typer.echo(f"Draft could not be saved: {exc}", err=True)
             raise typer.Exit(1) from None
-    payload = plan.as_dict(applied=should_apply)
+    payload = saved.as_dict() if saved is not None else plan.as_dict(applied=False)
     if json_output:
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
-    elif should_apply:
-        typer.echo("Draft applied locally; review and commit the authoring repository when ready.")
+    elif saved is not None:
+        typer.echo("◆ Draft saved")
+        typer.echo(f"◇ Active brain updated: {saved.plan.brain.name}")
+        typer.echo("◇ Ready for local search and agent retrieval")
+        typer.echo("◇ Not shared with the organization")
     else:
         typer.echo("Plan only; no files changed. Re-run with --apply to write it.")
 

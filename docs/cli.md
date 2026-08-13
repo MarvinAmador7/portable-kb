@@ -238,9 +238,11 @@ The command resolves the active brain's retained local authoring repository,
 checks its identity and ancestry against the installed pin, and calls the core
 `plan_create` operation. Planning happens in a temporary tree and validates the
 base bundle, proposed bundle, transition, generated indexes, and log entry. The
-CLI then prints the exact create/update file list and asks before applying the
-optimistic change set. It never writes to the installed read-only checkout,
-creates stable knowledge, commits, or pushes.
+CLI then prints the exact create/update file list and asks once before saving.
+Portable KB commits only those planned files to local history and refreshes the
+installed read-only snapshot automatically. The Git mechanism stays internal:
+users do not run `git status`, `git add`, `git commit`, or `pkb brain sync`.
+Draft creation never creates stable knowledge or pushes to the organization.
 
 Agents and automation provide the complete inputs directly:
 
@@ -259,10 +261,10 @@ pkb knowledge create \
 ```
 
 Without `--apply`, this returns a validated plan and changes no files. Add
-`--apply` to write the draft, indexes, and log atomically. `--sources-file`
-must be a UTF-8 JSON array of OKF source objects. Body input is bounded to 1 MiB
-and must not include YAML frontmatter because the lifecycle operation generates
-identity and governed metadata exactly once.
+`--apply` to save, locally version, and activate the draft in one operation.
+`--sources-file` must be a UTF-8 JSON array of OKF source objects. Body input is
+bounded to 1 MiB and must not include YAML frontmatter because the lifecycle
+operation generates identity and governed metadata exactly once.
 
 ## Keyword index and search
 

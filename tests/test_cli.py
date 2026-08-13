@@ -488,12 +488,26 @@ This definition gives product and customer-success teams a shared milestone.
 
     applied = runner.invoke(app, [*arguments, "--apply"])
     assert applied.exit_code == 0, applied.output
-    assert json.loads(applied.output)["applied"] is True
+    applied_payload = json.loads(applied.output)
+    assert applied_payload["applied"] is True
+    assert applied_payload["active_brain_updated"] is True
+    assert len(applied_payload["saved_version"]) == 40
     assert target.is_file()
     assert "status: draft" in target.read_text(encoding="utf-8")
     assert "customer-activation.md" in (
         repository / "knowledge/inbox/index.md"
     ).read_text(encoding="utf-8")
+    assert subprocess.run(
+        ["git", "-C", str(repository), "status", "--porcelain"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout == ""
+    installed = load_catalog(settings).get("authoring-brain")
+    assert installed.commit == applied_payload["saved_version"]
+    assert (
+        installed.checkout_path(settings) / "knowledge/inbox/customer-activation.md"
+    ).is_file()
 
 
 def test_knowledge_create_cli_rejects_partial_inputs_and_frontmatter(tmp_path: Path) -> None:
@@ -593,7 +607,9 @@ The answer changes how the team measures onboarding.
 
     assert result.exit_code == 0, result.output
     assert "Validated draft plan: inbox/onboarding-checkpoint.md" in result.output
-    assert "Draft applied locally" in result.output
+    assert "◆ Draft saved" in result.output
+    assert "Ready for local search and agent retrieval" in result.output
+    assert "Not shared with the organization" in result.output
     assert (repository / "knowledge/inbox/onboarding-checkpoint.md").is_file()
 
 

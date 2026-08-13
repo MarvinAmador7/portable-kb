@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import tempfile
 import uuid
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from contextlib import suppress
 from dataclasses import dataclass, replace
 from datetime import date
@@ -538,6 +538,131 @@ def authoring_repository(
     return brain, repository, manifest
 
 
+def clean_repository_head(repository: Path) -> str:
+    """Return the current commit after verifying an authoring tree is clean."""
+
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to save knowledge.")
+    current = _run_git(git, "-C", str(repository), "rev-parse", "HEAD").strip()
+    if not COMMIT.fullmatch(current):
+        raise BrainError("Git returned an invalid authoring commit identifier.")
+    if _run_git(
+        git,
+        "-C",
+        str(repository),
+        "status",
+        "--porcelain",
+        "--untracked-files=all",
+    ).strip():
+        raise BrainError(
+            "This brain has another unfinished local change. Finish or discard it before "
+            "creating new knowledge."
+        )
+    return current
+
+
+def commit_authoring_changes(
+    repository: Path,
+    relative_paths: Sequence[str],
+    *,
+    expected_head: str,
+    message: str,
+) -> str:
+    """Commit exactly one validated authoring change without exposing Git to callers."""
+
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to save knowledge.")
+    current = _run_git(git, "-C", str(repository), "rev-parse", "HEAD").strip()
+    if current != expected_head:
+        raise BrainError("The brain changed while this knowledge was being prepared.")
+    paths = tuple(dict.fromkeys(relative_paths))
+    if not paths:
+        raise BrainError("The knowledge plan contains no files to save.")
+    _run_git(git, "-C", str(repository), "add", "--", *paths)
+    commit_arguments = [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "commit.gpgsign=false",
+    ]
+    if not _git_identity_is_configured(git, repository):
+        commit_arguments.extend(
+            [
+                "-c",
+                "user.name=Portable KB",
+                "-c",
+                "user.email=portable-kb@localhost.invalid",
+            ]
+        )
+    _run_git(
+        git,
+        *commit_arguments,
+        "-C",
+        str(repository),
+        "commit",
+        "--quiet",
+        "--no-verify",
+        "--only",
+        "-m",
+        message,
+        "--",
+        *paths,
+    )
+    commit = _run_git(git, "-C", str(repository), "rev-parse", "HEAD").strip()
+    if not COMMIT.fullmatch(commit):
+        raise BrainError("Git returned an invalid saved version identifier.")
+    return commit
+
+
+def refresh_brain_from_authoring(
+    settings: Settings,
+    slug: str,
+    commit: str,
+    *,
+    as_of: str | None = None,
+) -> dict[str, Any]:
+    """Validate and activate one local authoring commit in the installed snapshot."""
+
+    catalog = load_catalog(settings)
+    brain = catalog.get(slug)
+    resolved_brain, repository, _manifest = authoring_repository(settings, slug)
+    if resolved_brain != brain:
+        raise BrainError("Local authoring state changed before the brain could be refreshed.")
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to refresh a brain.")
+    authoring_head = _run_git(git, "-C", str(repository), "rev-parse", "HEAD").strip()
+    if authoring_head != commit or not COMMIT.fullmatch(commit):
+        raise BrainError("The saved knowledge version no longer matches the authoring brain.")
+    checkout, current = _verified_installed_checkout(settings, brain, git)
+    if not _git_is_ancestor(git, repository, current, commit):
+        raise BrainError("The saved knowledge is not a safe continuation of the active brain.")
+    _run_git(
+        git,
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        str(checkout),
+        "fetch",
+        "--quiet",
+        "--no-tags",
+        str(repository),
+        commit,
+    )
+    return _activate_installed_commit(
+        settings,
+        catalog,
+        brain,
+        checkout,
+        current,
+        commit,
+        as_of=as_of,
+        invalid_message="Saved knowledge failed validation",
+    )
+
+
 def brain_status(
     settings: Settings,
     slug: str | None = None,
@@ -597,64 +722,51 @@ def brain_status(
     return result
 
 
-def sync_brain(
+def _verified_installed_checkout(
     settings: Settings,
-    slug: str | None = None,
-    *,
-    as_of: str | None = None,
-) -> dict[str, Any]:
-    """Fetch, validate, and fast-forward one installed brain."""
+    brain: InstalledBrain,
+    git: str,
+) -> tuple[Path, str]:
+    """Return a clean installed checkout at its catalog-pinned commit."""
 
-    catalog = load_catalog(settings)
-    selected = slug or catalog.active
-    if selected is None:
-        raise BrainError("No active brain. Install or select one first.")
-    brain = catalog.get(selected)
     checkout = brain.checkout_path(settings)
     if checkout.is_symlink() or not checkout.is_dir():
         raise BrainError(f"Brain checkout is unavailable: {checkout}")
     manifest = read_manifest(checkout)
     if manifest.id != brain.id or manifest.slug != brain.slug:
         raise BrainError("Installed brain identity does not match the local catalog.")
-    git = shutil.which("git")
-    if git is None:
-        raise BrainError("Git is required to synchronize a brain.")
     current = _run_git(git, "-C", str(checkout), "rev-parse", "HEAD").strip()
     if current != brain.commit:
-        raise BrainError("Installed checkout does not match its catalog pin; refusing to sync.")
+        raise BrainError("Installed checkout does not match its catalog pin; refusing to update.")
     if _run_git(git, "-C", str(checkout), "status", "--porcelain").strip():
-        raise BrainError("Installed checkout has local changes; refusing to sync.")
-    origin = _run_git(git, "-C", str(checkout), "remote", "get-url", "origin").strip()
-    if origin != brain.source:
-        raise BrainError("Installed checkout origin differs from its catalog source.")
+        raise BrainError("Installed checkout has local changes; refusing to update.")
+    return checkout, current
 
-    _run_git(
-        git,
-        "-c",
-        "core.hooksPath=/dev/null",
-        "-C",
-        str(checkout),
-        "fetch",
-        "--quiet",
-        "--no-tags",
-        "--prune",
-        "origin",
-    )
-    upstream = _run_git(
-        git, "-C", str(checkout), "rev-parse", "--verify", "@{upstream}"
-    ).strip()
-    if not COMMIT.fullmatch(upstream):
-        raise BrainError("Git returned an invalid upstream commit identifier.")
-    if not _git_is_ancestor(git, checkout, current, upstream):
-        raise BrainError("Remote history is not a fast-forward from the installed commit.")
 
-    if upstream == current:
+def _activate_installed_commit(
+    settings: Settings,
+    catalog: BrainCatalog,
+    brain: InstalledBrain,
+    checkout: Path,
+    current: str,
+    candidate_commit: str,
+    *,
+    as_of: str | None,
+    invalid_message: str,
+) -> dict[str, Any]:
+    """Validate, fast-forward, and catalog-pin an already fetched commit."""
+
+    manifest = read_manifest(checkout)
+    if candidate_commit == current:
         report = validate_bundle(checkout / manifest.bundle, as_of=as_of)
         if not report.profile_passes:
             codes = ", ".join(finding.code for finding in report.errors[:8])
-            raise BrainError(f"Installed knowledge bundle failed validation: {codes}")
-        return _sync_result(brain, current, upstream, report, changed=False)
+            raise BrainError(f"{invalid_message}: {codes}")
+        return _sync_result(brain, current, candidate_commit, report, changed=False)
 
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to update a brain.")
     settings.cache_dir.mkdir(parents=True, exist_ok=True)
     worktree = Path(tempfile.mkdtemp(prefix=f".sync-{brain.slug}-", dir=settings.cache_dir))
     shutil.rmtree(worktree)
@@ -671,16 +783,16 @@ def sync_brain(
             "--quiet",
             "--detach",
             str(worktree),
-            upstream,
+            candidate_commit,
         )
         worktree_added = True
         candidate = read_manifest(worktree)
         if candidate.id != brain.id or candidate.slug != brain.slug:
-            raise BrainError("Remote candidate changes the installed brain identity.")
+            raise BrainError("Candidate changes the installed brain identity.")
         report = validate_bundle(worktree / candidate.bundle, as_of=as_of)
         if not report.profile_passes:
             codes = ", ".join(finding.code for finding in report.errors[:8])
-            raise BrainError(f"Remote knowledge bundle failed validation: {codes}")
+            raise BrainError(f"{invalid_message}: {codes}")
     finally:
         if worktree_added:
             try:
@@ -709,9 +821,9 @@ def sync_brain(
             shutil.rmtree(worktree, ignore_errors=True)
 
     if _run_git(git, "-C", str(checkout), "rev-parse", "HEAD").strip() != current:
-        raise BrainError("Installed checkout changed during synchronization.")
+        raise BrainError("Installed checkout changed during the update.")
     if _run_git(git, "-C", str(checkout), "status", "--porcelain").strip():
-        raise BrainError("Installed checkout changed during synchronization.")
+        raise BrainError("Installed checkout changed during the update.")
     _run_git(
         git,
         "-c",
@@ -721,12 +833,11 @@ def sync_brain(
         "merge",
         "--ff-only",
         "--no-edit",
-        upstream,
+        candidate_commit,
     )
-    updated_brain = replace(brain, name=candidate.name, commit=upstream)
-    updated_catalog = catalog.updating(updated_brain)
+    updated_brain = replace(brain, name=candidate.name, commit=candidate_commit)
     try:
-        save_catalog(updated_catalog, settings)
+        save_catalog(catalog.updating(updated_brain), settings)
     except Exception as exc:
         _run_git(
             git,
@@ -739,7 +850,68 @@ def sync_brain(
             current,
         )
         raise BrainError("Catalog update failed; the installed checkout was restored.") from exc
-    return _sync_result(updated_brain, current, upstream, report, changed=True)
+    return _sync_result(updated_brain, current, candidate_commit, report, changed=True)
+
+
+def sync_brain(
+    settings: Settings,
+    slug: str | None = None,
+    *,
+    as_of: str | None = None,
+) -> dict[str, Any]:
+    """Fetch, validate, and fast-forward one installed brain."""
+
+    catalog = load_catalog(settings)
+    selected = slug or catalog.active
+    if selected is None:
+        raise BrainError("No active brain. Install or select one first.")
+    brain = catalog.get(selected)
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to synchronize a brain.")
+    checkout, current = _verified_installed_checkout(settings, brain, git)
+    origin = _run_git(git, "-C", str(checkout), "remote", "get-url", "origin").strip()
+    if origin != brain.source:
+        raise BrainError("Installed checkout origin differs from its catalog source.")
+
+    _run_git(
+        git,
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        str(checkout),
+        "fetch",
+        "--quiet",
+        "--no-tags",
+        "--prune",
+        "origin",
+    )
+    upstream = _run_git(
+        git, "-C", str(checkout), "rev-parse", "--verify", "@{upstream}"
+    ).strip()
+    if not COMMIT.fullmatch(upstream):
+        raise BrainError("Git returned an invalid upstream commit identifier.")
+    if upstream != current and _git_is_ancestor(git, checkout, upstream, current):
+        manifest = read_manifest(checkout)
+        report = validate_bundle(checkout / manifest.bundle, as_of=as_of)
+        if not report.profile_passes:
+            codes = ", ".join(finding.code for finding in report.errors[:8])
+            raise BrainError(f"Installed knowledge bundle failed validation: {codes}")
+        result = _sync_result(brain, current, current, report, changed=False)
+        result["source_behind"] = True
+        return result
+    if not _git_is_ancestor(git, checkout, current, upstream):
+        raise BrainError("Remote history is not a fast-forward from the installed commit.")
+    return _activate_installed_commit(
+        settings,
+        catalog,
+        brain,
+        checkout,
+        current,
+        upstream,
+        as_of=as_of,
+        invalid_message="Remote knowledge bundle failed validation",
+    )
 
 
 def _sync_result(
