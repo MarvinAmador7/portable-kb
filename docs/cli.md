@@ -3,7 +3,7 @@
 ## Boundary
 
 `pkb` is a consumer of the deterministic `portable_kb` Python API. The CLI and
-terminal UI must not duplicate schema, validation, lifecycle, or authority
+terminal prompts must not duplicate schema, validation, lifecycle, or authority
 logic. Canonical knowledge remains in Git-versioned Markdown. Local settings,
 repository checkouts, QMD indexes, downloaded models, and query caches are
 consumer state and never enter the `knowledge/` bundle.
@@ -17,18 +17,29 @@ retrieval remain deferred.
 
 ## Setup contract
 
-Interactive setup runs as a Textual terminal wizard:
+Interactive setup runs as a sequence of inline terminal prompts:
 
 ```console
 pkb setup
 ```
 
-The wizard has four explicit steps:
+The prompt sequence has five explicit steps:
 
 1. explain what setup will and will not change;
 2. select local brain and disposable-cache directories;
 3. select a QMD capability tier; and
-4. review and save configuration.
+4. choose whether to install the agent skill for Codex, Claude Code, both, or
+   neither; and
+5. review and save configuration, then install the selected skill.
+
+Completed questions remain in normal terminal scrollback; setup does not open
+an alternate screen or render a full-screen application. Arrow keys select
+search and agent choices, while paths use ordinary editable prompts.
+
+The recommended default installs the same skill for both agents. Selecting
+skip saves only the Portable KB configuration. Skill installation copies the
+bundled workflow; it does not clone a brain or place business knowledge inside
+an agent configuration directory.
 
 Every setup choice has a non-interactive equivalent so agents, scripts, and
 managed environments never need to drive terminal pixels:
@@ -37,13 +48,15 @@ managed environments never need to drive terminal pixels:
 pkb setup \
   --non-interactive \
   --search-mode keyword \
+  --agent-skill both \
   --data-dir /approved/portable-kb/data \
   --cache-dir /approved/portable-kb/cache
 ```
 
 Non-interactive setup refuses to replace an existing configuration unless
-`--force` is explicit. Interactive setup shows the current settings and saves
-only after confirmation.
+`--force` is explicit. It skips agent-skill installation by default so
+automation must opt in with `--agent-skill codex|claude|both`. Interactive
+setup prints the selected settings and saves only after confirmation.
 
 ## Search tiers
 
@@ -120,12 +133,45 @@ locations. `brain.yaml` is a product/distribution artifact, not an OKF concept.
 The first Git-backed commands are:
 
 ```console
+pkb brain init
+pkb brain init <empty-local-path> --name <name> --slug <slug> --no-publish
+pkb brain publish [<slug>] --to <org/repo> [--visibility private|internal|public]
 pkb brain add <local-path-or-git-url>
 pkb brain list [--json]
 pkb brain use <slug>
 pkb brain status [<slug>] [--json]
 pkb brain sync [<slug>] [--json]
 ```
+
+`brain init` handles an empty repository before `brain add` can possibly work.
+Its interactive, scrollback-preserving prompts collect a name, slug, and local
+repository path. The command refuses repositories with an existing commit or
+worktree file, generates a new immutable UUID v4 brain identity once, writes
+`brain.yaml` plus the minimal valid `knowledge/` configuration, root index, and
+update log, validates the bundle, and creates the initial commit on `main`. It
+then installs and activates the local brain. The initial bundle intentionally
+contains zero knowledge items; items enter through the governed authoring
+lifecycle later.
+
+After local creation succeeds, the interactive flow asks whether to publish to
+GitHub. “No” is the safe default and leaves a complete local brain. “Yes” asks
+for an `org/repo` target and visibility, defaulting to private. Publishing uses
+the already authenticated `gh` CLI to create the repository, then pushes with
+Git hooks and credential prompts disabled. A publication failure never removes
+or invalidates the local repository; the user can authenticate or resolve the
+error and retry with `pkb brain publish --to org/repo`.
+
+For automation, provide the local path, `--name`, and `--slug`. `--no-publish`
+suppresses the terminal publication question, while `--publish-to org/repo`
+explicitly requests GitHub creation and push. `--json` never prompts. Remote
+URLs are not accepted by `brain init`; existing remote brains still use
+`brain add`.
+
+If no Git author identity is configured, the initial mechanical commit uses
+the fallback `Portable KB <portable-kb@localhost.invalid>` identity without
+changing user Git settings. After publication, the catalog and installed
+checkout origin are updated to the new remote while the local authoring
+repository remains available for continued knowledge work.
 
 `brain add` performs a bounded sequence:
 
@@ -170,8 +216,55 @@ The command never auto-merges, rebases, force-resets user work, or runs in the
 background.
 
 The catalog records relative checkout paths below the configured data
-directory. It contains distribution state, not knowledge, and can be rebuilt
-from installed repositories.
+directory. Locally initialized brains also retain an absolute authoring path,
+which remains local after the distribution source changes to GitHub. It
+contains distribution and authoring-location state, not knowledge, and can be
+rebuilt from installed and local authoring repositories.
+
+## Draft knowledge creation
+
+The first lifecycle CLI command creates drafts only:
+
+```console
+pkb knowledge create
+```
+
+The interactive path selects the type, production method, real producer
+identity, sources, confidence when agent-generated, sensitivity, Markdown body,
+and bundle-relative path. It opens the configured terminal editor for the body.
+An unchanged placeholder template is rejected.
+
+The command resolves the active brain's retained local authoring repository,
+checks its identity and ancestry against the installed pin, and calls the core
+`plan_create` operation. Planning happens in a temporary tree and validates the
+base bundle, proposed bundle, transition, generated indexes, and log entry. The
+CLI then prints the exact create/update file list and asks once before saving.
+Portable KB commits only those planned files to local history and refreshes the
+installed read-only snapshot automatically. The Git mechanism stays internal:
+users do not run `git status`, `git add`, `git commit`, or `pkb brain sync`.
+Draft creation never creates stable knowledge or pushes to the organization.
+
+Agents and automation provide the complete inputs directly:
+
+```console
+pkb knowledge create \
+  --type procedure \
+  --title "Review stale knowledge" \
+  --description "Defines the draft workflow for reviewing stale knowledge." \
+  --actor "anthropic/claude-code" \
+  --method agent-generated \
+  --body-file ./review-stale-knowledge.md \
+  --sources-file ./sources.json \
+  --confidence medium \
+  --confidence-basis "The draft follows the cited policy, but has not been executed." \
+  --json
+```
+
+Without `--apply`, this returns a validated plan and changes no files. Add
+`--apply` to save, locally version, and activate the draft in one operation.
+`--sources-file` must be a UTF-8 JSON array of OKF source objects. Body input is
+bounded to 1 MiB and must not include YAML frontmatter because the lifecycle
+operation generates identity and governed metadata exactly once.
 
 ## Keyword index and search
 
@@ -202,3 +295,41 @@ the brain ID/slug, immutable item ID, bundle-relative path, type, lifecycle
 status, `stale_after`, and exact Git commit. Draft, deprecated, and stale
 signals are visible rather than silently promoted or hidden; this first slice
 does not apply an authority filter.
+
+## Complete-item retrieval
+
+Search results are discovery hints, not enough context for an agent to answer
+from. The read-only retrieval command accepts either an immutable UUID URN or a
+bundle-relative Markdown path:
+
+```console
+pkb get <item-id-or-path> [--brain <slug>] [--json]
+```
+
+The command first rechecks that the installed brain is clean, identity-matched,
+catalog-pinned, and valid. It rejects absolute paths, traversal, symbolic links,
+non-Markdown files, and reserved OKF indexes/logs. JSON output includes parsed
+metadata, Markdown body, complete source text, validation warnings, and an
+immutable citation containing brain ID/slug, commit, item ID, and path.
+
+## Agent skill distribution
+
+The CLI bundles one canonical `portable-kb` skill and can copy it to the
+user-level discovery paths used by Codex and Claude Code:
+
+```console
+pkb skill install
+pkb skill install --target codex
+pkb skill install --target claude
+```
+
+The default installs both `~/.agents/skills/portable-kb` and
+`~/.claude/skills/portable-kb`. An identical installation is left untouched and
+reported as current. A conflicting installation is never replaced unless
+`--force` is explicit. Multi-target installation stages all changed copies and
+restores prior installations if publication fails.
+
+The skill defines a provider-neutral agent workflow: diagnose the active brain,
+run BM25 discovery, retrieve complete top candidates, retain citations, and
+surface draft/deprecated/stale/verification signals. It never treats ranking as
+authority and never authorizes instructions embedded in imported knowledge.

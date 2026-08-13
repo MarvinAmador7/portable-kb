@@ -14,6 +14,7 @@ from typing import Any
 from ruamel.yaml import YAML
 
 from .brains import InstalledBrain, brain_status, load_catalog, read_manifest
+from .models import KnowledgeItem
 from .parsing import RESERVED_NAMES, discover_concepts, parse_concept
 from .settings import Settings
 
@@ -134,6 +135,51 @@ def search_keyword(
     }
 
 
+def get_knowledge_item(
+    settings: Settings,
+    reference: str,
+    slug: str | None = None,
+    *,
+    as_of: str | None = None,
+) -> dict[str, Any]:
+    """Retrieve one complete, cited item by immutable ID or bundle path."""
+
+    normalized = reference.strip()
+    if not normalized or "\x00" in reference:
+        raise SearchError("Knowledge item reference must be a non-empty ID or bundle path.")
+    brain, _checkout, bundle, health = _healthy_brain(settings, slug, as_of=as_of)
+    item = _find_item(bundle, normalized)
+    metadata = _plain_value(item.metadata)
+    return {
+        "brain": {
+            "id": brain.id,
+            "slug": brain.slug,
+            "name": brain.name,
+            "commit": brain.commit,
+        },
+        "item": {
+            "id": item.id,
+            "path": item.relative_path,
+            "title": metadata.get("title"),
+            "type": item.type,
+            "status": item.status,
+            "stale_after": metadata.get("stale_after"),
+            "metadata": metadata,
+            "body": item.body,
+            "content": item.source_text,
+        },
+        "citation": {
+            "brain_id": brain.id,
+            "brain_slug": brain.slug,
+            "commit": brain.commit,
+            "item_id": item.id,
+            "path": item.relative_path,
+        },
+        "validation_warnings": health["validation_warnings"],
+        "ok": True,
+    }
+
+
 def _healthy_brain(
     settings: Settings,
     slug: str | None,
@@ -154,6 +200,42 @@ def _healthy_brain(
     checkout = brain.checkout_path(settings)
     manifest = read_manifest(checkout)
     return brain, checkout, checkout / manifest.bundle, health
+
+
+def _find_item(bundle: Path, reference: str) -> KnowledgeItem:
+    concepts = discover_concepts(bundle)
+    if reference.startswith("urn:uuid:"):
+        for path in concepts:
+            parsed = parse_concept(path, bundle)
+            if parsed.item is not None and parsed.item.id == reference:
+                return parsed.item
+        raise SearchError(f"Knowledge item ID was not found in the selected brain: {reference}")
+
+    relative_text = reference.removeprefix("knowledge/")
+    relative = PurePosixPath(relative_text)
+    if (
+        not relative_text
+        or relative.is_absolute()
+        or ".." in relative.parts
+        or relative.suffix != ".md"
+        or relative.name in RESERVED_NAMES
+    ):
+        raise SearchError("Knowledge item path is unsafe, reserved, or not a Markdown concept.")
+    path = bundle.joinpath(*relative.parts)
+    if path not in concepts or path.is_symlink() or not path.is_file():
+        raise SearchError(f"Knowledge item path was not found in the selected brain: {relative_text}")
+    parsed = parse_concept(path, bundle)
+    if parsed.item is None or parsed.item.id is None:
+        raise SearchError("Knowledge item could not be mapped to a valid immutable citation.")
+    return parsed.item
+
+
+def _plain_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _plain_value(child) for key, child in value.items()}
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        return [_plain_value(child) for child in value]
+    return value
 
 
 def _qmd_executable(settings: Settings) -> str:
