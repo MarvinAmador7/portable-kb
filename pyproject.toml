@@ -31,9 +31,9 @@ dependencies = [
 pkb = "portable_kb.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/MarvinAmador7/open-kb"
-Issues = "https://github.com/MarvinAmador7/open-kb/issues"
-Repository = "https://github.com/MarvinAmador7/open-kb"
+Homepage = "https://github.com/MarvinAmador7/portable-kb"
+Issues = "https://github.com/MarvinAmador7/portable-kb/issues"
+Repository = "https://github.com/MarvinAmador7/portable-kb"
 
 [tool.hatch.version]
 path = "src/portable_kb/__init__.py"

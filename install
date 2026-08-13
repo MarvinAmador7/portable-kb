@@ -2,7 +2,7 @@
 
 set -eu
 
-repository="${PKB_REPOSITORY:-MarvinAmador7/open-kb}"
+repository="${PKB_REPOSITORY:-MarvinAmador7/portable-kb}"
 install_dir="${PKB_INSTALL_DIR:-${HOME}/.local/bin}"
 requested_version="${PKB_VERSION:-}"
 release_base="${PKB_RELEASE_BASE_URL:-}"

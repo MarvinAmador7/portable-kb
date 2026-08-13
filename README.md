@@ -24,7 +24,7 @@ background agents are not yet implemented.
 On macOS or Linux, the public-repository installation path is:
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/open-kb/main/install | bash
+curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/portable-kb/main/install | bash
 pkb --version
 pkb setup
 ```
@@ -35,7 +35,7 @@ under `~/.local/bin`. It does not require a system Python. Re-run the same
 command to upgrade to the latest release, or pin a release:
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/open-kb/main/install \
+curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/portable-kb/main/install \
   | bash -s -- --version v0.1.0
 ```
 
@@ -46,13 +46,13 @@ visibility:
 ```console
 export GH_TOKEN="$(gh auth token)"
 gh api -H "Accept: application/vnd.github.raw+json" \
-  repos/MarvinAmador7/open-kb/contents/install | bash
+  repos/MarvinAmador7/portable-kb/contents/install | bash
 ```
 
 To remove only the installed executable:
 
 ```console
-curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/open-kb/main/install \
+curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/portable-kb/main/install \
   | bash -s -- --uninstall
 ```
 
