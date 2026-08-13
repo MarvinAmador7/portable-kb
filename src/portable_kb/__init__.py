@@ -1,7 +1,7 @@
 """Portable KB core library.
 
 The deterministic Python API remains the core seam. Optional consumers such as
-the CLI and setup TUI call this API rather than reimplementing its rules.
+the CLI and inline setup prompts call this API rather than reimplementing its rules.
 """
 
 from .models import Finding, KnowledgeItem, Severity, ValidationReport
@@ -16,7 +16,8 @@ from .operations import (
     plan_supersede,
     plan_update,
 )
-from .search import SearchError, index_keyword_brain, search_keyword
+from .search import SearchError, get_knowledge_item, index_keyword_brain, search_keyword
+from .skills import SkillError, SkillTarget, install_agent_skill
 from .validation import validate_bundle, validate_transition
 
 __all__ = [
@@ -26,6 +27,8 @@ __all__ = [
     "OperationValidationError",
     "Severity",
     "SearchError",
+    "SkillError",
+    "SkillTarget",
     "ValidationReport",
     "plan_archive",
     "plan_create",
@@ -34,7 +37,9 @@ __all__ = [
     "plan_reverify",
     "plan_supersede",
     "plan_update",
+    "get_knowledge_item",
     "index_keyword_brain",
+    "install_agent_skill",
     "search_keyword",
     "validate_bundle",
     "validate_transition",

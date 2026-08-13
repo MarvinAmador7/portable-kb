@@ -6,10 +6,15 @@ import pytest
 
 from portable_kb.brains import (
     BrainError,
+    GitHubVisibility,
+    _github_repository_from_source,
+    _run_gh,
     add_brain,
     brain_status,
     catalog_path,
+    init_brain,
     load_catalog,
+    publish_brain_to_github,
     read_manifest,
     save_catalog,
     sync_brain,
@@ -42,6 +47,244 @@ def test_add_brain_clones_validates_pins_and_selects(
     assert load_catalog(settings) == catalog
     assert catalog_path(settings).stat().st_mode & 0o777 == 0o600
     assert brain_status(settings, as_of="2026-08-12")["ok"] is True
+
+
+def test_init_brain_creates_commits_installs_and_activates_local_repository(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    repository = tmp_path / "new-brain"
+    monkeypatch.setenv("HOME", str(tmp_path / "unconfigured-home"))
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "unconfigured-xdg"))
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+
+    result, catalog, report = init_brain(
+        str(repository),
+        "New Business",
+        "new-business",
+        settings,
+        as_of="2026-08-13",
+    )
+
+    assert report.profile_passes
+    assert result.repository == str(repository)
+    assert result.brain.id.startswith("urn:uuid:")
+    assert catalog.active == "new-business"
+    assert load_catalog(settings).active == "new-business"
+    assert (repository / "brain.yaml").is_file()
+    assert (repository / "knowledge/.core-kb.yaml").is_file()
+    assert (repository / "knowledge/index.md").is_file()
+    assert "## 2026-08-13" in (repository / "knowledge/log.md").read_text(encoding="utf-8")
+    assert _git_output(repository, "status", "--porcelain") == ""
+    assert _git_output(repository, "branch", "--show-current").strip() == "main"
+    assert _git_output(repository, "rev-parse", "HEAD").strip() == result.brain.commit
+    assert _git_output(repository, "show", "-s", "--format=%an <%ae>", "HEAD").strip() == (
+        "Portable KB <portable-kb@localhost.invalid>"
+    )
+    assert brain_status(settings, as_of="2026-08-13")["ok"] is True
+
+
+def test_init_brain_rejects_occupied_repository_and_remote_source(
+    tmp_path: Path,
+) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    occupied = tmp_path / "occupied"
+    occupied.mkdir()
+    existing = occupied / "README.md"
+    existing.write_text("keep me\n", encoding="utf-8")
+
+    with pytest.raises(BrainError, match="empty directory"):
+        init_brain(
+            str(occupied),
+            "Occupied Brain",
+            "occupied-brain",
+            settings,
+            as_of="2026-08-13",
+        )
+    assert existing.read_text(encoding="utf-8") == "keep me\n"
+
+    with pytest.raises(BrainError, match="starts with a local repository"):
+        init_brain(
+            "https://github.com/example/empty-brain.git",
+            "Remote Brain",
+            "remote-brain",
+            settings,
+            as_of="2026-08-13",
+        )
+
+
+def test_publish_brain_creates_github_repo_pushes_and_updates_distribution_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    repository = tmp_path / "local-authoring"
+    initialized, _, report = init_brain(
+        str(repository),
+        "Remote Business",
+        "remote-business",
+        settings,
+        as_of="2026-08-13",
+    )
+    assert report.profile_passes
+    remote = tmp_path / "created-on-github.git"
+    real_which = __import__("shutil").which
+
+    def which(command: str) -> str | None:
+        return "/fake/gh" if command == "gh" else real_which(command)
+
+    def create_repository(_executable: str, *arguments: str) -> str:
+        assert arguments[:4] == (
+            "repo",
+            "create",
+            "acme/remote-business",
+            "--private",
+        )
+        _git_output(tmp_path, "init", "--quiet", "--bare", "--initial-branch=main", str(remote))
+        _git(repository, "remote", "add", "origin", str(remote))
+        return ""
+
+    monkeypatch.setattr("portable_kb.brains.shutil.which", which)
+    monkeypatch.setattr("portable_kb.brains._run_gh", create_repository)
+
+    result, catalog = publish_brain_to_github(
+        settings,
+        "acme/remote-business",
+        visibility=GitHubVisibility.PRIVATE,
+    )
+
+    assert result.repository == str(repository)
+    assert result.github_repository == "acme/remote-business"
+    assert result.visibility is GitHubVisibility.PRIVATE
+    assert result.brain.source == str(remote)
+    assert catalog.active == "remote-business"
+    assert load_catalog(settings).get("remote-business").source == str(remote)
+    assert _git_output(remote, "rev-parse", "refs/heads/main").strip() == initialized.brain.commit
+    assert "slug: remote-business" in _git_output(
+        remote, "show", "refs/heads/main:brain.yaml"
+    )
+    checkout = initialized.brain.checkout_path(settings)
+    assert _git_output(checkout, "remote", "get-url", "origin").strip() == str(remote)
+    assert brain_status(settings, as_of="2026-08-13")["ok"] is True
+
+
+def test_publish_brain_validates_target_and_preserves_local_brain_without_gh(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    initialized, _, _ = init_brain(
+        str(tmp_path / "local-only"),
+        "Local Only",
+        "local-only",
+        settings,
+        as_of="2026-08-13",
+    )
+    with pytest.raises(BrainError, match="org/repo"):
+        publish_brain_to_github(settings, "not-a-repository")
+    real_which = __import__("shutil").which
+    monkeypatch.setattr(
+        "portable_kb.brains.shutil.which",
+        lambda command: None if command == "gh" else real_which(command),
+    )
+    with pytest.raises(BrainError, match="GitHub CLI is required"):
+        publish_brain_to_github(settings, "acme/local-only")
+    assert load_catalog(settings).get("local-only").source == initialized.repository
+    assert brain_status(settings, as_of="2026-08-13")["ok"] is True
+
+
+def test_publish_brain_refuses_missing_active_dirty_drifted_and_wrong_origin(
+    tmp_path: Path,
+) -> None:
+    empty_settings = Settings(data_dir=tmp_path / "empty-data", cache_dir=tmp_path / "empty-cache")
+    with pytest.raises(BrainError, match="No active brain"):
+        publish_brain_to_github(empty_settings, "acme/missing")
+
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    repository = tmp_path / "guarded"
+    initialized, _, _ = init_brain(
+        str(repository),
+        "Guarded",
+        "guarded",
+        settings,
+        as_of="2026-08-13",
+    )
+    dirty = repository / "uncommitted.md"
+    dirty.write_text("not committed\n", encoding="utf-8")
+    with pytest.raises(BrainError, match="uncommitted changes"):
+        publish_brain_to_github(settings, "acme/guarded")
+    dirty.unlink()
+
+    _git(
+        repository,
+        "-c",
+        "user.name=Test",
+        "-c",
+        "user.email=test@example.invalid",
+        "commit",
+        "--quiet",
+        "--allow-empty",
+        "-m",
+        "Uninstalled commit",
+    )
+    with pytest.raises(BrainError, match="does not match the installed commit"):
+        publish_brain_to_github(settings, "acme/guarded")
+    _git(repository, "reset", "--quiet", "--hard", initialized.brain.commit)
+
+    _git(repository, "remote", "add", "origin", "git@github.com:other/brain.git")
+    with pytest.raises(BrainError, match="different origin"):
+        publish_brain_to_github(settings, "acme/guarded")
+
+
+def test_github_runner_is_noninteractive_and_reports_cli_failure(tmp_path: Path) -> None:
+    assert _github_repository_from_source("https://github.com/Acme/Brain.git") == "acme/brain"
+    assert _github_repository_from_source("/local/repository") is None
+
+    success = tmp_path / "gh-success"
+    success.write_text(
+        "#!/bin/sh\nprintf '%s' \"$GH_PROMPT_DISABLED:$GIT_TERMINAL_PROMPT:$*\"\n",
+        encoding="utf-8",
+    )
+    success.chmod(0o755)
+    assert _run_gh(str(success), "repo", "create", "acme/brain") == (
+        "1:0:repo create acme/brain"
+    )
+
+    failure = tmp_path / "gh-failure"
+    failure.write_text(
+        "#!/bin/sh\nprintf '%s\\n' 'repository already exists' >&2\nexit 7\n",
+        encoding="utf-8",
+    )
+    failure.chmod(0o755)
+    with pytest.raises(BrainError, match="repository already exists"):
+        _run_gh(str(failure), "repo", "create", "acme/brain")
+
+
+def test_init_brain_rolls_back_owned_files_on_precommit_failures(tmp_path: Path) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    bad_date = tmp_path / "bad-date"
+    with pytest.raises(ValueError, match="Invalid isoformat"):
+        init_brain(
+            str(bad_date),
+            "Bad Date",
+            "bad-date",
+            settings,
+            as_of="not-a-date",
+        )
+    assert not bad_date.exists()
+
+    committed = tmp_path / "committed-empty"
+    committed.mkdir()
+    _git(committed, "init", "--quiet", "--initial-branch=main")
+    _git(committed, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "--quiet", "--allow-empty", "-m", "Existing")
+    with pytest.raises(BrainError, match="no commits"):
+        init_brain(
+            str(committed),
+            "Committed Empty",
+            "committed-empty",
+            settings,
+            as_of="2026-08-13",
+        )
 
 
 def test_add_rejects_duplicate_slug_and_invalid_bundle(

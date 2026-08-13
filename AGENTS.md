@@ -4,9 +4,11 @@
 
 This repository contains an implemented OKF-compatible core plus the active
 Phase 5 CLI consumer. The currently authorized consumer surface includes local
-setup, the setup TUI, an installable brain manifest, and safe Git-backed brain
+setup, inline terminal prompts, an installable brain manifest, and safe Git-backed brain
 installation, catalog, selection, status, and explicit fast-forward
 synchronization, plus isolated QMD BM25 indexing and cited keyword queries.
+Complete-item retrieval and standalone or setup-integrated installation of the
+bundled read-only workflow skill for Codex and Claude Code are also authorized.
 Do not expand into automatic QMD installation, embeddings, semantic/hybrid
 querying, vector databases, lifecycle CLI mutation, MCP servers, APIs,
 native/web UI, authentication/authorization, multitenancy, background agents,

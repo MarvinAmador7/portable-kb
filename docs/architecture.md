@@ -12,9 +12,10 @@ The design intentionally separates three layers:
 
 1. **Canonical knowledge:** Markdown files, sources, indexes, and Git history.
 2. **Deterministic governance:** a profile schema and corpus-level validation.
-3. **Consumers:** CLI/TUI setup, Git-backed brain distribution, and disposable
-   keyword search are implemented consumers; agents, MCP, APIs, graphs, and
-   external platforms remain rebuildable from the canonical layer.
+3. **Consumers:** inline CLI setup, Git-backed brain distribution, disposable
+   keyword search, complete-item retrieval, and a coding-agent workflow skill
+   are implemented consumers; MCP, APIs, graphs, native apps, and external
+   platforms remain rebuildable from the canonical layer.
 
 Baseline OKF conformance and local governance are different contracts. An OKF
 consumer must be permissive. The local authoring gate can be stricter so that a
@@ -333,7 +334,7 @@ own durable identifiers.
 
 ## Deferred capabilities
 
-The CLI/TUI consumer phase has started without changing the canonical model.
+The CLI consumer phase has started without changing the canonical model.
 QMD BM25 indexing and cited keyword queries are implemented as isolated,
 deletable consumer state. Detailed implementation is still deferred for model
 installation, semantic/hybrid retrieval, embeddings, vector databases, graph

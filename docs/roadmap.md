@@ -12,7 +12,7 @@ describe retrieval/integrations. Phases are gates, not calendar estimates.
 | 2 — Validation | Implemented | `portable_kb.validate_bundle()` covers the rule catalog with stable structured findings and offline explicit-date behavior. |
 | 3 — Lifecycle operations | Implemented | Reviewable planners cover create, update, promote, reverify, move, supersede, and archive with base/proposed validation and optimistic application. |
 | 4 — Test corpus | Implemented | Focused fixtures and transition/operation tests assert every catalog rule; time and network behavior are deterministic. |
-| 5 — Retrieval and CLI consumers | In progress | Setup, brain distribution, and explicit fast-forward sync are implemented. QMD BM25 indexing and cited keyword queries now use isolated disposable state without model downloads. Semantic/hybrid retrieval, trust filtering, and retrieval evaluation remain pending. |
+| 5 — Retrieval and CLI consumers | In progress | Inline/non-interactive setup, local-first brain initialization with optional GitHub publication, brain distribution, explicit fast-forward sync, QMD BM25 search, complete-item retrieval, and setup-integrated Codex/Claude skill installation are implemented. Semantic/hybrid retrieval, trust filtering, and retrieval evaluation remain pending. |
 | 6+ — Applications and integrations | Deferred | MCP, native UI, authentication/authorization, and connectors remain outside the current implementation. |
 
 Technical implementation does not substitute for human governance. When a
@@ -195,18 +195,20 @@ search is the default setup tier and requires no model download.
 
 **Deliverables:**
 
-- `pkb` command with TUI and non-interactive setup parity;
+- `pkb` command with inline and non-interactive setup parity;
 - versioned local settings and XDG-aware data/cache locations;
-- a brain manifest, local catalog, Git install/sync, and commit lock contract
-  (manifest, install, catalog, selection, local status, and explicit
-  fast-forward sync implemented);
+- a brain manifest, local catalog, Git initialization/publication/install/sync,
+  and commit lock contract (local-first empty-repository initialization,
+  optional GitHub publication, manifest, install, catalog, selection, local
+  status, and explicit fast-forward sync implemented);
 - a QMD adapter with one disposable index per selected worldview (BM25
   indexing and keyword queries implemented);
 - visible draft/deprecated/stale handling and a trust-policy boundary;
 - result citations retaining bundle, immutable item ID, path, and Git commit
-  (implemented for keyword queries);
+  (implemented for keyword queries and complete-item retrieval);
 - keyword/semantic/hybrid retrieval evaluations; and
-- machine-readable output for agent skills and future native clients.
+- machine-readable output for agent skills and future native clients
+  (implemented for search, retrieval, and skill installation).
 
 **Dependencies:** stable corpus, validation, lifecycle operations, test data,
 and explicit retrieval requirements.

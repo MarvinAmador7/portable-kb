@@ -10,8 +10,19 @@ from typing import Annotated
 
 import typer
 
-from .brains import BrainError, add_brain, brain_status, load_catalog, sync_brain, use_brain
-from .search import SearchError, index_keyword_brain, search_keyword
+from .brain_prompt import run_brain_init_prompts, run_brain_publish_prompt
+from .brains import (
+    BrainError,
+    GitHubVisibility,
+    add_brain,
+    brain_status,
+    init_brain,
+    load_catalog,
+    publish_brain_to_github,
+    sync_brain,
+    use_brain,
+)
+from .search import SearchError, get_knowledge_item, index_keyword_brain, search_keyword
 from .settings import (
     SearchMode,
     Settings,
@@ -21,7 +32,8 @@ from .settings import (
     load_settings,
     save_settings,
 )
-from .setup_tui import SetupWizard
+from .setup_prompt import SetupPromptError, SetupSkillChoice, run_setup_prompts
+from .skills import SkillError, SkillTarget, install_agent_skill
 
 app = typer.Typer(
     name="pkb",
@@ -29,17 +41,19 @@ app = typer.Typer(
     no_args_is_help=True,
     pretty_exceptions_show_locals=False,
 )
-brain_app = typer.Typer(help="Install, sync, select, and inspect portable brains.")
+brain_app = typer.Typer(help="Create, publish, install, sync, select, and inspect brains.")
 app.add_typer(brain_app, name="brain")
 search_app = typer.Typer(help="Build and query disposable local search indexes.")
 app.add_typer(search_app, name="search")
+skill_app = typer.Typer(help="Install the Portable KB workflow for coding agents.")
+app.add_typer(skill_app, name="skill")
 
 
 @app.command()
 def setup(
     non_interactive: Annotated[
         bool,
-        typer.Option("--non-interactive", help="Write configuration without opening the TUI."),
+        typer.Option("--non-interactive", help="Write configuration without inline prompts."),
     ] = False,
     search_mode: Annotated[
         SearchMode,
@@ -61,6 +75,17 @@ def setup(
         bool,
         typer.Option("--force", help="Replace existing configuration in non-interactive mode."),
     ] = False,
+    agent_skill: Annotated[
+        SetupSkillChoice,
+        typer.Option(
+            "--agent-skill",
+            help="Install the agent workflow during non-interactive setup.",
+        ),
+    ] = SetupSkillChoice.NONE,
+    force_skill: Annotated[
+        bool,
+        typer.Option("--force-skill", help="Replace a conflicting agent skill installation."),
+    ] = False,
 ) -> None:
     """Configure local storage and QMD search quality."""
 
@@ -74,15 +99,20 @@ def setup(
     )
     if non_interactive:
         _persist(initial, target, overwrite=force)
+        _install_setup_skill(agent_skill.target, force=force_skill)
         return
     if not sys.stdin.isatty() or not sys.stdout.isatty():
         typer.echo("Interactive setup requires a terminal. Use --non-interactive.", err=True)
         raise typer.Exit(2)
-    result = SetupWizard(initial).run()
-    if result is None:
-        typer.echo("Setup cancelled.")
+    try:
+        setup_result = run_setup_prompts(initial, write=typer.echo)
+    except SetupPromptError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(2) from None
+    if setup_result is None:
         return
-    _persist(result, target, overwrite=True)
+    _persist(setup_result.settings, target, overwrite=True)
+    _install_setup_skill(setup_result.skill_target, force=force_skill)
 
 
 @app.command()
@@ -123,6 +153,49 @@ def doctor(
         raise typer.Exit(1)
 
 
+@app.command("get")
+def get_item(
+    reference: Annotated[
+        str,
+        typer.Argument(help="Immutable item ID or knowledge-bundle-relative Markdown path."),
+    ],
+    slug: Annotated[
+        str | None,
+        typer.Option("--brain", help="Installed brain slug; defaults to the active brain."),
+    ] = None,
+    config_path: Annotated[
+        Path | None,
+        typer.Option("--config", help="Override the user configuration path."),
+    ] = None,
+    as_of: Annotated[
+        str | None,
+        typer.Option("--as-of", help="Explicit ISO date for bundle validation."),
+    ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit the complete cited item as JSON."),
+    ] = False,
+) -> None:
+    """Retrieve a complete knowledge item from the current pinned brain."""
+
+    settings = _load_cli_settings(config_path)
+    try:
+        result = get_knowledge_item(settings, reference, slug, as_of=as_of)
+    except (BrainError, SearchError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if json_output:
+        typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        return
+    citation = result["citation"]
+    typer.echo(
+        f"Citation: {citation['brain_slug']}@{citation['commit'][:12]}:"
+        f"{citation['path']} ({citation['item_id']})"
+    )
+    typer.echo()
+    typer.echo(result["item"]["content"], nl=False)
+
+
 @brain_app.command("add")
 def brain_add(
     source: Annotated[str, typer.Argument(help="Local path or Git repository URL.")],
@@ -160,6 +233,185 @@ def brain_add(
         typer.echo("Active brain: yes")
     if report.warnings:
         typer.echo(f"Validation warnings: {len(report.warnings)}")
+
+
+@brain_app.command("init")
+def brain_init(
+    source: Annotated[
+        str | None,
+        typer.Argument(help="Empty local directory or empty local Git repository."),
+    ] = None,
+    name: Annotated[
+        str | None,
+        typer.Option("--name", help="Human-readable brain name."),
+    ] = None,
+    slug: Annotated[
+        str | None,
+        typer.Option("--slug", help="Lowercase kebab-case command name."),
+    ] = None,
+    publish_to: Annotated[
+        str | None,
+        typer.Option(
+            "--publish-to",
+            help="Create and publish to a GitHub org/repo after local initialization.",
+        ),
+    ] = None,
+    visibility: Annotated[
+        GitHubVisibility,
+        typer.Option("--visibility", help="Visibility for a newly published GitHub repository."),
+    ] = GitHubVisibility.PRIVATE,
+    no_publish: Annotated[
+        bool,
+        typer.Option("--no-publish", help="Do not ask whether to publish after local creation."),
+    ] = False,
+    config_path: Annotated[
+        Path | None,
+        typer.Option("--config", help="Override the user configuration path."),
+    ] = None,
+    as_of: Annotated[
+        str | None,
+        typer.Option("--as-of", help="Explicit ISO date for bundle validation and log entry."),
+    ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit machine-readable initialization details."),
+    ] = False,
+) -> None:
+    """Create, commit, install, and activate a local brain, then optionally publish it."""
+
+    settings = _load_cli_settings(config_path)
+    interactive = _interactive_terminal() and not json_output
+    if publish_to is not None and no_publish:
+        typer.echo("--publish-to and --no-publish cannot be used together.", err=True)
+        raise typer.Exit(2)
+    if source is None or name is None or slug is None:
+        if not interactive:
+            typer.echo(
+                "Brain init requires SOURCE, --name, and --slug outside an interactive terminal.",
+                err=True,
+            )
+            raise typer.Exit(2)
+        try:
+            inputs = run_brain_init_prompts(
+                repository=source,
+                name=name,
+                slug=slug,
+                write=typer.echo,
+            )
+        except SetupPromptError as exc:
+            typer.echo(str(exc), err=True)
+            raise typer.Exit(2) from None
+        if inputs is None:
+            return
+        source = str(inputs.repository)
+        name = inputs.name
+        slug = inputs.slug
+    try:
+        result, _catalog, report = init_brain(
+            source,
+            name,
+            slug,
+            settings,
+            as_of=as_of,
+        )
+    except (BrainError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if not json_output:
+        typer.echo(f"Initialized locally: {result.brain.name} ({result.brain.slug})")
+        typer.echo(f"Repository: {result.repository}")
+        typer.echo(f"Commit: {result.brain.commit}")
+        typer.echo("Installed and active: yes")
+        if report.warnings:
+            typer.echo(f"Validation warnings: {len(report.warnings)}")
+
+    publish_choice = None
+    if publish_to is not None:
+        publish_choice = (publish_to, visibility)
+    elif interactive and not no_publish:
+        try:
+            choice = run_brain_publish_prompt(result.brain.slug, write=typer.echo)
+        except SetupPromptError as exc:
+            typer.echo(f"Local brain is ready, but publishing could not start: {exc}", err=True)
+            raise typer.Exit(1) from None
+        if choice is not None:
+            publish_choice = (choice.repository, choice.visibility)
+
+    if publish_choice is None:
+        if json_output:
+            typer.echo(json.dumps(result.as_dict(report), indent=2, sort_keys=True))
+        return
+    try:
+        publication, published_catalog = publish_brain_to_github(
+            settings,
+            publish_choice[0],
+            result.brain.slug,
+            visibility=publish_choice[1],
+        )
+    except BrainError as exc:
+        typer.echo(f"Local brain is ready, but GitHub publication failed: {exc}", err=True)
+        typer.echo("Retry later with `pkb brain publish --to org/repo`.", err=True)
+        raise typer.Exit(1) from None
+    if json_output:
+        payload = publication.as_dict(
+            active=publication.brain.slug == published_catalog.active
+        )
+        payload["validation_warnings"] = [finding.as_dict() for finding in report.warnings]
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    typer.echo(f"Published to GitHub: {publication.github_repository}")
+    typer.echo(f"Visibility: {publication.visibility.value}")
+
+
+@brain_app.command("publish")
+def brain_publish(
+    github_repository: Annotated[
+        str,
+        typer.Option("--to", help="GitHub repository in org/repo format."),
+    ],
+    slug: Annotated[
+        str | None,
+        typer.Argument(help="Installed local brain slug; defaults to the active brain."),
+    ] = None,
+    visibility: Annotated[
+        GitHubVisibility,
+        typer.Option("--visibility", help="Visibility for the new GitHub repository."),
+    ] = GitHubVisibility.PRIVATE,
+    config_path: Annotated[
+        Path | None,
+        typer.Option("--config", help="Override the user configuration path."),
+    ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit machine-readable publication details."),
+    ] = False,
+) -> None:
+    """Publish an initialized local brain to a new GitHub repository."""
+
+    settings = _load_cli_settings(config_path)
+    try:
+        result, catalog = publish_brain_to_github(
+            settings,
+            github_repository,
+            slug,
+            visibility=visibility,
+        )
+    except BrainError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if json_output:
+        typer.echo(
+            json.dumps(
+                result.as_dict(active=result.brain.slug == catalog.active),
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+    typer.echo(f"Published brain: {result.brain.name} ({result.brain.slug})")
+    typer.echo(f"Repository: {result.repository}")
+    typer.echo(f"GitHub: {result.github_repository}")
+    typer.echo(f"Visibility: {result.visibility.value}")
 
 
 @brain_app.command("list")
@@ -376,6 +628,34 @@ def search_query(
             typer.echo(f"    {item['snippet']}")
 
 
+@skill_app.command("install")
+def skill_install(
+    target: Annotated[
+        SkillTarget,
+        typer.Option("--target", help="Agent skill location to install."),
+    ] = SkillTarget.BOTH,
+    force: Annotated[
+        bool,
+        typer.Option("--force", help="Replace existing Portable KB skill installations."),
+    ] = False,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit machine-readable installation details."),
+    ] = False,
+) -> None:
+    """Install the same governed retrieval skill for Codex and Claude Code."""
+
+    try:
+        result = install_agent_skill(target, force=force)
+    except SkillError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if json_output:
+        typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        return
+    _report_skill_install(result)
+
+
 def _initial_settings(path: Path) -> Settings:
     if not path.exists():
         return default_settings()
@@ -384,6 +664,10 @@ def _initial_settings(path: Path) -> Settings:
     except SettingsError as exc:
         typer.echo(f"Cannot load existing configuration: {exc}", err=True)
         raise typer.Exit(2) from None
+
+
+def _interactive_terminal() -> bool:
+    return sys.stdin.isatty() and sys.stdout.isatty()
 
 
 def _load_cli_settings(path: Path | None) -> Settings:
@@ -406,6 +690,28 @@ def _persist(settings: Settings, target: Path, *, overwrite: bool) -> None:
     typer.echo(f"Search mode: {settings.search_mode.value}")
     if shutil.which(settings.qmd_command) is None:
         typer.echo("QMD is not installed yet; setup was saved without downloading anything.")
+
+
+def _install_setup_skill(target: SkillTarget | None, *, force: bool) -> None:
+    if target is None:
+        return
+    try:
+        result = install_agent_skill(target, force=force)
+    except SkillError as exc:
+        typer.echo(f"Configuration saved, but the agent skill was not installed: {exc}", err=True)
+        typer.echo("Resolve the conflict, then run `pkb skill install`.", err=True)
+        raise typer.Exit(1) from None
+    _report_skill_install(result)
+
+
+def _report_skill_install(result: dict[str, object]) -> None:
+    typer.echo("Installed Portable KB agent skill:")
+    targets = result["targets"]
+    assert isinstance(targets, dict)
+    unchanged = set(result.get("unchanged", []))
+    for agent, path in targets.items():
+        note = " (already current)" if agent in unchanged else ""
+        typer.echo(f"  {agent}: {path}{note}")
 
 
 def _doctor_output(result: dict[str, object], json_output: bool) -> None:

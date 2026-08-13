@@ -8,7 +8,12 @@ import pytest
 
 from portable_kb.brains import add_brain, sync_brain
 from portable_kb.parsing import discover_concepts, parse_concept
-from portable_kb.search import SearchError, index_keyword_brain, search_keyword
+from portable_kb.search import (
+    SearchError,
+    get_knowledge_item,
+    index_keyword_brain,
+    search_keyword,
+)
 from portable_kb.settings import Settings
 
 
@@ -150,6 +155,47 @@ def test_keyword_query_validation(tmp_path: Path) -> None:
         search_keyword(settings, "   ")
     with pytest.raises(SearchError, match="between 1 and 100"):
         search_keyword(settings, "query", limit=0)
+
+
+def test_get_knowledge_item_by_id_and_path(
+    tmp_path: Path,
+    brain_repo_factory,
+    fake_qmd: tuple[Path, Path, Path],
+) -> None:
+    settings, _source = _installed_settings(tmp_path, brain_repo_factory, fake_qmd)
+    bundle = settings.data_dir / "brains/search-brain/knowledge"
+    concept = discover_concepts(bundle)[0]
+    parsed = parse_concept(concept, bundle).item
+    assert parsed is not None and parsed.id is not None
+
+    by_id = get_knowledge_item(settings, parsed.id, as_of="2026-08-12")
+    relative = concept.relative_to(bundle).as_posix()
+    assert by_id["item"]["path"] == relative
+    assert by_id["item"]["metadata"]["id"] == parsed.id
+    assert by_id["item"]["body"] == parsed.body
+    assert by_id["item"]["content"] == parsed.source_text
+    assert by_id["citation"]["commit"] == by_id["brain"]["commit"]
+
+    by_path = get_knowledge_item(settings, f"knowledge/{relative}", as_of="2026-08-12")
+    assert by_path["item"]["id"] == parsed.id
+
+
+def test_get_knowledge_item_rejects_missing_and_reserved_paths(
+    tmp_path: Path,
+    brain_repo_factory,
+    fake_qmd: tuple[Path, Path, Path],
+) -> None:
+    settings, _source = _installed_settings(tmp_path, brain_repo_factory, fake_qmd)
+    with pytest.raises(SearchError, match="not found"):
+        get_knowledge_item(
+            settings,
+            "urn:uuid:00000000-0000-4000-8000-000000000000",
+            as_of="2026-08-12",
+        )
+    with pytest.raises(SearchError, match="unsafe, reserved"):
+        get_knowledge_item(settings, "../brain.yaml", as_of="2026-08-12")
+    with pytest.raises(SearchError, match="unsafe, reserved"):
+        get_knowledge_item(settings, "index.md", as_of="2026-08-12")
 
 
 def _git(repository: Path, *arguments: str) -> None:

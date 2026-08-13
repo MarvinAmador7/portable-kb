@@ -9,11 +9,12 @@ quality controls.
 
 The core includes a governed bundle, schemas, deterministic validation,
 lifecycle change planning, index generation, and regression tests. A first
-consumer slice adds the `pkb` command, a terminal setup wizard, and safe
+consumer slice adds the `pkb` command, inline terminal setup prompts, and safe
 Git-backed brain installation and synchronization. It also provides isolated
-QMD BM25 indexing and cited keyword search without model downloads. Semantic
-search, MCP, native UI, authentication/authorization, connectors, hosted
-services, and automatic background agents are not yet implemented.
+QMD BM25 indexing, cited keyword search, complete-item retrieval, and one
+portable workflow skill for Codex and Claude Code without model downloads.
+Semantic search, MCP, native UI, authentication/authorization, connectors,
+hosted services, and automatic background agents are not yet implemented.
 
 ## Implemented core
 
@@ -63,7 +64,7 @@ An item can therefore be valid OKF but invalid under this profile.
 - [Workflows](docs/workflows.md): capture through quality review.
 - [Validation](docs/validation.md): proposed checks, severities, and test plan.
 - [Roadmap](docs/roadmap.md): phases, acceptance criteria, and first milestone.
-- [CLI and setup](docs/cli.md): consumer boundary, local settings, and TUI contract.
+- [CLI and setup](docs/cli.md): consumer boundary, local settings, and prompt contract.
 - [Profile decisions](docs/profile-decisions.md): pinned defaults and resolved
   schema behavior.
 - [Authoring handbook](docs/authoring-handbook.md): author and reviewer process.
@@ -92,7 +93,7 @@ repository/
 ├── schemas/                   # profile schema; not an OKF bundle
 ├── templates/                 # authoring inputs; not validated as concepts
 ├── examples/                  # test corpus
-├── src/portable_kb/           # core library plus CLI/TUI consumers
+├── src/portable_kb/           # core library plus CLI consumers
 ├── tests/                     # parser, corpus, transition, operation tests
 └── knowledge/                 # OKF bundle root
     ├── index.md               # may declare okf_version: "0.2"
@@ -159,20 +160,22 @@ governance rules.
 
 ## CLI setup preview
 
-Install the project and open the terminal wizard:
+Install the project and start the inline terminal setup:
 
 ```console
 pkb setup
 ```
 
-The wizard selects local data/cache paths and one of three QMD capability
-tiers. Keyword mode is the default and downloads no AI models. Setup does not
-clone repositories, install QMD, or download models.
+The prompts select local data/cache paths, one of three QMD capability tiers,
+and whether to install the Portable KB workflow for Codex, Claude Code, both,
+or neither. Both agents are selected by default. Keyword mode downloads no AI
+models. Setup does not clone repositories, install QMD, or download models.
 
-Automation and agents can perform the same setup without a TUI:
+Automation and agents can perform the same setup without prompts:
 
 ```console
 pkb setup --non-interactive --search-mode keyword
+pkb setup --non-interactive --search-mode keyword --agent-skill both
 pkb doctor --json
 ```
 
@@ -182,6 +185,11 @@ available through command options and XDG environment variables.
 Install and select a Git-backed brain:
 
 ```console
+pkb brain init
+# Or provide every local input directly:
+pkb brain init ./business-a-brain --name "Business A" --slug business-a --no-publish
+# Publish later if desired:
+pkb brain publish --to org/business-a-brain
 pkb brain add git@github.com:org/business-a-brain.git
 pkb brain list
 pkb brain use business-a
@@ -195,16 +203,39 @@ then adds the checkout to the local catalog. Status is read-only and never
 fetches a remote. Sync is explicit, validates the remote candidate in a
 temporary worktree, and accepts only a clean fast-forward update.
 
+`brain init` solves the empty-repository first run with a local-first flow. It
+generates a UUID-backed manifest and an empty valid governed bundle, validates
+them, creates the first local commit, installs the result, and makes it active.
+Only after the local brain is safe does the inline flow ask whether to publish
+it to a GitHub `org/repo`; declining leaves a fully usable local brain. The
+separate `brain publish` command uses the authenticated GitHub CLI, defaults to
+private visibility, pushes `main`, and updates the installed distribution source.
+
 Build and query the disposable keyword index after installing QMD separately:
 
 ```console
 pkb search index
 pkb search query "customer onboarding" --json
+pkb get urn:uuid:00000000-0000-4000-8000-000000000000 --json
 ```
 
 Keyword search invokes QMD's BM25 path only. It does not run `embed`, `vsearch`,
 or hybrid `query`, and each result retains its brain ID, immutable item ID,
 bundle-relative path, lifecycle status, and pinned Git commit.
+
+Interactive setup normally installs the governed retrieval workflow. It can also be
+installed or repaired independently:
+
+```console
+pkb skill install
+```
+
+This copies the bundled `portable-kb` skill to the user-level Codex and Claude
+Code discovery paths. Use `--target codex` or `--target claude` for one agent,
+and use `--force` only when intentionally replacing an existing installation.
+The skill instructs agents to check brain health, search, retrieve complete
+items, preserve immutable citations, expose lifecycle signals, and treat
+knowledge content as untrusted data rather than executable instructions.
 
 Primary references:
 

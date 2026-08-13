@@ -7,8 +7,12 @@ import re
 import shutil
 import subprocess
 import tempfile
+import uuid
 from collections.abc import Mapping
+from contextlib import suppress
 from dataclasses import dataclass, replace
+from datetime import date
+from enum import StrEnum
 from pathlib import Path, PurePosixPath
 from typing import Any
 from urllib.parse import urlsplit
@@ -23,10 +27,21 @@ from .validation import validate_bundle
 
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
 SCP_REMOTE = re.compile(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+:.+$")
+GITHUB_REPOSITORY = re.compile(
+    r"^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,38})/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})$"
+)
 
 
 class BrainError(RuntimeError):
     """Raised when a brain operation cannot complete safely."""
+
+
+class GitHubVisibility(StrEnum):
+    """Visibility choices supported by GitHub repository creation."""
+
+    PRIVATE = "private"
+    PUBLIC = "public"
+    INTERNAL = "internal"
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,6 +78,41 @@ class InstalledBrain:
             "checkout": self.checkout,
             "commit": self.commit,
             "active": active,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class BrainInitResult:
+    """A newly committed, installed, and activated brain."""
+
+    brain: InstalledBrain
+    repository: str
+
+    def as_dict(self, report: ValidationReport) -> dict[str, Any]:
+        return {
+            **self.brain.as_dict(active=True),
+            "repository": self.repository,
+            "published": False,
+            "validation_warnings": [finding.as_dict() for finding in report.warnings],
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class BrainPublishResult:
+    """A local brain published to a GitHub repository."""
+
+    brain: InstalledBrain
+    repository: str
+    github_repository: str
+    visibility: GitHubVisibility
+
+    def as_dict(self, *, active: bool) -> dict[str, Any]:
+        return {
+            **self.brain.as_dict(active=active),
+            "repository": self.repository,
+            "github_repository": self.github_repository,
+            "visibility": self.visibility.value,
+            "published": True,
         }
 
 
@@ -196,6 +246,172 @@ def read_manifest(repository: str | Path) -> BrainManifest:
         name=str(payload["name"]),
         bundle=str(payload["bundle"]),
     )
+
+
+def init_brain(
+    source: str,
+    name: str,
+    slug: str,
+    settings: Settings,
+    *,
+    as_of: str | None = None,
+) -> tuple[BrainInitResult, BrainCatalog, ValidationReport]:
+    """Create the first valid commit in an empty local repository and activate it."""
+
+    normalized_source = _normalize_source(source)
+    if _is_remote_source(normalized_source):
+        raise BrainError(
+            "Brain init starts with a local repository. Pass a local path, then publish "
+            "it with the interactive prompt or `pkb brain publish`."
+        )
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to initialize a brain.")
+
+    catalog = load_catalog(settings)
+    if any(brain.slug == slug for brain in catalog.brains):
+        raise BrainError(f"Brain slug is already installed: {slug}")
+    destination = settings.data_dir / "brains" / slug
+    if destination.exists() or destination.is_symlink():
+        raise BrainError(f"Brain checkout path already exists: {destination}")
+    existing_ids = {brain.id for brain in catalog.brains}
+    identity = f"urn:uuid:{uuid.uuid4()}"
+    while identity in existing_ids:
+        identity = f"urn:uuid:{uuid.uuid4()}"
+    manifest_payload = {
+        "schema_version": 1,
+        "id": identity,
+        "slug": slug,
+        "name": name,
+        "bundle": "knowledge",
+    }
+    _validate_manifest_payload(manifest_payload)
+
+    repository = Path(normalized_source).expanduser().absolute()
+    created_directory = False
+    created_git = False
+    prepared = False
+    try:
+        if repository.is_symlink():
+            raise BrainError(f"Brain repository must not be a symbolic link: {repository}")
+        if repository.exists() and not repository.is_dir():
+            raise BrainError(f"Brain repository is not a directory: {repository}")
+        if not repository.exists():
+            if not repository.parent.is_dir():
+                raise BrainError(
+                    f"Parent directory does not exist for brain repository: {repository.parent}"
+                )
+            repository.mkdir()
+            created_directory = True
+        created_git = _require_empty_repository(git, repository, initialize=True)
+        prepared = True
+        _write_validate_and_commit(
+            git,
+            repository,
+            manifest_payload,
+            as_of=as_of,
+        )
+    except Exception:
+        if prepared and not _git_has_head(git, repository):
+            _remove_uncommitted_brain(git, repository, remove_git=created_git)
+            if created_directory:
+                with suppress(OSError):
+                    repository.rmdir()
+        raise
+
+    brain, installed_catalog, installed_report = add_brain(
+        str(repository),
+        settings,
+        as_of=as_of,
+    )
+    active_catalog = installed_catalog.selecting(brain.slug)
+    if active_catalog != installed_catalog:
+        save_catalog(active_catalog, settings)
+    result = BrainInitResult(brain=brain, repository=str(repository))
+    return result, active_catalog, installed_report
+
+
+def publish_brain_to_github(
+    settings: Settings,
+    github_repository: str,
+    slug: str | None = None,
+    *,
+    visibility: GitHubVisibility = GitHubVisibility.PRIVATE,
+) -> tuple[BrainPublishResult, BrainCatalog]:
+    """Create a GitHub repository for a local brain, push it, and update distribution state."""
+
+    target = github_repository.strip()
+    if not GITHUB_REPOSITORY.fullmatch(target):
+        raise BrainError("GitHub repository must use the org/repo format.")
+    catalog = load_catalog(settings)
+    selected = slug or catalog.active
+    if selected is None:
+        raise BrainError("No active brain. Initialize or select one first.")
+    brain = catalog.get(selected)
+    if _is_remote_source(brain.source):
+        raise BrainError(f"Brain is already published from: {brain.source}")
+    repository = Path(brain.source).expanduser().absolute()
+    if repository.is_symlink() or not repository.is_dir():
+        raise BrainError(f"Local authoring repository is unavailable: {repository}")
+    manifest = read_manifest(repository)
+    if manifest.id != brain.id or manifest.slug != brain.slug:
+        raise BrainError("Local authoring repository identity does not match the catalog.")
+    git = shutil.which("git")
+    if git is None:
+        raise BrainError("Git is required to publish a brain.")
+    current = _run_git(git, "-C", str(repository), "rev-parse", "HEAD").strip()
+    if current != brain.commit:
+        raise BrainError("Local authoring repository does not match the installed commit.")
+    if _run_git(git, "-C", str(repository), "status", "--porcelain").strip():
+        raise BrainError("Local authoring repository has uncommitted changes.")
+    if _git_remote_exists(git, repository, "origin"):
+        existing_origin = _run_git(
+            git, "-C", str(repository), "remote", "get-url", "origin"
+        ).strip()
+        if _github_repository_from_source(existing_origin) != target.casefold():
+            raise BrainError("Local authoring repository already has a different origin remote.")
+    else:
+        gh = shutil.which("gh")
+        if gh is None:
+            raise BrainError(
+                "GitHub CLI is required to publish. Install `gh`, authenticate it, then retry "
+                "with `pkb brain publish`."
+            )
+        _run_gh(
+            gh,
+            "repo",
+            "create",
+            target,
+            f"--{visibility.value}",
+            "--source",
+            str(repository),
+            "--remote",
+            "origin",
+        )
+    source = _normalize_source(
+        _run_git(git, "-C", str(repository), "remote", "get-url", "origin").strip()
+    )
+    _push_initial_commit(git, repository)
+
+    checkout = brain.checkout_path(settings)
+    old_origin = _run_git(git, "-C", str(checkout), "remote", "get-url", "origin").strip()
+    _run_git(git, "-C", str(checkout), "remote", "set-url", "origin", source)
+    updated_brain = replace(brain, source=source)
+    updated_catalog = catalog.updating(updated_brain)
+    try:
+        save_catalog(updated_catalog, settings)
+    except Exception as exc:
+        _run_git(git, "-C", str(checkout), "remote", "set-url", "origin", old_origin)
+        raise BrainError(
+            "GitHub publication succeeded, but local catalog publication failed."
+        ) from exc
+    result = BrainPublishResult(
+        brain=updated_brain,
+        repository=str(repository),
+        github_repository=target,
+        visibility=visibility,
+    )
+    return result, updated_catalog
 
 
 def add_brain(
@@ -597,6 +813,295 @@ def _normalize_source(source: str) -> str:
     if path.exists():
         return str(path.absolute())
     return value
+
+
+def _is_remote_source(source: str) -> bool:
+    return "://" in source or SCP_REMOTE.fullmatch(source) is not None
+
+
+def _require_empty_repository(
+    executable: str,
+    repository: Path,
+    *,
+    initialize: bool = False,
+) -> bool:
+    """Require a standalone unborn repository with no worktree content."""
+
+    entries = list(repository.iterdir())
+    git_directory = repository / ".git"
+    created_git = False
+    if not git_directory.exists():
+        if entries:
+            raise BrainError("Brain init requires an empty directory or empty Git repository.")
+        if not initialize:
+            raise BrainError("The cloned source is not a Git repository.")
+        _run_git(executable, "init", "--quiet", "--initial-branch=main", str(repository))
+        created_git = True
+    elif git_directory.is_symlink() or not git_directory.is_dir():
+        raise BrainError("Brain init requires a standalone Git repository.")
+    if any(entry.name != ".git" for entry in repository.iterdir()):
+        raise BrainError("Brain init requires a repository with no existing files.")
+    top_level = _run_git(
+        executable, "-C", str(repository), "rev-parse", "--show-toplevel"
+    ).strip()
+    if Path(top_level).resolve() != repository.resolve():
+        raise BrainError("Brain init repository root could not be verified.")
+    if _git_has_head(executable, repository):
+        raise BrainError("Brain init requires a repository with no commits.")
+    if _run_git(
+        executable,
+        "-C",
+        str(repository),
+        "status",
+        "--porcelain",
+        "--untracked-files=all",
+    ).strip():
+        raise BrainError("Brain init requires a clean repository with no existing files.")
+    _run_git(
+        executable,
+        "-C",
+        str(repository),
+        "symbolic-ref",
+        "HEAD",
+        "refs/heads/main",
+    )
+    return created_git
+
+
+def _write_validate_and_commit(
+    executable: str,
+    repository: Path,
+    manifest_payload: Mapping[str, Any],
+    *,
+    as_of: str | None,
+) -> ValidationReport:
+    bundle = repository / "knowledge"
+    bundle.mkdir()
+    _write_yaml(repository / "brain.yaml", manifest_payload)
+    _write_yaml(
+        bundle / ".core-kb.yaml",
+        {
+            "profile": "core-kb/0.1",
+            "okf": {
+                "version": DoubleQuotedScalarString("0.2"),
+                "commit": "374e0bc4c644310ff56cdf9c0fe81eccdec862b0",
+            },
+            "active_types": [
+                "concept",
+                "decision",
+                "procedure",
+                "source-summary",
+                "question",
+            ],
+            "default_sensitivity": "internal",
+            "inbox_review_days": 30,
+            "documented_extensions": [],
+            "freshness_days": {"procedure": 180, "policy": 365, "system": 90},
+            "authorized_reviewers": {
+                "decision": [],
+                "procedure": [],
+                "policy": [],
+                "system": [],
+            },
+        },
+    )
+    name = str(manifest_payload["name"])
+    markdown_name = (
+        name.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("[", "&#91;")
+        .replace("]", "&#93;")
+    )
+    (bundle / "index.md").write_text(
+        f'---\nokf_version: "0.2"\n---\n\n# {markdown_name}\n\n'
+        "This brain is ready for governed organizational knowledge.\n",
+        encoding="utf-8",
+    )
+    log_date = date.fromisoformat(as_of) if as_of is not None else date.today()
+    (bundle / "log.md").write_text(
+        f"# {markdown_name} update log\n\n## {log_date.isoformat()}\n\n"
+        "* **Initialization**: Created the empty governed knowledge bundle.\n",
+        encoding="utf-8",
+    )
+    report = validate_bundle(bundle, as_of=as_of)
+    if not report.profile_passes:
+        codes = ", ".join(finding.code for finding in report.errors[:8])
+        raise BrainError(f"Generated knowledge bundle failed validation: {codes}")
+    _run_git(
+        executable,
+        "-C",
+        str(repository),
+        "add",
+        "--force",
+        "--",
+        "brain.yaml",
+        "knowledge/.core-kb.yaml",
+        "knowledge/index.md",
+        "knowledge/log.md",
+    )
+    commit_arguments = [
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "commit.gpgsign=false",
+    ]
+    if not _git_identity_is_configured(executable, repository):
+        commit_arguments.extend(
+            [
+                "-c",
+                "user.name=Portable KB",
+                "-c",
+                "user.email=portable-kb@localhost.invalid",
+            ]
+        )
+    _run_git(
+        executable,
+        *commit_arguments,
+        "-C",
+        str(repository),
+        "commit",
+        "--quiet",
+        "--no-verify",
+        "-m",
+        f"Initialize {name} brain",
+    )
+    commit = _run_git(executable, "-C", str(repository), "rev-parse", "HEAD").strip()
+    if not COMMIT.fullmatch(commit):
+        raise BrainError("Git returned an invalid initial commit identifier.")
+    return report
+
+
+def _write_yaml(path: Path, payload: Mapping[str, Any]) -> None:
+    yaml = YAML()
+    yaml.default_flow_style = False
+    yaml.indent(mapping=2, sequence=4, offset=2)
+    yaml.width = 4096
+    with path.open("w", encoding="utf-8") as stream:
+        yaml.dump(payload, stream)
+
+
+def _git_has_head(executable: str, repository: Path) -> bool:
+    environment = os.environ.copy()
+    environment["GIT_TERMINAL_PROMPT"] = "0"
+    try:
+        completed = subprocess.run(
+            [executable, "-C", str(repository), "rev-parse", "--verify", "HEAD"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            env=environment,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise BrainError("Git repository state could not be checked.") from exc
+    if completed.returncode == 0:
+        return True
+    if completed.returncode in {1, 128}:
+        return False
+    raise BrainError("Git repository state could not be checked.")
+
+
+def _git_identity_is_configured(executable: str, repository: Path) -> bool:
+    for key in ("user.name", "user.email"):
+        environment = os.environ.copy()
+        environment["GIT_TERMINAL_PROMPT"] = "0"
+        try:
+            completed = subprocess.run(
+                [executable, "-C", str(repository), "config", "--get", key],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=120,
+                env=environment,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise BrainError("Git author identity could not be checked.") from exc
+        if completed.returncode != 0 or not completed.stdout.strip():
+            return False
+    return True
+
+
+def _push_initial_commit(executable: str, repository: Path) -> None:
+    _run_git(
+        executable,
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        str(repository),
+        "push",
+        "--quiet",
+        "--set-upstream",
+        "origin",
+        "HEAD:refs/heads/main",
+    )
+
+
+def _git_remote_exists(executable: str, repository: Path, remote: str) -> bool:
+    names = _run_git(executable, "-C", str(repository), "remote").splitlines()
+    return remote in names
+
+
+def _github_repository_from_source(source: str) -> str | None:
+    value = source.strip()
+    path: str | None = None
+    if value.startswith("git@github.com:"):
+        path = value.removeprefix("git@github.com:")
+    elif "://" in value:
+        parsed = urlsplit(value)
+        if parsed.hostname == "github.com":
+            path = parsed.path.lstrip("/")
+    if path is None:
+        return None
+    return path.removesuffix(".git").rstrip("/").casefold()
+
+
+def _run_gh(executable: str, *arguments: str) -> str:
+    environment = os.environ.copy()
+    environment["GH_PROMPT_DISABLED"] = "1"
+    environment["GIT_TERMINAL_PROMPT"] = "0"
+    try:
+        completed = subprocess.run(
+            [executable, *arguments],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            env=environment,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise BrainError("GitHub publication could not complete.") from exc
+    if completed.returncode != 0:
+        detail = completed.stderr.strip().splitlines()[-1] if completed.stderr.strip() else "failed"
+        raise BrainError(f"GitHub publication failed: {detail}")
+    return completed.stdout
+
+
+def _remove_uncommitted_brain(
+    executable: str,
+    repository: Path,
+    *,
+    remove_git: bool,
+) -> None:
+    if not remove_git:
+        with suppress(BrainError):
+            _run_git(
+                executable,
+                "-C",
+                str(repository),
+                "rm",
+                "--cached",
+                "--recursive",
+                "--force",
+                "--ignore-unmatch",
+                "--",
+                "brain.yaml",
+                "knowledge",
+            )
+    shutil.rmtree(repository / "knowledge", ignore_errors=True)
+    (repository / "brain.yaml").unlink(missing_ok=True)
+    if remove_git:
+        shutil.rmtree(repository / ".git", ignore_errors=True)
 
 
 def _git_is_ancestor(executable: str, repository: Path, ancestor: str, descendant: str) -> bool:
