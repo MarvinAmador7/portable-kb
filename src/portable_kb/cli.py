@@ -17,7 +17,9 @@ from .authoring import (
     KnowledgeType,
     Sensitivity,
     plan_knowledge_create,
+    plan_knowledge_update,
     save_knowledge_create,
+    save_knowledge_update,
 )
 from .brain_prompt import run_brain_init_prompts, run_brain_publish_prompt
 from .brains import (
@@ -678,6 +680,116 @@ def knowledge_create(
         typer.echo("Plan only; no files changed. Re-run with --apply to write it.")
 
 
+@knowledge_app.command("update")
+def knowledge_update(
+    reference: Annotated[
+        str,
+        typer.Argument(help="Immutable item ID or bundle-relative Markdown path."),
+    ],
+    actor: Annotated[
+        str,
+        typer.Option("--actor", help="Producer identity: human:id, process:id, or producer/version."),
+    ],
+    method: Annotated[
+        GenerationMethod,
+        typer.Option("--method", help="How the revised substantive content was produced."),
+    ],
+    body_file: Annotated[
+        Path | None,
+        typer.Option("--body-file", help="Replacement UTF-8 Markdown body without frontmatter."),
+    ] = None,
+    metadata_file: Annotated[
+        Path | None,
+        typer.Option("--metadata-file", help="JSON object of metadata fields to replace."),
+    ] = None,
+    approve_sensitivity_lowering: Annotated[
+        bool,
+        typer.Option(
+            "--approve-sensitivity-lowering",
+            help="Record explicit human approval to lower the handling classification.",
+        ),
+    ] = False,
+    timestamp: Annotated[
+        str | None,
+        typer.Option("--timestamp", help="Strict UTC RFC 3339 production time."),
+    ] = None,
+    slug: Annotated[
+        str | None,
+        typer.Option("--brain", help="Installed brain slug; defaults to the active brain."),
+    ] = None,
+    apply: Annotated[
+        bool,
+        typer.Option("--apply", help="Save and activate the validated update."),
+    ] = False,
+    config_path: Annotated[
+        Path | None,
+        typer.Option("--config", help="Override the user configuration path."),
+    ] = None,
+    as_of: Annotated[
+        str | None,
+        typer.Option("--as-of", help="Explicit ISO date for deterministic validation."),
+    ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit the plan or applied result as JSON."),
+    ] = False,
+) -> None:
+    """Plan or save a material update while preserving knowledge identity."""
+
+    settings = _load_cli_settings(config_path)
+    try:
+        body = _read_text_input(body_file, label="Body file") if body_file else None
+        metadata_updates = _read_metadata_input(metadata_file)
+        plan = plan_knowledge_update(
+            settings,
+            reference,
+            actor=actor,
+            method=method,
+            body=body,
+            metadata_updates=metadata_updates,
+            approve_sensitivity_lowering=approve_sensitivity_lowering,
+            timestamp=timestamp,
+            slug=slug,
+            as_of=as_of,
+        )
+    except (BrainError, OperationError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+
+    if not json_output:
+        typer.echo(f"Validated update plan: {plan.item.relative_path}")
+        typer.echo(f"Identity preserved: {plan.item.id}")
+        if plan.item.status != plan.as_dict(applied=False)["resulting_status"]:
+            typer.echo(
+                f"Lifecycle: {plan.item.status} → "
+                f"{plan.as_dict(applied=False)['resulting_status']}"
+            )
+        if "verified" in plan.item.metadata:
+            typer.echo("Verification: invalidated by material update")
+        for change in plan.change_set.changes:
+            typer.echo(f"  {change.kind:<6} {change.relative_path}")
+        if plan.change_set.validation.warnings:
+            typer.echo(f"Validation warnings: {len(plan.change_set.validation.warnings)}")
+
+    saved = None
+    if apply:
+        try:
+            saved = save_knowledge_update(settings, plan, as_of=as_of)
+        except (BrainError, ConcurrentChangeError, OSError, ValueError) as exc:
+            typer.echo(f"Update could not be saved: {exc}", err=True)
+            raise typer.Exit(1) from None
+    payload = saved.as_dict() if saved is not None else plan.as_dict(applied=False)
+    if json_output:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    elif saved is not None:
+        typer.echo("◆ Update saved")
+        typer.echo(f"◇ Active brain updated: {saved.plan.brain.name}")
+        typer.echo("◇ Ready for local search and agent retrieval")
+        typer.echo("◇ Not shared with the organization")
+    else:
+        typer.echo("Plan only; no files changed. Re-run with --apply to save it.")
+
+
 @brain_app.command("use")
 def brain_use(
     slug: Annotated[str, typer.Argument(help="Installed brain slug.")],
@@ -933,6 +1045,23 @@ def _read_sources_input(path: Path | None) -> tuple[Mapping[str, object], ...]:
     if not isinstance(payload, list) or not all(isinstance(item, dict) for item in payload):
         raise ValueError("Sources file must contain a JSON array of source objects.")
     return tuple(payload)
+
+
+def _read_metadata_input(path: Path | None) -> Mapping[str, object] | None:
+    if path is None:
+        return None
+    content = _read_text_input(path, label="Metadata file")
+    try:
+        payload = json.loads(content)
+    except json.JSONDecodeError as exc:
+        raise ValueError(
+            f"Metadata file is not valid JSON: {path.expanduser().absolute()}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise ValueError("Metadata file must contain a JSON object.")
+    if not payload:
+        raise ValueError("Metadata file must contain at least one field.")
+    return payload
 
 
 def _load_cli_settings(path: Path | None) -> Settings:

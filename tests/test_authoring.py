@@ -13,7 +13,9 @@ from portable_kb.authoring import (
     Sensitivity,
     body_template,
     plan_knowledge_create,
+    plan_knowledge_update,
     save_knowledge_create,
+    save_knowledge_update,
     slugify,
 )
 from portable_kb.brains import (
@@ -25,6 +27,7 @@ from portable_kb.brains import (
     save_catalog,
     sync_brain,
 )
+from portable_kb.operations import OperationError
 from portable_kb.parsing import parse_concept
 from portable_kb.settings import Settings
 from portable_kb.validation import validate_bundle
@@ -149,6 +152,148 @@ The practice may inform a future internal procedure.
     assert item.metadata["confidence"]["level"] == "medium"
 
 
+def test_plan_and_save_update_preserves_identity_and_refreshes_active_brain(
+    tmp_path: Path,
+) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    repository = tmp_path / "update-brain"
+    init_brain(
+        str(repository),
+        "Update Brain",
+        "update-brain",
+        settings,
+        as_of="2026-08-13",
+    )
+    created = plan_knowledge_create(
+        settings,
+        item_type=KnowledgeType.CONCEPT,
+        title="Customer activation",
+        description="Defines the first customer realization of the product's core value.",
+        actor="human:marvin",
+        method=GenerationMethod.HUMAN_AUTHORED,
+        body="# Customer activation\n\n## Definition\n\nThe first realization of value.\n",
+        timestamp="2026-08-13T15:00:00Z",
+        as_of="2026-08-13",
+    )
+    save_knowledge_create(settings, created, as_of="2026-08-13")
+    original_path = repository / "knowledge/inbox/customer-activation.md"
+    original = parse_concept(original_path, repository / "knowledge").item
+    assert original is not None
+
+    update = plan_knowledge_update(
+        settings,
+        original.id or "",
+        actor="openai/codex",
+        method=GenerationMethod.AGENT_GENERATED,
+        body=(
+            "# Customer activation\n\n## Definition\n\n"
+            "The first verified customer realization of product value.[^evidence]\n\n"
+            "[^evidence]: Customer interview summary.\n"
+        ),
+        metadata_updates={
+            "description": "Defines the first evidenced customer realization of product value.",
+            "sources": [
+                {
+                    "id": "evidence",
+                    "resource": "https://example.com/customer-interviews",
+                    "title": "Customer interview summary",
+                }
+            ],
+            "confidence": {
+                "level": "medium",
+                "basis": "The source supports the definition, but the sample is still limited.",
+            },
+            "x-owner-note": "preserve-on-future-updates",
+        },
+        timestamp="2026-08-13T16:00:00Z",
+        as_of="2026-08-13",
+    )
+
+    assert update.item.id == original.id
+    assert update.as_dict(applied=False)["applied"] is False
+    assert "verified" not in update.item.metadata
+    stable_item = replace(
+        update.item,
+        metadata={
+            **update.item.metadata,
+            "type": "policy",
+            "status": "stable",
+            "verified": [{"by": "human:marvin", "at": "2026-08-13T15:30:00Z"}],
+        },
+    )
+    stable_payload = replace(update, item=stable_item).as_dict(applied=False)
+    assert stable_payload["resulting_status"] == "draft"
+    assert stable_payload["verification_invalidated"] is True
+    result = save_knowledge_update(settings, update, as_of="2026-08-13")
+
+    revised = parse_concept(original_path, repository / "knowledge").item
+    assert revised is not None
+    assert revised.id == original.id
+    assert revised.metadata["created_at"] == original.metadata["created_at"]
+    assert revised.metadata["generated"]["by"] == "openai/codex"
+    assert revised.metadata["x-owner-note"] == "preserve-on-future-updates"
+    assert result.commit == load_catalog(settings).get("update-brain").commit
+    installed = (
+        settings.data_dir / "brains/update-brain/knowledge/inbox/customer-activation.md"
+    )
+    assert "first verified customer realization" in installed.read_text(encoding="utf-8")
+
+
+def test_plan_update_rejects_missing_change_and_unsafe_reference(tmp_path: Path) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    init_brain(
+        str(tmp_path / "brain"),
+        "Guarded Update",
+        "guarded-update",
+        settings,
+        as_of="2026-08-13",
+    )
+    with pytest.raises(ValueError, match="requires a body"):
+        plan_knowledge_update(
+            settings,
+            "inbox/missing.md",
+            actor="openai/codex",
+            method=GenerationMethod.AGENT_GENERATED,
+            timestamp="2026-08-13T16:00:00Z",
+            as_of="2026-08-13",
+        )
+    with pytest.raises(ValueError, match="lifecycle-controlled fields: status"):
+        plan_knowledge_update(
+            settings,
+            "inbox/missing.md",
+            actor="openai/codex",
+            method=GenerationMethod.AGENT_GENERATED,
+            metadata_updates={"status": "stable"},
+            timestamp="2026-08-13T16:00:00Z",
+            as_of="2026-08-13",
+        )
+    with pytest.raises(OperationError, match="unsafe"):
+        plan_knowledge_update(
+            settings,
+            "../escape.md",
+            actor="human:marvin",
+            method=GenerationMethod.HUMAN_AUTHORED,
+            body="# Escape\n\nShould not resolve.\n",
+            timestamp="2026-08-13T16:00:00Z",
+            as_of="2026-08-13",
+        )
+    for reference, message in (
+        ("", "non-empty ID"),
+        ("inbox/missing.md", "path was not found"),
+        ("urn:uuid:00000000-0000-4000-8000-000000000000", "ID was not found"),
+    ):
+        with pytest.raises(OperationError, match=message):
+            plan_knowledge_update(
+                settings,
+                reference,
+                actor="human:marvin",
+                method=GenerationMethod.HUMAN_AUTHORED,
+                body="# Missing\n\nShould not resolve.\n",
+                timestamp="2026-08-13T16:00:00Z",
+                as_of="2026-08-13",
+            )
+
+
 def test_authoring_helpers_generate_safe_defaults() -> None:
     assert slugify("  Customer Success / Activation! ") == "customer-success-activation"
     body = body_template(KnowledgeType.PROCEDURE, "Review knowledge")
@@ -263,6 +408,43 @@ def test_save_rejects_a_plan_when_the_brain_changes_before_confirmation(
 
     with pytest.raises(ValueError, match="changed while this knowledge was being prepared"):
         save_knowledge_create(settings, plan, as_of="2026-08-13")
+
+    saved_plan = plan_knowledge_create(
+        settings,
+        item_type=KnowledgeType.CONCEPT,
+        title="Update concurrency",
+        description="Provides a target for the material update concurrency guard.",
+        actor="human:marvin",
+        method=GenerationMethod.HUMAN_AUTHORED,
+        body="# Update concurrency\n\n## Definition\n\nA guarded update target.\n",
+        timestamp="2026-08-13T15:30:00Z",
+        as_of="2026-08-13",
+    )
+    saved = save_knowledge_create(settings, saved_plan, as_of="2026-08-13")
+    update_plan = plan_knowledge_update(
+        settings,
+        "inbox/update-concurrency.md",
+        actor="human:marvin",
+        method=GenerationMethod.HUMAN_AUTHORED,
+        body="# Update concurrency\n\n## Definition\n\nA revised guarded target.\n",
+        timestamp="2026-08-13T16:00:00Z",
+        as_of="2026-08-13",
+    )
+    assert update_plan.base_commit == saved.commit
+    _git(
+        repository,
+        "-c",
+        "user.name=Test",
+        "-c",
+        "user.email=test@example.invalid",
+        "commit",
+        "--quiet",
+        "--allow-empty",
+        "-m",
+        "Concurrent update version",
+    )
+    with pytest.raises(ValueError, match="changed while this update was being prepared"):
+        save_knowledge_update(settings, update_plan, as_of="2026-08-13")
 
     current = clean_repository_head(repository)
     with pytest.raises(BrainError, match="contains no files"):

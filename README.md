@@ -12,10 +12,10 @@ lifecycle change planning, index generation, and regression tests. A first
 consumer slice adds the `pkb` command, inline terminal setup prompts, and safe
 Git-backed brain installation and synchronization. It also provides isolated
 QMD BM25 indexing, cited keyword search, complete-item retrieval, and one
-portable workflow skill for Codex and Claude Code without model downloads. A
-plan-first authoring command can create validated local drafts without silently
-publishing them, and an explicit push command safely shares the active saved
-version. Semantic search, MCP, native UI,
+portable workflow skill for Codex and Claude Code without model downloads.
+Plan-first authoring commands can create drafts and materially update existing
+items without silently publishing them, and an explicit push command safely
+shares the active saved version. Semantic search, MCP, native UI,
 authentication/authorization, connectors, hosted services, and automatic
 background agents are not yet implemented.
 
@@ -228,6 +228,23 @@ commands and agents can retrieve the draft immediately. It does not share the
 draft with the organization. Agents can use `--body-file`, `--sources-file`,
 `--json`, and the explicit `--apply` flag for the same deterministic workflow.
 
+Agents revise existing knowledge by immutable ID or path without changing its
+identity:
+
+```console
+pkb knowledge update "urn:uuid:..." \
+  --actor "openai/codex" \
+  --method agent-generated \
+  --body-file ./revised-body.md \
+  --metadata-file ./metadata-updates.json \
+  --json
+```
+
+The first call is a plan only. Repeating it with `--apply` preserves `id` and
+`created_at`, updates provenance, invalidates prior verification, applies any
+required lifecycle fallback to draft, versions the exact validated files, and
+refreshes the active local brain. It does not publish the update.
+
 Share the active saved version only when organization publication is intended:
 
 ```console
@@ -277,7 +294,7 @@ Primary references:
 
 Semantic and hybrid retrieval, model installation, embeddings, vector
 databases, knowledge-graph databases, background brain synchronization,
-lifecycle CLI commands beyond draft creation, MCP, APIs, web/native UI,
+lifecycle CLI commands beyond draft creation and material update, MCP, APIs, web/native UI,
 authentication,
 authorization, multitenancy, automatic background agents, production
 infrastructure, and third-party connectors are not yet implemented. The file

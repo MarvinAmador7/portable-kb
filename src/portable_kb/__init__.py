@@ -10,9 +10,13 @@ from .authoring import (
     KnowledgeCreatePlan,
     KnowledgeCreateResult,
     KnowledgeType,
+    KnowledgeUpdatePlan,
+    KnowledgeUpdateResult,
     Sensitivity,
     plan_knowledge_create,
+    plan_knowledge_update,
     save_knowledge_create,
+    save_knowledge_update,
 )
 from .brains import push_brain
 from .models import Finding, KnowledgeItem, Severity, ValidationReport
@@ -39,6 +43,8 @@ __all__ = [
     "KnowledgeCreateResult",
     "KnowledgeItem",
     "KnowledgeType",
+    "KnowledgeUpdatePlan",
+    "KnowledgeUpdateResult",
     "OperationError",
     "OperationValidationError",
     "Severity",
@@ -50,7 +56,9 @@ __all__ = [
     "plan_archive",
     "plan_create",
     "plan_knowledge_create",
+    "plan_knowledge_update",
     "save_knowledge_create",
+    "save_knowledge_update",
     "plan_move",
     "plan_promote",
     "plan_reverify",

@@ -502,6 +502,35 @@ def test_agent_create_push_and_second_machine_sync_flow(tmp_path: Path) -> None:
         ],
     )
     assert created.exit_code == 0, created.output
+    body.write_text(
+        "# Shared customer promise\n\n## Definition\n\n"
+        "A revised promise shared across machines.\n",
+        encoding="utf-8",
+    )
+    updated = runner.invoke(
+        app,
+        [
+            "knowledge",
+            "update",
+            "inbox/shared-customer-promise.md",
+            "--actor",
+            "human:marvin",
+            "--method",
+            "human-authored",
+            "--body-file",
+            str(body),
+            "--timestamp",
+            "2026-08-13T17:00:00Z",
+            "--config",
+            str(author_config),
+            "--as-of",
+            "2026-08-13",
+            "--apply",
+            "--json",
+        ],
+    )
+    assert updated.exit_code == 0, updated.output
+    assert json.loads(updated.output)["item_id"]
     shared = runner.invoke(
         app,
         ["brain", "push", "--config", str(author_config), "--as-of", "2026-08-13", "--json"],
@@ -528,7 +557,9 @@ def test_agent_create_push_and_second_machine_sync_flow(tmp_path: Path) -> None:
         ],
     )
     assert retrieved.exit_code == 0, retrieved.output
-    assert json.loads(retrieved.output)["citation"]["commit"] == shared_commit
+    retrieved_payload = json.loads(retrieved.output)
+    assert retrieved_payload["citation"]["commit"] == shared_commit
+    assert "A revised promise shared across machines" in retrieved_payload["item"]["body"]
 
 
 def test_brain_init_interactive_flow_creates_locally_then_publishes(
@@ -720,6 +751,192 @@ This definition gives product and customer-success teams a shared milestone.
     assert (
         installed.checkout_path(settings) / "knowledge/inbox/customer-activation.md"
     ).is_file()
+
+
+def test_knowledge_update_cli_plans_then_saves_by_path(tmp_path: Path) -> None:
+    config = tmp_path / "config.yaml"
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    save_settings(settings, config)
+    repository = tmp_path / "authoring"
+    initialized = runner.invoke(
+        app,
+        [
+            "brain",
+            "init",
+            str(repository),
+            "--name",
+            "Update Brain",
+            "--slug",
+            "update-brain",
+            "--config",
+            str(config),
+            "--as-of",
+            "2026-08-13",
+            "--json",
+        ],
+    )
+    assert initialized.exit_code == 0, initialized.output
+    body = tmp_path / "body.md"
+    body.write_text("# Retention\n\n## Definition\n\nKeep records for 30 days.\n", encoding="utf-8")
+    created = runner.invoke(
+        app,
+        [
+            "knowledge",
+            "create",
+            "--type",
+            "concept",
+            "--title",
+            "Retention window",
+            "--description",
+            "Defines the current record retention window for the business.",
+            "--actor",
+            "human:marvin",
+            "--body-file",
+            str(body),
+            "--timestamp",
+            "2026-08-13T15:00:00Z",
+            "--config",
+            str(config),
+            "--as-of",
+            "2026-08-13",
+            "--apply",
+            "--json",
+        ],
+    )
+    assert created.exit_code == 0, created.output
+    target = repository / "knowledge/inbox/retention-window.md"
+    original = target.read_text(encoding="utf-8")
+    updated_body = tmp_path / "updated-body.md"
+    updated_body.write_text(
+        "# Retention\n\n## Definition\n\nKeep records for 45 days.\n",
+        encoding="utf-8",
+    )
+    metadata = tmp_path / "metadata.json"
+    metadata.write_text(
+        json.dumps(
+            {
+                "description": "Defines the revised 45-day record retention window.",
+                "tags": ["retention"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    arguments = [
+        "knowledge",
+        "update",
+        "inbox/retention-window.md",
+        "--actor",
+        "human:marvin",
+        "--method",
+        "human-authored",
+        "--body-file",
+        str(updated_body),
+        "--metadata-file",
+        str(metadata),
+        "--timestamp",
+        "2026-08-13T16:00:00Z",
+        "--config",
+        str(config),
+        "--as-of",
+        "2026-08-13",
+        "--json",
+    ]
+
+    planned = runner.invoke(app, arguments)
+    assert planned.exit_code == 0, planned.output
+    plan = json.loads(planned.output)
+    assert plan["operation"] == "update"
+    assert plan["applied"] is False
+    assert plan["previous_status"] == "draft"
+    assert target.read_text(encoding="utf-8") == original
+
+    applied = runner.invoke(app, [*arguments, "--apply"])
+    assert applied.exit_code == 0, applied.output
+    result = json.loads(applied.output)
+    assert result["active_brain_updated"] is True
+    assert len(result["saved_version"]) == 40
+    revised = target.read_text(encoding="utf-8")
+    assert "Keep records for 45 days" in revised
+    assert "urn:uuid:" in revised
+    assert load_catalog(settings).get("update-brain").commit == result["saved_version"]
+
+    human_arguments = [argument for argument in arguments if argument != "--json"]
+    human_arguments[human_arguments.index("2026-08-13T16:00:00Z")] = (
+        "2026-08-13T17:00:00Z"
+    )
+    human_plan = runner.invoke(app, human_arguments)
+    assert human_plan.exit_code == 0, human_plan.output
+    assert "Validated update plan: inbox/retention-window.md" in human_plan.output
+    assert "Identity preserved: urn:uuid:" in human_plan.output
+    assert "Plan only; no files changed" in human_plan.output
+
+    human_apply = runner.invoke(app, [*human_arguments, "--apply"])
+    assert human_apply.exit_code == 0, human_apply.output
+    assert "◆ Update saved" in human_apply.output
+    assert "Active brain updated: Update Brain" in human_apply.output
+    assert "Ready for local search and agent retrieval" in human_apply.output
+    assert "Not shared with the organization" in human_apply.output
+
+    missing_change = runner.invoke(
+        app,
+        [
+            "knowledge",
+            "update",
+            "inbox/retention-window.md",
+            "--actor",
+            "human:marvin",
+            "--method",
+            "human-authored",
+            "--config",
+            str(config),
+            "--json",
+        ],
+    )
+    assert missing_change.exit_code == 1
+    assert "requires a body" in missing_change.output
+
+    invalid_metadata = tmp_path / "invalid-metadata.json"
+    invalid_metadata.write_text("[]\n", encoding="utf-8")
+    rejected = runner.invoke(
+        app,
+        [
+            "knowledge",
+            "update",
+            "inbox/retention-window.md",
+            "--actor",
+            "human:marvin",
+            "--method",
+            "human-authored",
+            "--metadata-file",
+            str(invalid_metadata),
+            "--config",
+            str(config),
+            "--json",
+        ],
+    )
+    assert rejected.exit_code == 1
+    assert "JSON object" in rejected.output
+
+    malformed_metadata = tmp_path / "malformed-metadata.json"
+    malformed_metadata.write_text("{\n", encoding="utf-8")
+    malformed = runner.invoke(
+        app,
+        [
+            "knowledge",
+            "update",
+            "inbox/retention-window.md",
+            "--actor",
+            "human:marvin",
+            "--method",
+            "human-authored",
+            "--metadata-file",
+            str(malformed_metadata),
+            "--config",
+            str(config),
+        ],
+    )
+    assert malformed.exit_code == 1
+    assert "valid JSON" in malformed.output
 
 
 def test_knowledge_create_cli_rejects_partial_inputs_and_frontmatter(tmp_path: Path) -> None:
