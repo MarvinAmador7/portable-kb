@@ -1,6 +1,6 @@
 # Portable KB update log
 
-## 2026-08-14
+## 2026-08-13
 
 * **Maintenance**: Bounded generated index navigation with explicit markers so author-written titles, descriptions, and ordering remain intact.
 
