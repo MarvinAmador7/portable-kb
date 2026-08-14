@@ -199,7 +199,10 @@ The first installed brain becomes active. `brain use` changes only the local
 selection after rechecking repository identity. `brain status` is read-only:
 it reports checkout availability, manifest identity, current versus pinned
 commit, dirty working-tree state, and deterministic bundle validation. It does
-not fetch, repair, reset, or clean anything.
+not fetch, repair, reset, or clean anything. For locally authorable brains it
+also reports the authoring branch, cleanliness, and `authoring_ready`; retrieval
+health remains independent from whether the authoring repository is ready to
+accept a new saved draft.
 
 `brain sync` is an explicit, foreground-only fast-forward operation. With no
 slug it targets the active brain. It performs this bounded sequence:
@@ -250,6 +253,14 @@ Portable KB commits only those planned files to local history and refreshes the
 installed read-only snapshot automatically. The Git mechanism stays internal:
 users do not run `git status`, `git add`, `git commit`, or `pkb brain sync`.
 Draft creation never creates stable knowledge or pushes to the organization.
+The retained authoring repository must be on `main`; a feature branch or
+detached checkout is rejected before planning so an agent cannot strand saved
+knowledge on an unrelated development branch.
+
+Generated navigation is bounded by `<!-- portable-kb:index:start -->` and
+`<!-- portable-kb:index:end -->`. Index titles, scope explanations, and other
+human-authored text outside those markers remain byte-for-byte intact while
+Portable KB adds, moves, or removes navigation entries.
 
 Agents and automation provide the complete inputs directly:
 

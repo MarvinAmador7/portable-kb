@@ -658,6 +658,13 @@ def authoring_repository(
         current,
     ):
         raise BrainError("Local authoring repository does not contain the installed commit.")
+    branch = _run_git(git, "-C", str(repository), "branch", "--show-current").strip()
+    if branch != "main":
+        label = branch or "detached HEAD"
+        raise BrainError(
+            f"Knowledge authoring requires the main branch; the repository is on {label}. "
+            "Switch the brain's authoring repository to main before creating or updating knowledge."
+        )
     return brain, repository, manifest
 
 
@@ -811,6 +818,10 @@ def brain_status(
         "bundle_valid": False,
         "validation_errors": [],
         "validation_warnings": [],
+        "authoring_available": False,
+        "authoring_branch": None,
+        "authoring_clean": None,
+        "authoring_ready": False,
         "ok": False,
     }
     if checkout.is_symlink() or not checkout.is_dir():
@@ -831,6 +842,25 @@ def brain_status(
         result["bundle_valid"] = report.profile_passes
         result["validation_errors"] = [finding.as_dict() for finding in report.errors]
         result["validation_warnings"] = [finding.as_dict() for finding in report.warnings]
+        authoring = brain.authoring_path()
+        if authoring is not None and not authoring.is_symlink() and authoring.is_dir():
+            result["authoring_available"] = True
+            authoring_branch = _run_git(
+                git, "-C", str(authoring), "branch", "--show-current"
+            ).strip()
+            authoring_clean = not bool(
+                _run_git(
+                    git,
+                    "-C",
+                    str(authoring),
+                    "status",
+                    "--porcelain",
+                    "--untracked-files=all",
+                ).strip()
+            )
+            result["authoring_branch"] = authoring_branch or None
+            result["authoring_clean"] = authoring_clean
+            result["authoring_ready"] = authoring_branch == "main" and authoring_clean
     except BrainError as exc:
         result["error"] = str(exc)
     result["ok"] = all(
@@ -1267,7 +1297,10 @@ def _write_validate_and_commit(
     )
     (bundle / "index.md").write_text(
         f'---\nokf_version: "0.2"\n---\n\n# {markdown_name}\n\n'
-        "This brain is ready for governed organizational knowledge.\n",
+        "This brain is ready for governed organizational knowledge.\n\n"
+        "<!-- portable-kb:index:start -->\n"
+        "No current knowledge is indexed in this scope.\n\n"
+        "<!-- portable-kb:index:end -->\n",
         encoding="utf-8",
     )
     log_date = date.fromisoformat(as_of) if as_of is not None else date.today()

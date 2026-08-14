@@ -4,6 +4,9 @@
 
 1. Confirm that the subject belongs in the `knowledge/` bundle and contains no
    secret or incorrectly scoped personal data.
+   For conversational capture, also confirm that the selected brain represents
+   the intended business or worldview; never silently place unrelated knowledge
+   in whichever brain happens to be active.
 2. Start from the matching template and generate one new lowercase UUID v4 URN.
 3. Keep the item `draft`. Record the real producer and production method.
 4. Add sources for imported, transformed, calculated, summarized, and
@@ -13,6 +16,18 @@
    plan, then repeat with `--apply` to save and refresh the active local brain.
 7. Share only after separate publication intent with `pkb brain push`; Git
    remains an inspectable persistence layer rather than a required user task.
+
+Participant-reported knowledge may use a fresh `urn:uuid:` source descriptor
+with `x-source-kind: participant-report` when no durable meeting note, ticket,
+or URL exists. Describe only the report actually received. Do not imply that an
+underlying record was reviewed, and do not add names, email addresses, or other
+personal identifiers unless the user supplied them for the item and they are
+necessary to its meaning.
+
+Portable KB updates only navigation enclosed by
+`<!-- portable-kb:index:start -->` and `<!-- portable-kb:index:end -->`.
+Titles and explanatory prose outside that region are author-owned and must be
+preserved.
 
 ## Review
 

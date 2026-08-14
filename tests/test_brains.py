@@ -76,7 +76,9 @@ def test_init_brain_creates_commits_installs_and_activates_local_repository(
     assert load_catalog(settings).active == "new-business"
     assert (repository / "brain.yaml").is_file()
     assert (repository / "knowledge/.core-kb.yaml").is_file()
-    assert (repository / "knowledge/index.md").is_file()
+    root_index = (repository / "knowledge/index.md").read_text(encoding="utf-8")
+    assert "<!-- portable-kb:index:start -->" in root_index
+    assert "<!-- portable-kb:index:end -->" in root_index
     assert "## 2026-08-13" in (repository / "knowledge/log.md").read_text(encoding="utf-8")
     assert _git_output(repository, "status", "--porcelain") == ""
     assert _git_output(repository, "branch", "--show-current").strip() == "main"
@@ -84,7 +86,11 @@ def test_init_brain_creates_commits_installs_and_activates_local_repository(
     assert _git_output(repository, "show", "-s", "--format=%an <%ae>", "HEAD").strip() == (
         "Portable KB <portable-kb@localhost.invalid>"
     )
-    assert brain_status(settings, as_of="2026-08-13")["ok"] is True
+    status = brain_status(settings, as_of="2026-08-13")
+    assert status["ok"] is True
+    assert status["authoring_branch"] == "main"
+    assert status["authoring_clean"] is True
+    assert status["authoring_ready"] is True
 
 
 def test_init_brain_rejects_occupied_repository_and_remote_source(

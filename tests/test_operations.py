@@ -59,6 +59,51 @@ def test_create_is_reviewable_and_applies_explicitly(bundle: Path) -> None:
     assert parsed is not None and parsed.id is not None
 
 
+def test_create_preserves_authored_indexes_and_labels_new_decision_index(
+    bundle: Path,
+) -> None:
+    original_root = (bundle / "index.md").read_text(encoding="utf-8")
+    original_concepts = (bundle / "curated/concepts/index.md").read_text(encoding="utf-8")
+
+    change_set = plan_create(
+        bundle,
+        "inbox/discount-approval.md",
+        item_type="decision",
+        title="Discount approval",
+        description="Records the draft approval threshold for customer discounts.",
+        actor="anthropic/claude-code",
+        method="agent-generated",
+        timestamp=TIMESTAMP,
+        body=(
+            "# Discount approval\n\n"
+            "## Decision\n\nDiscounts above the threshold require approval.[^report]\n\n"
+            "## Context\n\nA participant reported the meeting outcome.\n\n"
+            "[^report]: Participant report captured in the authorized conversation.\n"
+        ),
+        sources=[{"id": "report", "resource": "urn:pkb:conversation:test-report"}],
+        confidence={
+            "level": "medium",
+            "basis": "A participant reported the decision, but no meeting record was reviewed.",
+        },
+        sensitivity="internal",
+        as_of="2026-08-13",
+    )
+
+    changed = {change.relative_path: change.after for change in change_set.changes}
+    assert set(changed) == {
+        "inbox/discount-approval.md",
+        "inbox/index.md",
+        "index.md",
+        "log.md",
+    }
+    assert "This bundle is the governed, portable knowledge layer" in changed["index.md"]
+    assert original_root.split("## Knowledge", 1)[0] in changed["index.md"]
+    assert changed["inbox/index.md"] is not None
+    assert "## Decisions" in changed["inbox/index.md"]
+    assert "## Concepts" not in changed["inbox/index.md"]
+    assert (bundle / "curated/concepts/index.md").read_text(encoding="utf-8") == original_concepts
+
+
 def test_change_set_detects_concurrent_edit(bundle: Path) -> None:
     change_set = plan_move(
         bundle,
@@ -344,7 +389,7 @@ def test_move_last_item_regenerates_empty_source_index(bundle: Path) -> None:
         change.after for change in change_set.changes if change.relative_path == "sources/index.md"
     )
     assert source_index is not None
-    assert "No current concepts are indexed in this scope." in source_index
+    assert "No current knowledge is indexed in this scope." in source_index
     assert "okf-v02.md" not in source_index
     change_set.apply()
     assert validate_bundle(bundle, as_of="2026-08-13").profile_passes

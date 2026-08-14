@@ -76,14 +76,28 @@ complete items, create honest drafts, and keep authority separate from relevance
 
 ## Creation workflow
 
-1. Search first to avoid silently duplicating or conflicting with existing
+1. Run `pkb brain status --json` and require `authoring_ready: true`. Retrieval
+   health can remain good while the retained authoring repository is on an
+   unrelated feature branch; report that exact blocker instead of writing.
+2. Confirm that the requested knowledge belongs in the selected brain's scope.
+   If the subject is unrelated to the brain's name or worldview, stop and ask
+   the user to select or initialize the intended brain. Never use a product,
+   personal, or test brain as a silent fallback for another business.
+3. Search first to avoid silently duplicating or conflicting with existing
    knowledge. If a close item exists, retrieve it and report that `create` is
    not the correct lifecycle operation; do not overwrite it.
-2. Prepare a UTF-8 Markdown body without YAML frontmatter and a JSON array of
+4. Prepare a UTF-8 Markdown body without YAML frontmatter and a JSON array of
    real sources. Agent-generated knowledge must use an agent producer/version,
    `--method agent-generated`, at least one source, and a confidence level plus
    plain-language basis. Never use a `human:` actor for yourself.
-3. Plan without writing:
+5. For knowledge reported in the conversation, describe the source as the
+   participant report actually received; do not imply that meeting minutes or
+   another record were reviewed. When no durable source URL or file exists, use
+   a fresh `urn:uuid:` resource titled `Participant report captured in the
+   current conversation` with `x-source-kind: participant-report`. Do not add
+   names, email addresses, account identifiers, or other personal data unless
+   the user supplied them for this item and they are necessary to its meaning.
+6. Plan without writing:
 
    ```console
    pkb knowledge create \
@@ -100,11 +114,11 @@ complete items, create honest drafts, and keep authority separate from relevance
      --json
    ```
 
-4. Inspect the complete plan, warnings, brain, and paths. If it matches the
+7. Inspect the complete plan, warnings, brain, and paths. If it matches the
    user's request, repeat the exact command with `--apply`. This saves a local
    draft, versions only its validated files, and updates the active brain. Do
    not run raw Git commands or `pkb brain sync` afterward.
-5. Report the saved item as a draft and state that it is local, not shared.
+8. Report the saved item as a draft and state that it is local, not shared.
    Remove temporary body/source files you created outside the brain when safe.
 
 Creation never authorizes promotion, verification, supersession, archival, or
