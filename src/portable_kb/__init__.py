@@ -36,6 +36,7 @@ from .skills import SkillError, SkillTarget, install_agent_skill
 from .validation import validate_bundle, validate_transition
 
 __all__ = [
+    "__version__",
     "ConfidenceLevel",
     "Finding",
     "GenerationMethod",

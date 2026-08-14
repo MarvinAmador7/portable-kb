@@ -19,6 +19,43 @@ shares the active saved version. Semantic search, MCP, native UI,
 authentication/authorization, connectors, hosted services, and automatic
 background agents are not yet implemented.
 
+## Install the CLI
+
+On macOS or Linux, the public-repository installation path is:
+
+```console
+curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/portable-kb/main/install | bash
+pkb --version
+pkb setup
+```
+
+The installer detects Intel or ARM, downloads the matching standalone release,
+verifies it against the release `SHA256SUMS`, and atomically installs `pkb`
+under `~/.local/bin`. It does not require a system Python. Re-run the same
+command to upgrade to the latest release, or pin a release:
+
+```console
+curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/portable-kb/main/install \
+  | bash -s -- --version v0.1.0
+```
+
+If the repository is private, anonymous raw and release URLs are unavailable.
+An authenticated GitHub CLI session can install without changing repository
+visibility:
+
+```console
+export GH_TOKEN="$(gh auth token)"
+gh api -H "Accept: application/vnd.github.raw+json" \
+  repos/MarvinAmador7/portable-kb/contents/install | bash
+```
+
+To remove only the installed executable:
+
+```console
+curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/portable-kb/main/install \
+  | bash -s -- --uninstall
+```
+
 ## Implemented core
 
 The first implementation is a single `knowledge/` bundle with:
@@ -79,6 +116,8 @@ An item can therefore be valid OKF but invalid under this profile.
 - [Templates](templates): authoring starters, excluded from corpus validation.
 - [Examples](examples): intentionally valid and invalid concept documents.
 - [Agent instructions](AGENTS.md): safe authoring rules for future agents.
+- [Release and installation](docs/releases.md): CI gates, standalone artifacts,
+  checksums, versioning, upgrade, and recovery.
 
 ## Proposed repository and bundle boundary
 

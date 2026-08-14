@@ -4,11 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "portable-kb-core"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Deterministic governance library for a portable OKF-compatible knowledge bundle."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
+authors = [{ name = "Marvin Amador" }]
+keywords = ["agents", "knowledge-base", "okf", "rag"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
 dependencies = [
   "jsonschema[format]>=4.23,<5",
   "questionary>=2.1,<3",
@@ -19,10 +30,18 @@ dependencies = [
 [project.scripts]
 pkb = "portable_kb.cli:app"
 
+[project.urls]
+Homepage = "https://github.com/MarvinAmador7/portable-kb"
+Issues = "https://github.com/MarvinAmador7/portable-kb/issues"
+Repository = "https://github.com/MarvinAmador7/portable-kb"
+
+[tool.hatch.version]
+path = "src/portable_kb/__init__.py"
+
 [project.optional-dependencies]
 dev = [
   "pytest>=8.3,<9",
-  "pytest-cov>=6,<7",
+  "pytest-cov>=7.1,<8",
   "ruff>=0.12,<1",
 ]
 

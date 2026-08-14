@@ -1,0 +1,183 @@
+#!/bin/sh
+
+set -eu
+
+repository="${PKB_REPOSITORY:-MarvinAmador7/portable-kb}"
+install_dir="${PKB_INSTALL_DIR:-${HOME}/.local/bin}"
+requested_version="${PKB_VERSION:-}"
+release_base="${PKB_RELEASE_BASE_URL:-}"
+uninstall=false
+
+usage() {
+    cat <<'EOF'
+Install the latest standalone Portable KB CLI.
+
+Usage:
+  install [--version VERSION] [--install-dir DIRECTORY]
+  install --uninstall [--install-dir DIRECTORY]
+
+Environment overrides:
+  PKB_VERSION           Release tag or version, for example v0.1.0 or 0.1.0
+  PKB_INSTALL_DIR       Destination directory (default: $HOME/.local/bin)
+  PKB_REPOSITORY        GitHub owner/repository
+  GH_TOKEN              Authenticates private-repository downloads through gh
+EOF
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --version)
+            [ "$#" -ge 2 ] || { echo "error: --version requires a value" >&2; exit 2; }
+            requested_version=$2
+            shift 2
+            ;;
+        --install-dir)
+            [ "$#" -ge 2 ] || { echo "error: --install-dir requires a value" >&2; exit 2; }
+            install_dir=$2
+            shift 2
+            ;;
+        --uninstall)
+            uninstall=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "error: unknown option: $1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
+target="${install_dir}/pkb"
+if [ "$uninstall" = true ]; then
+    if [ -e "$target" ]; then
+        rm -f "$target"
+        echo "Removed ${target}"
+    else
+        echo "Portable KB is not installed at ${target}"
+    fi
+    exit 0
+fi
+
+command -v curl >/dev/null 2>&1 || {
+    echo "error: curl is required to install Portable KB" >&2
+    exit 1
+}
+command -v tar >/dev/null 2>&1 || {
+    echo "error: tar is required to install Portable KB" >&2
+    exit 1
+}
+
+case "$(uname -s)" in
+    Darwin) operating_system=darwin ;;
+    Linux) operating_system=linux ;;
+    *)
+        echo "error: unsupported operating system: $(uname -s)" >&2
+        exit 1
+        ;;
+esac
+
+case "$(uname -m)" in
+    x86_64|amd64) architecture=x86_64 ;;
+    arm64|aarch64) architecture=arm64 ;;
+    *)
+        echo "error: unsupported architecture: $(uname -m)" >&2
+        exit 1
+        ;;
+esac
+
+if [ -z "$requested_version" ]; then
+    if [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
+        requested_version=$(GH_TOKEN="$GH_TOKEN" gh release view \
+            --repo "$repository" --json tagName --jq .tagName)
+    else
+        latest_url=$(curl -fsSL -o /dev/null -w '%{url_effective}' \
+            "https://github.com/${repository}/releases/latest")
+        requested_version=${latest_url##*/}
+    fi
+fi
+
+case "$requested_version" in
+    v*) release_tag=$requested_version ;;
+    *) release_tag="v${requested_version}" ;;
+esac
+if ! printf '%s\n' "$release_tag" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$'; then
+    echo "error: invalid Portable KB release version: ${release_tag}" >&2
+    exit 1
+fi
+
+archive="pkb-${release_tag}-${operating_system}-${architecture}.tar.gz"
+temporary=$(mktemp -d "${TMPDIR:-/tmp}/portable-kb-install.XXXXXX")
+staged_target="${install_dir}/.pkb-install.$$"
+cleanup() {
+    rm -rf "$temporary"
+    rm -f "$staged_target"
+}
+trap cleanup EXIT HUP INT TERM
+
+if [ -n "$release_base" ]; then
+    curl -fsSL "${release_base%/}/${release_tag}/${archive}" -o "${temporary}/${archive}"
+    curl -fsSL "${release_base%/}/${release_tag}/SHA256SUMS" \
+        -o "${temporary}/SHA256SUMS"
+elif [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
+    GH_TOKEN="$GH_TOKEN" gh release download "$release_tag" \
+        --repo "$repository" \
+        --pattern "$archive" \
+        --pattern SHA256SUMS \
+        --dir "$temporary"
+else
+    download_base="https://github.com/${repository}/releases/download/${release_tag}"
+    curl -fsSL "${download_base}/${archive}" -o "${temporary}/${archive}"
+    curl -fsSL "${download_base}/SHA256SUMS" -o "${temporary}/SHA256SUMS"
+fi
+
+expected_checksum=$(awk -v name="$archive" '$2 == name {print $1}' \
+    "${temporary}/SHA256SUMS")
+if [ -z "$expected_checksum" ]; then
+    echo "error: release checksum does not list ${archive}" >&2
+    exit 1
+fi
+if command -v sha256sum >/dev/null 2>&1; then
+    actual_checksum=$(sha256sum "${temporary}/${archive}" | awk '{print $1}')
+elif command -v shasum >/dev/null 2>&1; then
+    actual_checksum=$(shasum -a 256 "${temporary}/${archive}" | awk '{print $1}')
+else
+    echo "error: sha256sum or shasum is required to verify the release" >&2
+    exit 1
+fi
+if [ "$actual_checksum" != "$expected_checksum" ]; then
+    echo "error: checksum verification failed for ${archive}" >&2
+    exit 1
+fi
+
+archive_listing=$(tar -tzf "${temporary}/${archive}")
+if [ "$archive_listing" != "pkb" ]; then
+    echo "error: release archive must contain only the pkb executable" >&2
+    exit 1
+fi
+tar -xzf "${temporary}/${archive}" -C "$temporary"
+if [ ! -f "${temporary}/pkb" ] || [ -L "${temporary}/pkb" ]; then
+    echo "error: release archive does not contain a regular pkb executable" >&2
+    exit 1
+fi
+
+mkdir -p "$install_dir"
+cp "${temporary}/pkb" "$staged_target"
+chmod 0755 "$staged_target"
+installed_version=$("$staged_target" --version)
+if [ "$installed_version" != "pkb ${release_tag#v}" ]; then
+    echo "error: release executable reported an unexpected version: ${installed_version}" >&2
+    exit 1
+fi
+mv -f "$staged_target" "$target"
+echo "Installed ${installed_version} to ${target}"
+case ":${PATH}:" in
+    *:"${install_dir}":*) ;;
+    *)
+        echo "Add ${install_dir} to PATH, then run: pkb setup"
+        ;;
+esac

@@ -229,7 +229,17 @@ def test_push_brain_shares_only_validated_fast_forward_history(
 
     repository.joinpath("private.txt").write_text("must not be shared\n", encoding="utf-8")
     _git(repository, "add", "private.txt")
-    _git(repository, "commit", "--quiet", "-m", "Unrelated local file")
+    _git(
+        repository,
+        "-c",
+        "user.name=Test",
+        "-c",
+        "user.email=test@example.invalid",
+        "commit",
+        "--quiet",
+        "-m",
+        "Unrelated local file",
+    )
     unsafe = _git_output(repository, "rev-parse", "HEAD").strip()
     _git(checkout, "fetch", "--quiet", repository.as_uri(), unsafe)
     _git(checkout, "merge", "--quiet", "--ff-only", unsafe)
