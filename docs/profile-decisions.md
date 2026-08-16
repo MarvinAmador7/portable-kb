@@ -4,9 +4,9 @@ Decision date: 2026-08-12.
 
 This document closes the schema-behavior questions for `core-kb/0.1`. It does
 not fabricate organizational approval or human verification. A deployment
-must replace the intentionally empty reviewer allowlists in
+must replace the intentionally empty reviewer allowlists in its brain's
 `knowledge/.core-kb.yaml` with durable identifiers for real authorized people
-  before that deployment promotes authoritative items.
+before that deployment promotes authoritative items.
 
 ## Upstream target and bundle boundary
 
@@ -14,8 +14,9 @@ must replace the intentionally empty reviewer allowlists in
   `374e0bc4c644310ff56cdf9c0fe81eccdec862b0`.
 - The implementation is reviewed against later upstream revisions explicitly;
   it never follows mutable `main` silently.
-- `knowledge/` is the only OKF bundle. Repository documentation, schemas,
-  templates, tests, and code are outside that boundary.
+- Within a brain repository, `knowledge/` is the only OKF bundle. The Portable
+  KB CLI source repository is not a brain; its documentation, schemas,
+  templates, tests, and code remain outside any production bundle.
 - The local profile identifier is `core-kb/0.1`.
 
 ## Identity and actors
@@ -67,7 +68,7 @@ review note because schema validation cannot know domain risk.
 
 ## Sensitivity
 
-- This repository's example bundle is `internal` by default.
+- The test-only reference bundle is `internal` by default.
 - `confidential` and `restricted` material require a separately controlled
   repository or bundle. Metadata never grants or denies access.
 - Lowering sensitivity is always a material human-reviewed change.

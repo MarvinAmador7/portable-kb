@@ -125,8 +125,8 @@ outside the OKF bundle:
 ```yaml
 schema_version: 1
 id: urn:uuid:6e7cc12e-b3f7-49da-875d-32b714fdc1e8
-slug: portable-kb-core
-name: Portable KB Core
+slug: business-a
+name: Business A
 bundle: knowledge
 ```
 
@@ -134,6 +134,8 @@ The brain ID is immutable UUID v4 identity for the distribution unit. The slug
 is its local command name. The bundle path is fixed to `knowledge` in schema
 version 1 so repositories cannot redirect consumers to arbitrary filesystem
 locations. `brain.yaml` is a product/distribution artifact, not an OKF concept.
+The Portable KB CLI source repository intentionally has no manifest or root
+bundle; initialize each business brain in a separate repository.
 
 ## Installation catalog
 

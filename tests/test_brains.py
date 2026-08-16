@@ -28,11 +28,16 @@ ACME_ID = "urn:uuid:11111111-1111-4111-8111-111111111111"
 BETA_ID = "urn:uuid:22222222-2222-4222-8222-222222222222"
 
 
-def test_repository_manifest_is_valid() -> None:
-    repository = Path(__file__).resolve().parents[1]
-    manifest = read_manifest(repository)
-    assert manifest.slug == "portable-kb-core"
+def test_fixture_manifest_is_valid(brain_repo_factory) -> None:
+    manifest = read_manifest(brain_repo_factory("fixture-brain", ACME_ID))
+    assert manifest.slug == "fixture-brain"
     assert manifest.bundle == "knowledge"
+
+
+def test_product_repository_is_not_an_installable_brain() -> None:
+    repository = Path(__file__).resolve().parents[1]
+    with pytest.raises(BrainError, match="no regular brain.yaml"):
+        read_manifest(repository)
 
 
 def test_add_brain_clones_validates_pins_and_selects(

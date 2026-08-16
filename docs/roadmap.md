@@ -8,7 +8,7 @@ describe retrieval/integrations. Phases are gates, not calendar estimates.
 | Phase | Status | Evidence |
 |---|---|---|
 | 0 — Research and decisions | Implemented | The upstream revision and local decisions are pinned in `docs/profile-decisions.md`; deployment reviewer identities remain safely empty until real people configure them. |
-| 1 — Core file model | Implemented | `knowledge/` contains fourteen real project concepts across five active types, indexes, a log, and bundle configuration. The reusable file model is complete; the example concepts remain honestly agent-generated drafts until a deployment chooses to review and promote them. |
+| 1 — Core file model | Implemented | The isolated reference fixture exercises fourteen representative concepts across five active types, indexes, a log, and bundle configuration. Production brains are created in separate repositories with `pkb brain init`. |
 | 2 — Validation | Implemented | `portable_kb.validate_bundle()` covers the rule catalog with stable structured findings and offline explicit-date behavior. |
 | 3 — Lifecycle operations | Implemented | Reviewable planners cover create, update, promote, reverify, move, supersede, and archive with base/proposed validation and optimistic application. |
 | 4 — Test corpus | Implemented | Focused fixtures and transition/operation tests assert every catalog rule; time and network behavior are deterministic. |
