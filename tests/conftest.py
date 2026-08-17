@@ -86,7 +86,7 @@ with log.open("a", encoding="utf-8") as stream:
     }) + "\\n")
 
 if arguments == ["--version"]:
-    print("qmd test-1.0")
+    print("qmd 2.5.3")
 elif arguments == ["update"]:
     config = (config_dir / "index.yml").read_text(encoding="utf-8")
     if "\\n    update:" in config:

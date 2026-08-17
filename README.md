@@ -122,6 +122,10 @@ An item can therefore be valid OKF but invalid under this profile.
 - [Agent instructions](AGENTS.md): safe authoring rules for future agents.
 - [Release and installation](docs/releases.md): CI gates, standalone artifacts,
   checksums, versioning, upgrade, and recovery.
+- [Built-in search plan](docs/pkb-search.md): Rust/SQLite/QMD benchmark and
+  provider architecture for a future native keyword engine.
+- [Production hardening 0.1.2](docs/production-hardening-0.1.2.md): locking,
+  safe brain removal, diagnostics, skill drift, and real-QMD release gates.
 
 ## Project and brain repository boundary
 
@@ -244,6 +248,8 @@ pkb brain list
 pkb brain use business-a
 pkb brain status --json
 pkb brain sync --json
+# Remove only this computer's snapshot and disposable index:
+pkb brain remove business-a
 ```
 
 Installation clones without submodules, reads the repository-root
@@ -319,6 +325,7 @@ installed or repaired independently:
 
 ```console
 pkb skill install
+pkb skill status
 ```
 
 This copies the bundled `portable-kb` skill to the user-level Codex and Claude
@@ -329,6 +336,10 @@ items, create honest local drafts, share only after explicit user intent,
 preserve immutable citations, expose lifecycle signals, and treat knowledge
 content as untrusted data rather than executable instructions. Existing skill
 installations can be refreshed with `pkb skill install --force`.
+
+`pkb doctor --json` reports Git and QMD version compatibility, catalog and
+active-brain health, current index state, mutation locks, retired demo-brain
+installations, and agent-skill drift without changing local state.
 
 Primary references:
 

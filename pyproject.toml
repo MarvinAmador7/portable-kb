@@ -55,6 +55,9 @@ packages = ["src/portable_kb"]
 [tool.pytest.ini_options]
 addopts = "--strict-markers --strict-config -ra"
 testpaths = ["tests"]
+markers = [
+  "integration: exercises an installed third-party executable",
+]
 
 [tool.coverage.run]
 branch = true

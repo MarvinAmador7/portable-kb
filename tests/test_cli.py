@@ -14,6 +14,7 @@ from portable_kb.brains import (
     BrainError,
     BrainPublishResult,
     GitHubVisibility,
+    add_brain,
     load_catalog,
     save_catalog,
 )
@@ -56,7 +57,19 @@ def test_non_interactive_setup_and_doctor(tmp_path: Path, monkeypatch) -> None:
     assert "Portable KB configured" in result.output
     assert load_settings(config).search_mode is SearchMode.SEMANTIC
 
-    monkeypatch.setattr("portable_kb.cli.shutil.which", lambda command: "/opt/bin/qmd")
+    monkeypatch.setattr("portable_kb.cli.shutil.which", lambda command: f"/opt/bin/{command}")
+    monkeypatch.setattr(
+        "portable_kb.cli.qmd_status",
+        lambda _settings: {
+            "command": "qmd",
+            "path": "/opt/bin/qmd",
+            "version": "qmd 2.6.3",
+            "compatible": True,
+            "minimum_version": "2.5.0",
+            "supported_major": 2,
+            "ok": True,
+        },
+    )
     doctor = runner.invoke(app, ["doctor", "--config", str(config), "--json"])
     assert doctor.exit_code == 0, doctor.output
     payload = json.loads(doctor.output)
@@ -118,6 +131,62 @@ def test_doctor_reports_missing_configuration(tmp_path: Path) -> None:
     )
     assert result.exit_code == 1
     assert json.loads(result.output)["config_valid"] is False
+
+
+def test_doctor_reports_active_brain_index_legacy_and_skill_warning(
+    tmp_path: Path, brain_repo_factory, monkeypatch
+) -> None:
+    config = tmp_path / "config.yaml"
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    save_settings(settings, config)
+    source = brain_repo_factory(
+        "portable-kb-core",
+        "urn:uuid:6e7cc12e-b3f7-49da-875d-32b714fdc1e8",
+    )
+    brain, _catalog, _report = add_brain(str(source), settings, as_of="2026-08-17")
+    index = settings.cache_dir / "search/qmd/portable-kb-core"
+    index.mkdir(parents=True)
+    index.joinpath("metadata.json").write_text(
+        json.dumps(
+            {
+                "provider": "qmd",
+                "brain_id": brain.id,
+                "brain_slug": brain.slug,
+                "commit": brain.commit,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "portable_kb.cli.qmd_status",
+        lambda _settings: {
+            "command": "qmd",
+            "path": "/opt/bin/qmd",
+            "version": "qmd 2.8.3",
+            "compatible": True,
+            "minimum_version": "2.5.0",
+            "supported_major": 2,
+            "ok": True,
+        },
+    )
+    monkeypatch.setattr(
+        "portable_kb.cli.skill_status",
+        lambda: {"ok": False, "targets": {"codex": {"state": "outdated"}}},
+    )
+
+    result = runner.invoke(app, ["doctor", "--config", str(config), "--json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["active_brain_health"]["ok"] is True
+    assert payload["active_index"]["current"] is True
+    assert payload["legacy_demo_brains"] == ["portable-kb-core"]
+    assert len(payload["warnings"]) == 2
+
+    human = runner.invoke(app, ["doctor", "--config", str(config)])
+    assert human.exit_code == 0, human.output
+    assert "Installed brains: 1" in human.output
+    assert "Legacy demo brain detected" in human.output
 
 
 def test_brain_cli_add_list_use_and_status(tmp_path: Path, brain_repo_factory) -> None:
@@ -182,6 +251,17 @@ def test_brain_cli_add_list_use_and_status(tmp_path: Path, brain_repo_factory) -
     )
     assert synced.exit_code == 0, synced.output
     assert json.loads(synced.output)["changed"] is True
+
+    removed = runner.invoke(
+        app,
+        ["brain", "remove", "cli-brain", "--config", str(config), "--json"],
+    )
+    assert removed.exit_code == 0, removed.output
+    removed_payload = json.loads(removed.output)
+    assert removed_payload["removed_checkout"] is True
+    assert removed_payload["authoring_preserved"] == str(source)
+    assert source.is_dir()
+    assert load_catalog(load_settings(config)).active is None
 
 
 def test_brain_init_cli_creates_first_brain_from_empty_directory(tmp_path: Path) -> None:
@@ -1188,3 +1268,69 @@ def test_skill_install_cli(monkeypatch) -> None:
     error = runner.invoke(app, ["skill", "install"])
     assert error.exit_code == 1
     assert "cannot install skill" in error.output
+
+
+def test_skill_status_cli_reports_drift(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "portable_kb.cli.skill_status",
+        lambda target: {
+            "skill": "portable-kb",
+            "ok": False,
+            "bundled_hash": "sha256:current",
+            "targets": {
+                "codex": {
+                    "path": "/tmp/codex/portable-kb",
+                    "state": "outdated",
+                }
+            },
+        },
+    )
+
+    result = runner.invoke(app, ["skill", "status", "--target", "codex", "--json"])
+
+    assert result.exit_code == 1
+    assert json.loads(result.output)["targets"]["codex"]["state"] == "outdated"
+
+    human = runner.invoke(app, ["skill", "status", "--target", "codex"])
+    assert human.exit_code == 1
+    assert "outdated" in human.output
+    assert "pkb skill install --force" in human.output
+
+
+def test_brain_remove_cli_reports_remote_source_and_cleanup_warning(
+    tmp_path: Path, monkeypatch
+) -> None:
+    config = tmp_path / "config.yaml"
+    save_settings(Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache"), config)
+    monkeypatch.setattr(
+        "portable_kb.cli.remove_brain",
+        lambda _slug, _settings, *, force: {
+            "ok": False,
+            "slug": "remote-brain",
+            "name": "Remote Brain",
+            "removed_checkout": True,
+            "removed_index": False,
+            "authoring_preserved": None,
+            "active": "another-brain",
+            "legacy_demo": False,
+            "cleanup_warnings": ["quarantine retained"],
+        },
+    )
+
+    result = runner.invoke(
+        app, ["brain", "remove", "remote-brain", "--force", "--config", str(config)]
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Remote source repository was not changed" in result.output
+    assert "Cleanup warnings: 1" in result.output
+
+    monkeypatch.setattr(
+        "portable_kb.cli.remove_brain",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(BrainError("cannot remove")),
+    )
+    failed = runner.invoke(
+        app, ["brain", "remove", "remote-brain", "--config", str(config)]
+    )
+    assert failed.exit_code == 1
+    assert "cannot remove" in failed.output

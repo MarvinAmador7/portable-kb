@@ -6,18 +6,22 @@ from pathlib import Path
 import pytest
 
 from portable_kb.brains import (
+    BrainCatalog,
     BrainError,
     GitHubVisibility,
+    InstalledBrain,
     _github_repository_from_source,
     _run_gh,
     add_brain,
     brain_status,
     catalog_path,
     init_brain,
+    legacy_demo_brains,
     load_catalog,
     publish_brain_to_github,
     push_brain,
     read_manifest,
+    remove_brain,
     save_catalog,
     sync_brain,
     use_brain,
@@ -54,6 +58,82 @@ def test_add_brain_clones_validates_pins_and_selects(
     assert load_catalog(settings) == catalog
     assert catalog_path(settings).stat().st_mode & 0o777 == 0o600
     assert brain_status(settings, as_of="2026-08-12")["ok"] is True
+
+
+def test_remove_brain_deletes_only_derived_state_and_clears_active(
+    tmp_path: Path, brain_repo_factory
+) -> None:
+    source = brain_repo_factory("acme", ACME_ID)
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    brain, _catalog, _report = add_brain(str(source), settings, as_of="2026-08-12")
+    index = settings.cache_dir / "search/qmd/acme"
+    index.mkdir(parents=True)
+    index.joinpath("derived.txt").write_text("discardable\n", encoding="utf-8")
+
+    result = remove_brain("acme", settings)
+
+    assert result["ok"] is True
+    assert result["removed_checkout"] is True
+    assert result["removed_index"] is True
+    assert result["authoring_preserved"] == str(source)
+    assert source.is_dir()
+    assert not brain.checkout_path(settings).exists()
+    assert not index.exists()
+    assert load_catalog(settings).brains == ()
+    assert load_catalog(settings).active is None
+
+
+def test_remove_brain_refuses_dirty_checkout_without_force(
+    tmp_path: Path, brain_repo_factory
+) -> None:
+    source = brain_repo_factory("acme", ACME_ID)
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    brain, _catalog, _report = add_brain(str(source), settings, as_of="2026-08-12")
+    brain.checkout_path(settings).joinpath("untracked.txt").write_text(
+        "keep me\n", encoding="utf-8"
+    )
+
+    with pytest.raises(BrainError, match="local changes"):
+        remove_brain("acme", settings)
+    assert load_catalog(settings).get("acme") == brain
+
+    result = remove_brain("acme", settings, force=True)
+    assert result["removed_checkout"] is True
+
+
+def test_remove_brain_restores_derived_state_when_catalog_save_fails(
+    tmp_path: Path, brain_repo_factory, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = brain_repo_factory("acme", ACME_ID)
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    brain, _catalog, _report = add_brain(str(source), settings, as_of="2026-08-12")
+    index = settings.cache_dir / "search/qmd/acme"
+    index.mkdir(parents=True)
+
+    def fail_save(*_args, **_kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr("portable_kb.brains.save_catalog", fail_save)
+    with pytest.raises(OSError, match="disk full"):
+        remove_brain("acme", settings)
+
+    assert brain.checkout_path(settings).is_dir()
+    assert index.is_dir()
+
+
+def test_legacy_demo_detection_requires_exact_identity() -> None:
+    legacy = InstalledBrain(
+        id="urn:uuid:6e7cc12e-b3f7-49da-875d-32b714fdc1e8",
+        slug="portable-kb-core",
+        name="Portable KB Core",
+        source="/tmp/source",
+        checkout="brains/portable-kb-core",
+        commit="1" * 40,
+    )
+    lookalike = replace(legacy, id=ACME_ID)
+
+    assert legacy_demo_brains(BrainCatalog(brains=(legacy,))) == (legacy,)
+    assert legacy_demo_brains(BrainCatalog(brains=(lookalike,))) == ()
 
 
 def test_init_brain_creates_commits_installs_and_activates_local_repository(
