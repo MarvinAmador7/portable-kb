@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -21,6 +22,9 @@ from .settings import Settings
 INDEX_SCHEMA_VERSION = 1
 MAX_QUERY_LENGTH = 1_000
 MAX_RESULTS = 100
+QMD_MIN_VERSION = (2, 5, 0)
+QMD_SUPPORTED_MAJOR = 2
+QMD_VERSION = re.compile(r"\b(\d+)\.(\d+)\.(\d+)\b")
 
 
 class SearchError(RuntimeError):
@@ -50,7 +54,7 @@ def index_keyword_brain(
     stage = Path(tempfile.mkdtemp(prefix=f".index-{brain.slug}-", dir=root))
     try:
         _write_qmd_config(stage, brain, bundle)
-        version = _run_qmd(executable, stage, "--version", timeout=30).strip()
+        version = _require_qmd_compatibility(executable, stage)
         _run_qmd(executable, stage, "update", timeout=300)
         database = stage / "cache" / "qmd" / "index.sqlite"
         if database.is_symlink() or not database.is_file():
@@ -99,6 +103,7 @@ def search_keyword(
     state = keyword_index_path(settings, brain.slug)
     metadata = _load_index_metadata(state)
     _require_current_index(metadata, brain)
+    _require_qmd_compatibility(executable, state)
     candidate_limit = min(MAX_RESULTS, max(limit * 5, 20))
     output = _run_qmd(
         executable,
@@ -246,6 +251,89 @@ def _qmd_executable(settings: Settings) -> str:
             "`pkb doctor` before indexing."
         )
     return executable
+
+
+def qmd_status(settings: Settings) -> dict[str, Any]:
+    """Inspect the configured QMD executable and supported version range."""
+
+    executable = shutil.which(settings.qmd_command)
+    result: dict[str, Any] = {
+        "command": settings.qmd_command,
+        "path": executable,
+        "version": None,
+        "compatible": False,
+        "minimum_version": ".".join(str(part) for part in QMD_MIN_VERSION),
+        "supported_major": QMD_SUPPORTED_MAJOR,
+        "ok": False,
+    }
+    if executable is None:
+        result["error"] = "QMD executable was not found."
+        return result
+    try:
+        version = _qmd_version(executable)
+    except SearchError as exc:
+        result["error"] = str(exc)
+        return result
+    parsed = _parse_qmd_version(version)
+    result["version"] = version
+    if parsed is None:
+        result["error"] = "QMD returned an unrecognized version string."
+        return result
+    compatible = parsed[0] == QMD_SUPPORTED_MAJOR and parsed >= QMD_MIN_VERSION
+    result["compatible"] = compatible
+    result["ok"] = compatible
+    if not compatible:
+        result["error"] = (
+            f"QMD {parsed[0]}.{parsed[1]}.{parsed[2]} is outside the supported range "
+            f">={'.'.join(str(part) for part in QMD_MIN_VERSION)}, "
+            f"<{QMD_SUPPORTED_MAJOR + 1}.0.0."
+        )
+    return result
+
+
+def _qmd_version(executable: str) -> str:
+    environment = os.environ.copy()
+    environment.update({"NO_COLOR": "1", "QMD_FORCE_CPU": "1"})
+    try:
+        completed = subprocess.run(
+            [executable, "--version"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            env=environment,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise SearchError("QMD timed out while reporting its version.") from exc
+    except (OSError, subprocess.CalledProcessError) as exc:
+        detail = getattr(exc, "stderr", "") or getattr(exc, "stdout", "") or str(exc)
+        raise SearchError(f"QMD failed while reporting its version: {str(detail).strip()[-2_000:]}") from exc
+    return completed.stdout.strip()
+
+
+def _parse_qmd_version(value: str) -> tuple[int, int, int] | None:
+    match = QMD_VERSION.search(value)
+    if match is None:
+        return None
+    return tuple(int(part) for part in match.groups())
+
+
+def _require_qmd_compatibility(executable: str, state: Path | None = None) -> str:
+    version = (
+        _run_qmd(executable, state, "--version", timeout=30).strip()
+        if state is not None
+        else _qmd_version(executable)
+    )
+    parsed = _parse_qmd_version(version)
+    if parsed is None:
+        raise SearchError("QMD returned an unrecognized version string; run `pkb doctor`.")
+    if parsed[0] != QMD_SUPPORTED_MAJOR or parsed < QMD_MIN_VERSION:
+        raise SearchError(
+            f"Unsupported QMD version {version!r}; Portable KB requires "
+            f">={'.'.join(str(part) for part in QMD_MIN_VERSION)} and "
+            f"<{QMD_SUPPORTED_MAJOR + 1}.0.0."
+        )
+    return version
 
 
 def _write_qmd_config(state: Path, brain: InstalledBrain, bundle: Path) -> None:

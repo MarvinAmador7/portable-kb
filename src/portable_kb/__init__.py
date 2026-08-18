@@ -18,7 +18,7 @@ from .authoring import (
     save_knowledge_create,
     save_knowledge_update,
 )
-from .brains import push_brain
+from .brains import push_brain, remove_brain
 from .models import Finding, KnowledgeItem, Severity, ValidationReport
 from .operations import (
     OperationError,
@@ -32,7 +32,7 @@ from .operations import (
     plan_update,
 )
 from .search import SearchError, get_knowledge_item, index_keyword_brain, search_keyword
-from .skills import SkillError, SkillTarget, install_agent_skill
+from .skills import SkillError, SkillTarget, install_agent_skill, skill_status
 from .validation import validate_bundle, validate_transition
 
 __all__ = [
@@ -66,12 +66,14 @@ __all__ = [
     "plan_supersede",
     "plan_update",
     "push_brain",
+    "remove_brain",
     "get_knowledge_item",
     "index_keyword_brain",
     "install_agent_skill",
+    "skill_status",
     "search_keyword",
     "validate_bundle",
     "validate_transition",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"

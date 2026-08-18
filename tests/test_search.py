@@ -12,6 +12,7 @@ from portable_kb.search import (
     SearchError,
     get_knowledge_item,
     index_keyword_brain,
+    qmd_status,
     search_keyword,
 )
 from portable_kb.settings import Settings
@@ -90,7 +91,12 @@ def test_keyword_index_and_search_return_pinned_citations(
         "path": relative,
     }
     calls = [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
-    assert [call["arguments"][0] for call in calls] == ["--version", "update", "search"]
+    assert [call["arguments"][0] for call in calls] == [
+        "--version",
+        "update",
+        "--version",
+        "search",
+    ]
     assert all(call["force_cpu"] == "1" and call["index_path"] is None for call in calls)
     assert all(str(settings.cache_dir / "search/qmd") in call["config_dir"] for call in calls)
 
@@ -155,6 +161,51 @@ def test_keyword_query_validation(tmp_path: Path) -> None:
         search_keyword(settings, "   ")
     with pytest.raises(SearchError, match="between 1 and 100"):
         search_keyword(settings, "query", limit=0)
+
+
+@pytest.mark.parametrize(
+    ("version", "ok", "error_fragment"),
+    [
+        ("qmd 2.5.0", True, None),
+        ("qmd 2.4.9", False, "outside the supported range"),
+        ("qmd 3.0.0", False, "outside the supported range"),
+        ("development build", False, "unrecognized"),
+    ],
+)
+def test_qmd_status_reports_version_compatibility(
+    tmp_path: Path,
+    version: str,
+    ok: bool,
+    error_fragment: str | None,
+) -> None:
+    executable = tmp_path / "qmd-version"
+    executable.write_text(f"#!/bin/sh\nprintf '%s\\n' '{version}'\n", encoding="utf-8")
+    executable.chmod(0o755)
+    settings = Settings(
+        data_dir=tmp_path / "data",
+        cache_dir=tmp_path / "cache",
+        qmd_command=str(executable),
+    )
+
+    result = qmd_status(settings)
+
+    assert result["ok"] is ok
+    assert result["compatible"] is ok
+    if error_fragment is not None:
+        assert error_fragment in result["error"]
+
+
+def test_qmd_status_reports_missing_executable(tmp_path: Path) -> None:
+    settings = Settings(
+        data_dir=tmp_path / "data",
+        cache_dir=tmp_path / "cache",
+        qmd_command=str(tmp_path / "missing-qmd"),
+    )
+
+    result = qmd_status(settings)
+
+    assert result["ok"] is False
+    assert "not found" in result["error"]
 
 
 def test_get_knowledge_item_by_id_and_path(

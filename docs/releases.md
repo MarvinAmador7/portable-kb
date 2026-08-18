@@ -60,6 +60,11 @@ not release targets in this milestone.
 The workflow creates GitHub release assets; it does not publish to PyPI, alter
 repository visibility, notarize a future macOS application, or install QMD.
 
+The 0.1.2 CI and release gates install pinned `@tobilu/qmd@2.8.3` under Node.js
+24 and exercise an isolated real keyword index plus cited query. This verifies
+the optional external provider without adding QMD to the standalone archive or
+downloading embedding models during installation.
+
 ## Installer safety
 
 The root `install` script requires `curl`, `tar`, and either `sha256sum` or

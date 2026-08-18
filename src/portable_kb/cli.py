@@ -29,16 +29,26 @@ from .brains import (
     add_brain,
     brain_status,
     init_brain,
+    legacy_demo_brains,
     load_catalog,
     publish_brain_to_github,
     push_brain,
+    remove_brain,
     sync_brain,
     use_brain,
 )
 from .changes import ConcurrentChangeError
 from .knowledge_prompt import confirm_knowledge_apply, run_knowledge_create_prompts
+from .locks import LockError, inspect_operation_lock, operation_lock
 from .operations import OperationError
-from .search import SearchError, get_knowledge_item, index_keyword_brain, search_keyword
+from .search import (
+    SearchError,
+    get_knowledge_item,
+    index_keyword_brain,
+    keyword_index_path,
+    qmd_status,
+    search_keyword,
+)
 from .settings import (
     SearchMode,
     Settings,
@@ -49,7 +59,7 @@ from .settings import (
     save_settings,
 )
 from .setup_prompt import SetupPromptError, SetupSkillChoice, run_setup_prompts
-from .skills import SkillError, SkillTarget, install_agent_skill
+from .skills import SkillError, SkillTarget, install_agent_skill, skill_status
 
 app = typer.Typer(
     name="pkb",
@@ -139,7 +149,12 @@ def setup(
         qmd_command=initial.qmd_command,
     )
     if non_interactive:
-        _persist(initial, target, overwrite=force)
+        try:
+            with operation_lock(target.parent, "setup"):
+                _persist(initial, target, overwrite=force)
+        except LockError as exc:
+            typer.echo(str(exc), err=True)
+            raise typer.Exit(1) from None
         _install_setup_skill(agent_skill.target, force=force_skill)
         return
     if not sys.stdin.isatty() or not sys.stdout.isatty():
@@ -152,7 +167,12 @@ def setup(
         raise typer.Exit(2) from None
     if setup_result is None:
         return
-    _persist(setup_result.settings, target, overwrite=True)
+    try:
+        with operation_lock(target.parent, "setup"):
+            _persist(setup_result.settings, target, overwrite=True)
+    except LockError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
     _install_setup_skill(setup_result.skill_target, force=force_skill)
 
 
@@ -167,7 +187,7 @@ def doctor(
         typer.Option("--json", help="Emit machine-readable status."),
     ] = False,
 ) -> None:
-    """Check local configuration and QMD availability without changing anything."""
+    """Inspect configuration, tools, brains, indexes, locks, and agent skills."""
 
     target = (config_path or default_config_path()).expanduser().absolute()
     try:
@@ -178,16 +198,74 @@ def doctor(
             json_output,
         )
         raise typer.Exit(1) from None
-    qmd_path = shutil.which(settings.qmd_command)
+    qmd = qmd_status(settings)
+    git_path = shutil.which("git")
+    gh_path = shutil.which("gh")
+    errors: list[str] = []
+    warnings: list[str] = []
+    try:
+        catalog = load_catalog(settings)
+        catalog_valid = True
+    except BrainError as exc:
+        catalog = None
+        catalog_valid = False
+        errors.append(str(exc))
+    active_health = None
+    index = None
+    legacy: list[str] = []
+    if catalog is not None:
+        legacy = [brain.slug for brain in legacy_demo_brains(catalog)]
+        if legacy:
+            warnings.append(
+                "Legacy demo brain detected; remove it with `pkb brain remove portable-kb-core`."
+            )
+        if catalog.active is not None:
+            try:
+                active_health = brain_status(settings, catalog.active)
+            except (BrainError, ValueError) as exc:
+                active_health = {"ok": False, "error": str(exc)}
+            brain = catalog.get(catalog.active)
+            index = _doctor_index_status(settings, brain.id, brain.slug, brain.commit)
+    try:
+        skills = skill_status()
+    except SkillError as exc:
+        skills = {"ok": False, "error": str(exc), "targets": {}}
+    if not skills["ok"]:
+        warnings.append("One or more agent skills are missing, outdated, or modified.")
+    lock = inspect_operation_lock(settings.data_dir)
+    if lock.get("locked"):
+        warnings.append("Another Portable KB mutation is active or left a stale lock.")
+    if not qmd["ok"]:
+        errors.append(str(qmd.get("error", "QMD is unavailable.")))
+    if git_path is None:
+        errors.append("Git executable was not found.")
+    if active_health is not None and not active_health.get("ok"):
+        errors.append("The active brain is not healthy.")
+    if lock.get("safe") is False:
+        errors.append(str(lock.get("error", "The operation lock path is unsafe.")))
     result = {
-        "ok": qmd_path is not None,
+        "ok": not errors,
         "config": str(target),
         "config_valid": True,
         "data_dir": str(settings.data_dir),
         "cache_dir": str(settings.cache_dir),
         "search_mode": settings.search_mode.value,
         "qmd_command": settings.qmd_command,
-        "qmd_path": qmd_path,
+        "qmd_path": qmd["path"],
+        "qmd_version": qmd["version"],
+        "qmd": qmd,
+        "git_path": git_path,
+        "gh_path": gh_path,
+        "catalog_valid": catalog_valid,
+        "brain_count": len(catalog.brains) if catalog is not None else None,
+        "active_brain": catalog.active if catalog is not None else None,
+        "active_brain_health": active_health,
+        "active_index": index,
+        "legacy_demo_brains": legacy,
+        "operation_lock": lock,
+        "skills": skills,
+        "errors": errors,
+        "warnings": warnings,
     }
     _doctor_output(result, json_output)
     if not result["ok"]:
@@ -257,8 +335,9 @@ def brain_add(
 
     settings = _load_cli_settings(config_path)
     try:
-        brain, catalog, report = add_brain(source, settings, as_of=as_of)
-    except (BrainError, ValueError) as exc:
+        with operation_lock(settings.data_dir, "brain add"):
+            brain, catalog, report = add_brain(source, settings, as_of=as_of)
+    except (BrainError, LockError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
     payload = {
@@ -348,14 +427,15 @@ def brain_init(
         name = inputs.name
         slug = inputs.slug
     try:
-        result, _catalog, report = init_brain(
-            source,
-            name,
-            slug,
-            settings,
-            as_of=as_of,
-        )
-    except (BrainError, ValueError) as exc:
+        with operation_lock(settings.data_dir, "brain init"):
+            result, _catalog, report = init_brain(
+                source,
+                name,
+                slug,
+                settings,
+                as_of=as_of,
+            )
+    except (BrainError, LockError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
     if not json_output:
@@ -383,13 +463,14 @@ def brain_init(
             typer.echo(json.dumps(result.as_dict(report), indent=2, sort_keys=True))
         return
     try:
-        publication, published_catalog = publish_brain_to_github(
-            settings,
-            publish_choice[0],
-            result.brain.slug,
-            visibility=publish_choice[1],
-        )
-    except BrainError as exc:
+        with operation_lock(settings.data_dir, "brain publish"):
+            publication, published_catalog = publish_brain_to_github(
+                settings,
+                publish_choice[0],
+                result.brain.slug,
+                visibility=publish_choice[1],
+            )
+    except (BrainError, LockError) as exc:
         typer.echo(f"Local brain is ready, but GitHub publication failed: {exc}", err=True)
         typer.echo("Retry later with `pkb brain publish --to org/repo`.", err=True)
         raise typer.Exit(1) from None
@@ -431,13 +512,14 @@ def brain_publish(
 
     settings = _load_cli_settings(config_path)
     try:
-        result, catalog = publish_brain_to_github(
-            settings,
-            github_repository,
-            slug,
-            visibility=visibility,
-        )
-    except BrainError as exc:
+        with operation_lock(settings.data_dir, "brain publish"):
+            result, catalog = publish_brain_to_github(
+                settings,
+                github_repository,
+                slug,
+                visibility=visibility,
+            )
+    except (BrainError, LockError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
     if json_output:
@@ -509,8 +591,9 @@ def brain_push(
 
     settings = _load_cli_settings(config_path)
     try:
-        result = push_brain(settings, slug, as_of=as_of)
-    except (BrainError, ValueError) as exc:
+        with operation_lock(settings.data_dir, "brain push"):
+            result = push_brain(settings, slug, as_of=as_of)
+    except (BrainError, LockError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
     if json_output:
@@ -688,8 +771,9 @@ def knowledge_create(
     saved = None
     if should_apply:
         try:
-            saved = save_knowledge_create(settings, plan, as_of=as_of)
-        except (BrainError, ConcurrentChangeError, OSError, ValueError) as exc:
+            with operation_lock(settings.data_dir, "knowledge create"):
+                saved = save_knowledge_create(settings, plan, as_of=as_of)
+        except (BrainError, ConcurrentChangeError, LockError, OSError, ValueError) as exc:
             typer.echo(f"Draft could not be saved: {exc}", err=True)
             raise typer.Exit(1) from None
     payload = saved.as_dict() if saved is not None else plan.as_dict(applied=False)
@@ -798,8 +882,9 @@ def knowledge_update(
     saved = None
     if apply:
         try:
-            saved = save_knowledge_update(settings, plan, as_of=as_of)
-        except (BrainError, ConcurrentChangeError, OSError, ValueError) as exc:
+            with operation_lock(settings.data_dir, "knowledge update"):
+                saved = save_knowledge_update(settings, plan, as_of=as_of)
+        except (BrainError, ConcurrentChangeError, LockError, OSError, ValueError) as exc:
             typer.echo(f"Update could not be saved: {exc}", err=True)
             raise typer.Exit(1) from None
     payload = saved.as_dict() if saved is not None else plan.as_dict(applied=False)
@@ -826,11 +911,54 @@ def brain_use(
 
     settings = _load_cli_settings(config_path)
     try:
-        brain = use_brain(slug, settings)
-    except BrainError as exc:
+        with operation_lock(settings.data_dir, "brain use"):
+            brain = use_brain(slug, settings)
+    except (BrainError, LockError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
     typer.echo(f"Active brain: {brain.slug} ({brain.name})")
+
+
+@brain_app.command("remove")
+def brain_remove(
+    slug: Annotated[
+        str,
+        typer.Argument(help="Installed brain slug to remove from this computer."),
+    ],
+    force: Annotated[
+        bool,
+        typer.Option("--force", help="Discard local changes in the installed snapshot."),
+    ] = False,
+    config_path: Annotated[
+        Path | None,
+        typer.Option("--config", help="Override the user configuration path."),
+    ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit machine-readable removal details."),
+    ] = False,
+) -> None:
+    """Remove a local snapshot and index without deleting its source repository."""
+
+    settings = _load_cli_settings(config_path)
+    try:
+        with operation_lock(settings.data_dir, "brain remove"):
+            result = remove_brain(slug, settings, force=force)
+    except (BrainError, LockError, OSError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if json_output:
+        typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        return
+    typer.echo(f"Removed local brain: {result['name']} ({result['slug']})")
+    if result["authoring_preserved"]:
+        typer.echo(f"Source repository preserved: {result['authoring_preserved']}")
+    else:
+        typer.echo("Remote source repository was not changed.")
+    if result["active"] is None:
+        typer.echo("Active brain: none")
+    if result["cleanup_warnings"]:
+        typer.echo(f"Cleanup warnings: {len(result['cleanup_warnings'])}")
 
 
 @brain_app.command("status")
@@ -895,8 +1023,9 @@ def brain_sync(
 
     settings = _load_cli_settings(config_path)
     try:
-        result = sync_brain(settings, slug, as_of=as_of)
-    except (BrainError, ValueError) as exc:
+        with operation_lock(settings.data_dir, "brain sync"):
+            result = sync_brain(settings, slug, as_of=as_of)
+    except (BrainError, LockError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
     if json_output:
@@ -936,8 +1065,9 @@ def search_index(
 
     settings = _load_cli_settings(config_path)
     try:
-        result = index_keyword_brain(settings, slug, as_of=as_of)
-    except (BrainError, SearchError, ValueError) as exc:
+        with operation_lock(settings.data_dir, "search index"):
+            result = index_keyword_brain(settings, slug, as_of=as_of)
+    except (BrainError, LockError, SearchError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
     if json_output:
@@ -1015,14 +1145,44 @@ def skill_install(
     """Install the same governed retrieval skill for Codex and Claude Code."""
 
     try:
-        result = install_agent_skill(target, force=force)
-    except SkillError as exc:
+        with operation_lock(Path.home() / ".cache" / "portable-kb", "skill install"):
+            result = install_agent_skill(target, force=force)
+    except (LockError, SkillError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
     if json_output:
         typer.echo(json.dumps(result, indent=2, sort_keys=True))
         return
     _report_skill_install(result)
+
+
+@skill_app.command("status")
+def show_skill_status(
+    target: Annotated[
+        SkillTarget,
+        typer.Option("--target", help="Agent skill location to inspect."),
+    ] = SkillTarget.BOTH,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit machine-readable skill status."),
+    ] = False,
+) -> None:
+    """Report missing, outdated, or locally modified agent workflows."""
+
+    try:
+        result = skill_status(target)
+    except SkillError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if json_output:
+        typer.echo(json.dumps(result, indent=2, sort_keys=True))
+    else:
+        for agent, status in result["targets"].items():
+            typer.echo(f"{agent:<7} {status['state']:<9} {status['path']}")
+        if not result["ok"]:
+            typer.echo("Run `pkb skill install --force` to install the bundled workflow.")
+    if not result["ok"]:
+        raise typer.Exit(1)
 
 
 def _initial_settings(path: Path) -> Settings:
@@ -1114,8 +1274,9 @@ def _install_setup_skill(target: SkillTarget | None, *, force: bool) -> None:
     if target is None:
         return
     try:
-        result = install_agent_skill(target, force=force)
-    except SkillError as exc:
+        with operation_lock(Path.home() / ".cache" / "portable-kb", "skill install"):
+            result = install_agent_skill(target, force=force)
+    except (LockError, SkillError) as exc:
         typer.echo(f"Configuration saved, but the agent skill was not installed: {exc}", err=True)
         typer.echo("Resolve the conflict, then run `pkb skill install`.", err=True)
         raise typer.Exit(1) from None
@@ -1132,6 +1293,46 @@ def _report_skill_install(result: dict[str, object]) -> None:
         typer.echo(f"  {agent}: {path}{note}")
 
 
+def _doctor_index_status(
+    settings: Settings,
+    brain_id: str,
+    brain_slug: str,
+    commit: str,
+) -> dict[str, object]:
+    path = keyword_index_path(settings, brain_slug)
+    metadata_path = path / "metadata.json"
+    result: dict[str, object] = {
+        "path": str(path),
+        "present": False,
+        "current": False,
+    }
+    if path.is_symlink() or (path.exists() and not path.is_dir()):
+        result["error"] = "Index path is unsafe."
+        return result
+    if not metadata_path.is_file() or metadata_path.is_symlink():
+        return result
+    result["present"] = True
+    try:
+        payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        result["error"] = "Index metadata is invalid."
+        return result
+    if not isinstance(payload, dict):
+        result["error"] = "Index metadata is invalid."
+        return result
+    result["provider"] = payload.get("provider")
+    result["commit"] = payload.get("commit")
+    result["current"] = all(
+        (
+            payload.get("brain_id") == brain_id,
+            payload.get("brain_slug") == brain_slug,
+            payload.get("commit") == commit,
+            payload.get("provider") == "qmd",
+        )
+    )
+    return result
+
+
 def _doctor_output(result: dict[str, object], json_output: bool) -> None:
     if json_output:
         typer.echo(json.dumps(result, indent=2, sort_keys=True))
@@ -1139,9 +1340,22 @@ def _doctor_output(result: dict[str, object], json_output: bool) -> None:
     mark = "✓" if result.get("config_valid") else "✗"
     typer.echo(f"{mark} Configuration: {result['config']}")
     if result.get("config_valid"):
-        qmd = result.get("qmd_path") or "not found"
-        typer.echo(f"{'✓' if result.get('qmd_path') else '✗'} QMD: {qmd}")
+        qmd = result.get("qmd")
+        assert isinstance(qmd, dict)
+        qmd_label = qmd.get("version") or qmd.get("path") or "not found"
+        typer.echo(f"{'✓' if qmd.get('ok') else '✗'} QMD: {qmd_label}")
+        typer.echo(f"{'✓' if result.get('git_path') else '✗'} Git: {result.get('git_path') or 'not found'}")
         typer.echo(f"  Search mode: {result['search_mode']}")
+        typer.echo(f"  Installed brains: {result['brain_count']}")
+        typer.echo(f"  Active brain: {result['active_brain'] or 'none'}")
+        warnings = result.get("warnings")
+        if isinstance(warnings, list):
+            for warning in warnings:
+                typer.echo(f"! {warning}")
+        errors = result.get("errors")
+        if isinstance(errors, list):
+            for error in errors:
+                typer.echo(f"✗ {error}")
     elif result.get("error"):
         typer.echo(f"  {result['error']}")
 

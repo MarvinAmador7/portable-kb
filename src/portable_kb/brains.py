@@ -30,6 +30,8 @@ SCP_REMOTE = re.compile(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+:.+$")
 GITHUB_REPOSITORY = re.compile(
     r"^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,38})/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})$"
 )
+LEGACY_DEMO_SLUG = "portable-kb-core"
+LEGACY_DEMO_ID = "urn:uuid:6e7cc12e-b3f7-49da-875d-32b714fdc1e8"
 
 
 class BrainError(RuntimeError):
@@ -153,6 +155,12 @@ class BrainCatalog:
             raise BrainError("Updated brain identity does not match the local catalog.")
         brains = tuple(updated if brain.slug == updated.slug else brain for brain in self.brains)
         return BrainCatalog(brains=brains, active=self.active)
+
+    def removing(self, slug: str) -> BrainCatalog:
+        self.get(slug)
+        brains = tuple(brain for brain in self.brains if brain.slug != slug)
+        active = None if self.active == slug else self.active
+        return BrainCatalog(brains=brains, active=active)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -625,6 +633,96 @@ def use_brain(slug: str, settings: Settings) -> InstalledBrain:
     return brain
 
 
+def remove_brain(
+    slug: str,
+    settings: Settings,
+    *,
+    force: bool = False,
+) -> dict[str, Any]:
+    """Forget one installed snapshot and its disposable index, preserving its source."""
+
+    catalog = load_catalog(settings)
+    brain = catalog.get(slug)
+    checkout = brain.checkout_path(settings)
+    index = settings.cache_dir / "search" / "qmd" / slug
+    _require_removable_path(checkout, settings.data_dir / "brains", "brain checkout")
+    _require_removable_path(index, settings.cache_dir / "search" / "qmd", "search index")
+    if checkout.exists():
+        if checkout.is_symlink() or not checkout.is_dir():
+            raise BrainError(f"Brain checkout is unsafe and was not removed: {checkout}")
+        if not force:
+            git = shutil.which("git")
+            if git is None:
+                raise BrainError("Git is required to verify a brain before removing it.")
+            if _run_git(
+                git,
+                "-C",
+                str(checkout),
+                "status",
+                "--porcelain",
+                "--untracked-files=all",
+            ).strip():
+                raise BrainError(
+                    "Installed checkout has local changes. Move or commit them, or use --force "
+                    "to discard only this installed snapshot."
+                )
+    if index.exists() and (index.is_symlink() or not index.is_dir()):
+        raise BrainError(f"Search index is unsafe and was not removed: {index}")
+
+    token = uuid.uuid4().hex
+    staged: list[tuple[Path, Path]] = []
+    try:
+        for path in (checkout, index):
+            if not path.exists():
+                continue
+            quarantine = path.parent / f".{path.name}.remove-{token}"
+            os.replace(path, quarantine)
+            staged.append((path, quarantine))
+        updated = catalog.removing(slug)
+        save_catalog(updated, settings)
+    except Exception:
+        for original, quarantine in reversed(staged):
+            if quarantine.exists() and not original.exists():
+                os.replace(quarantine, original)
+        raise
+
+    cleanup_warnings: list[str] = []
+    for _original, quarantine in staged:
+        try:
+            shutil.rmtree(quarantine)
+        except OSError as exc:
+            cleanup_warnings.append(f"Could not delete quarantined derived state: {exc}")
+    return {
+        "ok": not cleanup_warnings,
+        "slug": brain.slug,
+        "name": brain.name,
+        "removed_checkout": any(original == checkout for original, _ in staged),
+        "removed_index": any(original == index for original, _ in staged),
+        "authoring_preserved": brain.authoring,
+        "active": updated.active,
+        "legacy_demo": brain.slug == LEGACY_DEMO_SLUG and brain.id == LEGACY_DEMO_ID,
+        "cleanup_warnings": cleanup_warnings,
+    }
+
+
+def legacy_demo_brains(catalog: BrainCatalog) -> tuple[InstalledBrain, ...]:
+    """Return exact installations created by the retired bundled demo brain."""
+
+    return tuple(
+        brain
+        for brain in catalog.brains
+        if brain.slug == LEGACY_DEMO_SLUG and brain.id == LEGACY_DEMO_ID
+    )
+
+
+def _require_removable_path(path: Path, parent: Path, label: str) -> None:
+    """Require a derived-state path to be an immediate child of its expected root."""
+
+    expected_parent = parent.expanduser().absolute()
+    if path.expanduser().absolute().parent != expected_parent:
+        raise BrainError(f"Refusing unsafe {label} path: {path}")
+
+
 def authoring_repository(
     settings: Settings,
     slug: str | None = None,
@@ -658,6 +756,13 @@ def authoring_repository(
         current,
     ):
         raise BrainError("Local authoring repository does not contain the installed commit.")
+    branch = _run_git(git, "-C", str(repository), "branch", "--show-current").strip()
+    if branch != "main":
+        label = branch or "detached HEAD"
+        raise BrainError(
+            f"Knowledge authoring requires the main branch; the repository is on {label}. "
+            "Switch the brain's authoring repository to main before creating or updating knowledge."
+        )
     return brain, repository, manifest
 
 
@@ -811,6 +916,10 @@ def brain_status(
         "bundle_valid": False,
         "validation_errors": [],
         "validation_warnings": [],
+        "authoring_available": False,
+        "authoring_branch": None,
+        "authoring_clean": None,
+        "authoring_ready": False,
         "ok": False,
     }
     if checkout.is_symlink() or not checkout.is_dir():
@@ -831,6 +940,25 @@ def brain_status(
         result["bundle_valid"] = report.profile_passes
         result["validation_errors"] = [finding.as_dict() for finding in report.errors]
         result["validation_warnings"] = [finding.as_dict() for finding in report.warnings]
+        authoring = brain.authoring_path()
+        if authoring is not None and not authoring.is_symlink() and authoring.is_dir():
+            result["authoring_available"] = True
+            authoring_branch = _run_git(
+                git, "-C", str(authoring), "branch", "--show-current"
+            ).strip()
+            authoring_clean = not bool(
+                _run_git(
+                    git,
+                    "-C",
+                    str(authoring),
+                    "status",
+                    "--porcelain",
+                    "--untracked-files=all",
+                ).strip()
+            )
+            result["authoring_branch"] = authoring_branch or None
+            result["authoring_clean"] = authoring_clean
+            result["authoring_ready"] = authoring_branch == "main" and authoring_clean
     except BrainError as exc:
         result["error"] = str(exc)
     result["ok"] = all(
@@ -1267,7 +1395,10 @@ def _write_validate_and_commit(
     )
     (bundle / "index.md").write_text(
         f'---\nokf_version: "0.2"\n---\n\n# {markdown_name}\n\n'
-        "This brain is ready for governed organizational knowledge.\n",
+        "This brain is ready for governed organizational knowledge.\n\n"
+        "<!-- portable-kb:index:start -->\n"
+        "No current knowledge is indexed in this scope.\n\n"
+        "<!-- portable-kb:index:end -->\n",
         encoding="utf-8",
     )
     log_date = date.fromisoformat(as_of) if as_of is not None else date.today()

@@ -20,6 +20,7 @@ from portable_kb.authoring import (
 )
 from portable_kb.brains import (
     BrainError,
+    brain_status,
     clean_repository_head,
     commit_authoring_changes,
     init_brain,
@@ -323,6 +324,41 @@ def test_plan_knowledge_create_explains_unfinished_local_changes(tmp_path: Path)
             actor="human:marvin",
             method=GenerationMethod.HUMAN_AUTHORED,
             body="# Blocked draft\n\n## Definition\n\nThis should not be created.\n",
+            timestamp="2026-08-13T15:00:00Z",
+            as_of="2026-08-13",
+        )
+
+
+def test_plan_knowledge_create_refuses_non_main_authoring_branch(tmp_path: Path) -> None:
+    settings = Settings(data_dir=tmp_path / "data", cache_dir=tmp_path / "cache")
+    repository = tmp_path / "business"
+    init_brain(
+        str(repository),
+        "Business Knowledge",
+        "business",
+        settings,
+        as_of="2026-08-13",
+    )
+    _git(repository, "switch", "--quiet", "-c", "agent/unrelated-work")
+
+    status = brain_status(settings, as_of="2026-08-13")
+    assert status["ok"] is True
+    assert status["authoring_branch"] == "agent/unrelated-work"
+    assert status["authoring_clean"] is True
+    assert status["authoring_ready"] is False
+
+    with pytest.raises(BrainError, match="main branch"):
+        plan_knowledge_create(
+            settings,
+            item_type=KnowledgeType.DECISION,
+            title="Blocked branch draft",
+            description="Confirms knowledge cannot be saved from an unrelated feature branch.",
+            actor="anthropic/claude-code",
+            method=GenerationMethod.AGENT_GENERATED,
+            body="# Blocked branch draft\n\nThis should not be created.\n",
+            sources=[{"resource": "urn:pkb:conversation:branch-test"}],
+            confidence_level=ConfidenceLevel.MEDIUM,
+            confidence_basis="This is a synthetic branch-safety test.",
             timestamp="2026-08-13T15:00:00Z",
             as_of="2026-08-13",
         )

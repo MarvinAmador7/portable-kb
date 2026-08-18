@@ -8,12 +8,13 @@ from pathlib import Path
 import pytest
 
 REPOSITORY = Path(__file__).resolve().parents[1]
+REFERENCE_BUNDLE = REPOSITORY / "tests" / "fixtures" / "reference-bundle"
 
 
 @pytest.fixture
 def bundle(tmp_path: Path) -> Path:
     target = tmp_path / "knowledge"
-    shutil.copytree(REPOSITORY / "knowledge", target)
+    shutil.copytree(REFERENCE_BUNDLE, target)
     return target
 
 
@@ -31,7 +32,7 @@ def brain_repo_factory(tmp_path: Path) -> Callable[[str, str], Path]:
     def create(slug: str, identity: str) -> Path:
         repository = tmp_path / f"source-{slug}"
         repository.mkdir()
-        shutil.copytree(REPOSITORY / "knowledge", repository / "knowledge")
+        shutil.copytree(REFERENCE_BUNDLE, repository / "knowledge")
         repository.joinpath("brain.yaml").write_text(
             "\n".join(
                 (
@@ -85,7 +86,7 @@ with log.open("a", encoding="utf-8") as stream:
     }) + "\\n")
 
 if arguments == ["--version"]:
-    print("qmd test-1.0")
+    print("qmd 2.5.3")
 elif arguments == ["update"]:
     config = (config_dir / "index.yml").read_text(encoding="utf-8")
     if "\\n    update:" in config:

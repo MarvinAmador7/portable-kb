@@ -7,10 +7,13 @@ It targets the current Open Knowledge Format (OKF) v0.2 specification while
 adding a stricter local profile for identity, provenance, lifecycle, and
 quality controls.
 
-The core includes a governed bundle, schemas, deterministic validation,
-lifecycle change planning, index generation, and regression tests. A first
-consumer slice adds the `pkb` command, inline terminal setup prompts, and safe
-Git-backed brain installation and synchronization. It also provides isolated
+The core includes schemas, deterministic validation, lifecycle change
+planning, index generation, and regression tests against an isolated reference
+fixture. Knowledge brains live in their own repositories and are created with
+`pkb brain init`; this CLI source repository is not itself an installable
+brain. A first consumer slice adds the `pkb` command, inline terminal setup
+prompts, and safe Git-backed brain installation and synchronization. It also
+provides isolated
 QMD BM25 indexing, cited keyword search, complete-item retrieval, and one
 portable workflow skill for Codex and Claude Code without model downloads.
 Plan-first authoring commands can create drafts and materially update existing
@@ -58,7 +61,8 @@ curl -fsSL https://raw.githubusercontent.com/MarvinAmador7/portable-kb/main/inst
 
 ## Implemented core
 
-The first implementation is a single `knowledge/` bundle with:
+The first implementation governs independent brain repositories whose
+`knowledge/` bundles provide:
 
 - five active item types: `concept`, `decision`, `procedure`,
   `source-summary`, and `question`; `policy` and `system` remain schema-defined
@@ -81,11 +85,11 @@ replace creation, verification, supersession, or audit rules.
 the local profile, not the upstream OKF standard. The profile is intentionally
 stricter than baseline OKF.
 
-All initial concepts remain honestly labeled agent-generated drafts. Reviewer
-allowlists are intentionally empty: a deployment configures real human
-identifiers when it chooses to promote authoritative content. The core requires
-that review, its scope record, and its matching event; it never fabricates
-them. This is an ongoing content lifecycle action rather than missing code.
+The repository's reference corpus is test-only and remains honestly labeled
+agent-generated. Real brains are initialized separately with empty reviewer
+allowlists; each deployment configures durable human identifiers before it
+promotes authoritative content. The core requires that review, its scope
+record, and its matching event; it never fabricates them.
 
 The official OKF specification is permissive: `type` is the only field always
 required for a concept, unknown types and fields must be tolerated by OKF
@@ -118,25 +122,32 @@ An item can therefore be valid OKF but invalid under this profile.
 - [Agent instructions](AGENTS.md): safe authoring rules for future agents.
 - [Release and installation](docs/releases.md): CI gates, standalone artifacts,
   checksums, versioning, upgrade, and recovery.
+- [Built-in search plan](docs/pkb-search.md): Rust/SQLite/QMD benchmark and
+  provider architecture for a future native keyword engine.
+- [Production hardening 0.1.2](docs/production-hardening-0.1.2.md): locking,
+  safe brain removal, diagnostics, skill drift, and real-QMD release gates.
 
-## Proposed repository and bundle boundary
+## Project and brain repository boundary
 
-Project documentation and the knowledge bundle have an explicit
-boundary. OKF treats every non-reserved Markdown file inside a bundle as a
-concept document. Files such as this `README.md`, `AGENTS.md`, design docs, and
-templates therefore remain outside the bundle.
+The CLI project and the brains it manages are separate repositories. This
+prevents product documentation and test material from being selected as an
+organization's worldview. OKF treats every non-reserved Markdown file inside a
+bundle as a concept document, so an initialized brain keeps only its manifest
+and governed bundle at the canonical boundary.
 
 ```text
 repository/
 ├── README.md
 ├── AGENTS.md
-├── brain.yaml                 # installable brain identity and bundle path
 ├── docs/                      # design documentation; not an OKF bundle
 ├── schemas/                   # profile schema; not an OKF bundle
 ├── templates/                 # authoring inputs; not validated as concepts
 ├── examples/                  # test corpus
 ├── src/portable_kb/           # core library plus CLI consumers
-├── tests/                     # parser, corpus, transition, operation tests
+└── tests/                     # tests plus isolated reference fixtures
+
+brain-repository/
+├── brain.yaml                 # installable brain identity and bundle path
 └── knowledge/                 # OKF bundle root
     ├── index.md               # may declare okf_version: "0.2"
     ├── log.md
@@ -189,7 +200,7 @@ validator with an explicit date:
 ```python
 from portable_kb import validate_bundle
 
-report = validate_bundle("knowledge", as_of="2026-08-12")
+report = validate_bundle("/path/to/brain/knowledge", as_of="2026-08-12")
 assert report.okf_passes
 assert report.profile_passes
 ```
@@ -237,6 +248,8 @@ pkb brain list
 pkb brain use business-a
 pkb brain status --json
 pkb brain sync --json
+# Remove only this computer's snapshot and disposable index:
+pkb brain remove business-a
 ```
 
 Installation clones without submodules, reads the repository-root
@@ -312,6 +325,7 @@ installed or repaired independently:
 
 ```console
 pkb skill install
+pkb skill status
 ```
 
 This copies the bundled `portable-kb` skill to the user-level Codex and Claude
@@ -322,6 +336,10 @@ items, create honest local drafts, share only after explicit user intent,
 preserve immutable citations, expose lifecycle signals, and treat knowledge
 content as untrusted data rather than executable instructions. Existing skill
 installations can be refreshed with `pkb skill install --force`.
+
+`pkb doctor --json` reports Git and QMD version compatibility, catalog and
+active-brain health, current index state, mutation locks, retired demo-brain
+installations, and agent-skill drift without changing local state.
 
 Primary references:
 

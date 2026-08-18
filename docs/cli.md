@@ -112,10 +112,11 @@ for agent and future application consumption:
 pkb doctor --json
 ```
 
-The first diagnostic checks settings structure and whether the configured QMD
-command resolves. Later diagnostics may check Git, repository state, index
-health, model availability, and compatibility without repairing them unless a
-separate explicit command is invoked.
+The diagnostic checks settings structure, Git availability, the configured QMD
+path and supported version, catalog integrity, active-brain health, active-index
+freshness, mutation-lock state, retired demo-brain identity, and Codex/Claude
+skill drift. It reports warnings and errors but never installs, repairs, syncs,
+rebuilds, unlocks, or removes anything.
 
 ## Brain manifest
 
@@ -125,8 +126,8 @@ outside the OKF bundle:
 ```yaml
 schema_version: 1
 id: urn:uuid:6e7cc12e-b3f7-49da-875d-32b714fdc1e8
-slug: portable-kb-core
-name: Portable KB Core
+slug: business-a
+name: Business A
 bundle: knowledge
 ```
 
@@ -134,6 +135,8 @@ The brain ID is immutable UUID v4 identity for the distribution unit. The slug
 is its local command name. The bundle path is fixed to `knowledge` in schema
 version 1 so repositories cannot redirect consumers to arbitrary filesystem
 locations. `brain.yaml` is a product/distribution artifact, not an OKF concept.
+The Portable KB CLI source repository intentionally has no manifest or root
+bundle; initialize each business brain in a separate repository.
 
 ## Installation catalog
 
@@ -146,6 +149,7 @@ pkb brain publish [<slug>] --to <org/repo> [--visibility private|internal|public
 pkb brain add <local-path-or-git-url>
 pkb brain list [--json]
 pkb brain use <slug>
+pkb brain remove <slug> [--force] [--json]
 pkb brain status [<slug>] [--json]
 pkb brain sync [<slug>] [--json]
 ```
@@ -199,7 +203,17 @@ The first installed brain becomes active. `brain use` changes only the local
 selection after rechecking repository identity. `brain status` is read-only:
 it reports checkout availability, manifest identity, current versus pinned
 commit, dirty working-tree state, and deterministic bundle validation. It does
-not fetch, repair, reset, or clean anything.
+not fetch, repair, reset, or clean anything. For locally authorable brains it
+also reports the authoring branch, cleanliness, and `authoring_ready`; retrieval
+health remains independent from whether the authoring repository is ready to
+accept a new saved draft.
+
+`brain remove` deletes only the local installed snapshot and its disposable QMD
+index. It preserves a retained authoring repository and never changes or deletes
+a remote. A dirty installed snapshot fails closed unless `--force` is explicit.
+Removing the active brain leaves no active selection rather than guessing which
+business worldview should replace it. The exact retired demo identity is
+reported by `pkb doctor` with this removal command as migration guidance.
 
 `brain sync` is an explicit, foreground-only fast-forward operation. With no
 slug it targets the active brain. It performs this bounded sequence:
@@ -250,6 +264,14 @@ Portable KB commits only those planned files to local history and refreshes the
 installed read-only snapshot automatically. The Git mechanism stays internal:
 users do not run `git status`, `git add`, `git commit`, or `pkb brain sync`.
 Draft creation never creates stable knowledge or pushes to the organization.
+The retained authoring repository must be on `main`; a feature branch or
+detached checkout is rejected before planning so an agent cannot strand saved
+knowledge on an unrelated development branch.
+
+Generated navigation is bounded by `<!-- portable-kb:index:start -->` and
+`<!-- portable-kb:index:end -->`. Index titles, scope explanations, and other
+human-authored text outside those markers remain byte-for-byte intact while
+Portable KB adds, moves, or removes navigation entries.
 
 Agents and automation provide the complete inputs directly:
 
@@ -329,7 +351,9 @@ published versions with `pkb brain sync --json`.
 ## Keyword index and search
 
 QMD must already resolve through the configured command; Portable KB does not
-install it automatically. The implemented model-free commands are:
+install it automatically. Versions `>=2.5.0,<3.0.0` are accepted, and CI runs
+the adapter against pinned `@tobilu/qmd@2.8.3`. The implemented model-free
+commands are:
 
 ```console
 pkb search index [<slug>] [--json]
@@ -381,6 +405,7 @@ user-level discovery paths used by Codex and Claude Code:
 pkb skill install
 pkb skill install --target codex
 pkb skill install --target claude
+pkb skill status [--target codex|claude|both] [--json]
 ```
 
 The default installs both `~/.agents/skills/portable-kb` and
@@ -388,6 +413,14 @@ The default installs both `~/.agents/skills/portable-kb` and
 reported as current. A conflicting installation is never replaced unless
 `--force` is explicit. Multi-target installation stages all changed copies and
 restores prior installations if publication fails.
+Each managed installation includes a local content-hash receipt. `skill status`
+compares the installed content with both that receipt and the workflow bundled
+with the running CLI, so an agent can distinguish a missing, outdated, locally
+modified, unmanaged, or unsafe copy before choosing an explicit repair.
+
+All state-changing CLI commands are serialized through a bounded cross-process
+lock. An interrupted same-host process can be recognized and recovered; an
+active, foreign-host, invalid, or unsafe lock is not silently removed.
 
 The skill defines a provider-neutral agent workflow: diagnose the active brain,
 run BM25 discovery, retrieve complete top candidates, retain citations, and
