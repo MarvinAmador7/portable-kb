@@ -29,10 +29,12 @@ def main() -> int:
     started_utc = datetime.datetime.now(datetime.UTC).isoformat()
     input_files = {}
     for option in ("--body-file", "--sources-file", "--metadata-file"):
-        if option in sys.argv:
+        value = next(
+            (a[len(option) + 1 :] for a in sys.argv[1:] if a.startswith(option + "=")), None
+        )
+        if option in sys.argv or value is not None:
             try:
-                index = sys.argv.index(option)
-                path = Path(sys.argv[index + 1])
+                path = Path(value if value is not None else sys.argv[sys.argv.index(option) + 1])
                 input_files[option] = {
                     "path": str(path.absolute()),
                     "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),

@@ -6,6 +6,10 @@ knowledge and questions, separate fresh agents, independently observed full-page
 reads, and declared reference answers. It measures task outcomes and effort;
 it does not infer a winner from the existence of metadata or links.
 
+For mutation and multi-step workplace tasks, use the
+[agentic workflow suite](agentic-workflows.md). The retrieval suite below remains
+read-only.
+
 This is an opt-in development benchmark. Keep private corpora, labels, migrated
 brains, outputs and reports outside this repository. Preparation and grading
 make no model calls. `run` uses the existing configured Codex adapter. Install
