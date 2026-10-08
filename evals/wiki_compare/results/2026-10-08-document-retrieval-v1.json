@@ -1,0 +1,215 @@
+{
+  "run_id": "2026-10-08-document-retrieval-v1",
+  "runner": "codex-chat-subagent/recorded-shell-observer",
+  "model": "inherited/unknown",
+  "cli_source_commit": "b8a00f7725a778891292c3103ac98891f17d036f",
+  "fingerprints": {
+    "version": 1,
+    "suite_sha256": "3558fbc1a9e8f9d0ed40b8d31886e4e4ae51d9f17600a66d004f20be73945cc4",
+    "corpus_sha256": "197375e374f1f3f36eb76db6146e8002d9b6d04382baa4de1cb5d0a002c5ff3e",
+    "repetitions": 2,
+    "cli_sha256": "5d54f982379037556801f1dd710382f6efe980ca0b3d9065e50699c5db987c18",
+    "wiki_skill_sha256": "0229e37c1783fcac5b77cfb3242703666cf4aa472d2ae85b6bd5279756b515b6"
+  },
+  "portable_skill_sha256": "3d07c13c717cc3b83d1a9a7d9813aa95fcc9cf67f9cf3ef037265109d78e46ce",
+  "grader_sha256": "c9af289f3ea52b461a4dd8664889b475e9f3efd28a38965012129d9f6852f1f9",
+  "prepared_trials": {
+    "portable-kb": 2,
+    "wiki": 2
+  },
+  "executed_trials": {
+    "portable-kb": 2,
+    "wiki": 0
+  },
+  "totals": {
+    "blocked": 0,
+    "cli_errors": 0,
+    "completed": 2,
+    "completed_median_seconds": 105.265430436,
+    "completed_with_constraints": 2,
+    "constraint_passes": 2,
+    "facts": 2,
+    "failed": 0,
+    "grounded_accurate_facts": 2,
+    "incomplete": 0,
+    "shell_errors": 0,
+    "trials": 2
+  },
+  "cases": [
+    {
+      "constraint_status": "pass",
+      "facts": {
+        "retention": {
+          "accurate": true,
+          "grounded": true,
+          "passed": true
+        }
+      },
+      "integrity": {
+        "active_selection_preserved": true,
+        "authorized_changes_only": true,
+        "checkout_matches_source": true,
+        "evidence_unchanged": true,
+        "explicit_brain_scope": true,
+        "honest_draft_authorship": true,
+        "no_embedded_execution": true,
+        "plans_before_successful_saves": true,
+        "preserve:clients/northstar.md": true,
+        "preserve:current.md": true,
+        "preserve:systems/export-delivery.md": true,
+        "prompt_unchanged": true,
+        "saved_through_supported_cli": true,
+        "skill_unchanged": true,
+        "valid_saved_corpus_and_links": true
+      },
+      "metrics": {
+        "changed_knowledge_pages": 5,
+        "cli_calls": 19,
+        "cli_errors": 0,
+        "complete_final_pages_read": 4,
+        "elapsed_seconds": 140.644792915,
+        "output_characters": 91787,
+        "shell_calls": 9,
+        "shell_errors": 0
+      },
+      "mutations": {
+        "primary": [
+          "@git_head",
+          "knowledge/inbox/clients/northstar.md",
+          "knowledge/inbox/current.md",
+          "knowledge/inbox/procedures/client-export-runbook.md",
+          "knowledge/inbox/procedures/export-runbook.md",
+          "knowledge/inbox/procedures/index.md",
+          "knowledge/inbox/systems/export-delivery.md",
+          "knowledge/log.md"
+        ],
+        "primary-checkout": [
+          "@git_head",
+          "knowledge/inbox/clients/northstar.md",
+          "knowledge/inbox/current.md",
+          "knowledge/inbox/procedures/client-export-runbook.md",
+          "knowledge/inbox/procedures/export-runbook.md",
+          "knowledge/inbox/procedures/index.md",
+          "knowledge/inbox/systems/export-delivery.md",
+          "knowledge/log.md"
+        ]
+      },
+      "outcomes": {
+        "complete_saved_navigation_and_history_read": true,
+        "final_complete_read:clients/northstar.md": true,
+        "final_complete_read:current.md": true,
+        "final_complete_read:procedures/client-export-runbook.md": true,
+        "final_complete_read:systems/export-delivery.md": true,
+        "final_response_recorded": true,
+        "inbound_links_repaired": true,
+        "installed_skill_read": true,
+        "move_preserves_original": true,
+        "moved_page_read": true,
+        "original_removed_new_path_saved": true,
+        "structured_facts": true
+      },
+      "repetition": 1,
+      "status": "pass",
+      "task": "runbook-move",
+      "task_status": "completed",
+      "reserved_document_paths_read": [
+        "inbox/procedures/index.md",
+        "log.md"
+      ]
+    },
+    {
+      "constraint_status": "pass",
+      "facts": {
+        "retention": {
+          "accurate": true,
+          "grounded": true,
+          "passed": true
+        }
+      },
+      "integrity": {
+        "active_selection_preserved": true,
+        "authorized_changes_only": true,
+        "checkout_matches_source": true,
+        "evidence_unchanged": true,
+        "explicit_brain_scope": true,
+        "honest_draft_authorship": true,
+        "no_embedded_execution": true,
+        "plans_before_successful_saves": true,
+        "preserve:clients/northstar.md": true,
+        "preserve:current.md": true,
+        "preserve:systems/export-delivery.md": true,
+        "prompt_unchanged": true,
+        "saved_through_supported_cli": true,
+        "skill_unchanged": true,
+        "valid_saved_corpus_and_links": true
+      },
+      "metrics": {
+        "changed_knowledge_pages": 5,
+        "cli_calls": 19,
+        "cli_errors": 0,
+        "complete_final_pages_read": 4,
+        "elapsed_seconds": 69.886067957,
+        "output_characters": 87977,
+        "shell_calls": 7,
+        "shell_errors": 0
+      },
+      "mutations": {
+        "primary": [
+          "@git_head",
+          "knowledge/inbox/clients/northstar.md",
+          "knowledge/inbox/current.md",
+          "knowledge/inbox/procedures/client-export-runbook.md",
+          "knowledge/inbox/procedures/export-runbook.md",
+          "knowledge/inbox/procedures/index.md",
+          "knowledge/inbox/systems/export-delivery.md",
+          "knowledge/log.md"
+        ],
+        "primary-checkout": [
+          "@git_head",
+          "knowledge/inbox/clients/northstar.md",
+          "knowledge/inbox/current.md",
+          "knowledge/inbox/procedures/client-export-runbook.md",
+          "knowledge/inbox/procedures/export-runbook.md",
+          "knowledge/inbox/procedures/index.md",
+          "knowledge/inbox/systems/export-delivery.md",
+          "knowledge/log.md"
+        ]
+      },
+      "outcomes": {
+        "complete_saved_navigation_and_history_read": true,
+        "final_complete_read:clients/northstar.md": true,
+        "final_complete_read:current.md": true,
+        "final_complete_read:procedures/client-export-runbook.md": true,
+        "final_complete_read:systems/export-delivery.md": true,
+        "final_response_recorded": true,
+        "inbound_links_repaired": true,
+        "installed_skill_read": true,
+        "move_preserves_original": true,
+        "moved_page_read": true,
+        "original_removed_new_path_saved": true,
+        "structured_facts": true
+      },
+      "repetition": 2,
+      "status": "pass",
+      "task": "runbook-move",
+      "task_status": "completed",
+      "reserved_document_paths_read": [
+        "inbox/procedures/index.md",
+        "log.md"
+      ]
+    }
+  ],
+  "validation": {
+    "linux_tests_passed": 434,
+    "coverage_percent": 87.06,
+    "real_tantivy": true,
+    "real_qmd": true,
+    "standalone_smoke_passed": true
+  },
+  "limits": [
+    "Two targeted Portable KB trials only; prepared wiki cases were not run and no matched performance comparison is claimed.",
+    "Trials overlap, inherited model identity is unknown, and no token/cost telemetry is available.",
+    "Prior baseline/follow-up traces and scores remain separate with their original grading fingerprints.",
+    "Complete saved navigation and history retrieval is independently checked against observed content and pinned citations."
+  ]
+}
