@@ -55,7 +55,7 @@ def test_inline_setup_collects_confirmed_settings(tmp_path: Path) -> None:
     initial = Settings(data_dir=tmp_path / "old-data", cache_dir=tmp_path / "old-cache")
     backend = FakeBackend(
         texts=[str(tmp_path / "brains"), str(tmp_path / "cache")],
-        selections=["semantic", "both"],
+        selections=["qmd", "semantic", "both"],
         confirmation=True,
     )
     output: list[str] = []
@@ -76,7 +76,7 @@ def test_inline_setup_collects_confirmed_settings(tmp_path: Path) -> None:
 def test_inline_setup_can_skip_skill_and_decline_write(tmp_path: Path) -> None:
     backend = FakeBackend(
         texts=[str(tmp_path / "data"), str(tmp_path / "cache")],
-        selections=["keyword", "none"],
+        selections=["qmd", "keyword", "none"],
         confirmation=False,
     )
     output: list[str] = []
@@ -115,7 +115,7 @@ def test_inline_setup_handles_selector_cancellation(tmp_path: Path) -> None:
     )
     agent_cancelled = FakeBackend(
         texts=[str(settings.data_dir), str(settings.cache_dir)],
-        selections=["keyword", None],
+        selections=["qmd", "keyword", None],
         confirmation=None,
     )
 

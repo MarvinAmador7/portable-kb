@@ -51,6 +51,8 @@ def test_non_interactive_setup_and_doctor(tmp_path: Path, monkeypatch) -> None:
             str(cache),
             "--search-mode",
             "semantic",
+            "--search-provider",
+            "qmd",
         ],
     )
     assert result.exit_code == 0, result.output

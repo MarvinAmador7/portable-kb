@@ -8,7 +8,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Protocol
 
-from .settings import SearchMode, Settings
+from .settings import SearchMode, SearchProvider, Settings
 from .skills import SkillTarget
 
 
@@ -148,7 +148,7 @@ def run_setup_prompts(
     write("┌  portable-kb")
     write("│")
     write("◇  Local setup")
-    write("│  Git-backed knowledge · local QMD search · explicit agent access")
+    write("│  Git-backed knowledge · local keyword search · explicit agent access")
     try:
         write("│")
         write("◇  Storage")
@@ -161,13 +161,22 @@ def run_setup_prompts(
 
         write("│")
         write("◇  Retrieval")
+        selected_provider = prompts.select(
+            "Select local search provider",
+            choices=(PromptChoice("Tantivy · built in, no models", "builtin"),
+                     PromptChoice("QMD · external provider", "qmd")),
+            default=initial.search_provider.value,
+        )
+        if selected_provider is None:
+            return _cancel(write)
+        provider = SearchProvider(selected_provider)
         selected_mode = prompts.select(
             "Select local search mode",
             choices=tuple(
                 PromptChoice(mode.label, mode.value)
-                for mode in (SearchMode.KEYWORD, SearchMode.SEMANTIC, SearchMode.FULL)
+                for mode in ((SearchMode.KEYWORD,) if provider is SearchProvider.BUILTIN else (SearchMode.KEYWORD, SearchMode.SEMANTIC, SearchMode.FULL))
             ),
-            default=initial.search_mode.value,
+            default=initial.search_mode.value if provider is SearchProvider.QMD else "keyword",
         )
         if selected_mode is None:
             return _cancel(write)
@@ -192,13 +201,15 @@ def run_setup_prompts(
             cache_dir=Path(cache_dir.strip()).expanduser().resolve(),
             search_mode=SearchMode(selected_mode),
             qmd_command=initial.qmd_command,
+            native_command=initial.native_command,
+            search_provider=provider,
         )
         skill_choice = SetupSkillChoice(selected_skill)
         write("│")
         write("◇  Review")
         write(f"│  Brains   {settings.data_dir}")
         write(f"│  Cache    {settings.cache_dir}")
-        write(f"│  Search   {settings.search_mode.label}")
+        write(f"│  Search   {settings.search_provider.value} · {settings.search_mode.label}")
         write(f"│  Agents   {_skill_label(skill_choice)}")
         write("│")
         confirmed = prompts.confirm("Write this local configuration?", default=True)

@@ -46,6 +46,9 @@ def main() -> None:
         )
 
     repository = Path.cwd()
+    native = repository / "target/release/pkb-search"
+    if not native.is_file() or native.is_symlink():
+        raise RuntimeError("Build the native pkb-search sidecar before packaging pkb")
     build_root = repository / "build" / "standalone" / arguments.target
     distribution = build_root / "dist"
     specification = build_root / "spec"
@@ -67,6 +70,8 @@ def main() -> None:
         str(build_root / "work"),
         "--specpath",
         str(specification),
+        "--add-binary",
+        f"{native}{os.pathsep}.",
         "--collect-data",
         "portable_kb",
         "--copy-metadata",
@@ -118,6 +123,18 @@ def main() -> None:
         brain_payload = json.loads(brain_result.stdout)
         if brain_payload.get("active") is not True:
             raise RuntimeError("Standalone executable could not initialize a valid local brain")
+        index_result = run(
+            str(executable), "search", "index", "--config", str(config),
+            "--as-of", "2026-08-13", "--json", env=environment,
+        )
+        if json.loads(index_result.stdout).get("provider") != "builtin":
+            raise RuntimeError("Standalone executable omitted its Tantivy provider")
+        query_result = run(
+            str(executable), "search", "query", "standalone smoke", "--config", str(config),
+            "--as-of", "2026-08-13", "--json", env=environment,
+        )
+        if json.loads(query_result.stdout).get("provider") != "builtin":
+            raise RuntimeError("Standalone executable cannot query its Tantivy index")
         skill_result = run(
             str(executable),
             "skill",

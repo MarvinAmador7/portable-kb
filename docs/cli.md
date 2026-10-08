@@ -350,6 +350,29 @@ published versions with `pkb brain sync --json`.
 
 ## Keyword index and search
 
+New setup selects the bundled Tantivy engine (`builtin`) for model-free keyword
+search. Existing QMD configurations remain unchanged. To choose explicitly:
+
+```console
+pkb setup --search-provider builtin
+pkb setup --search-provider qmd
+```
+
+Non-interactive setup also accepts `--search-provider` and `--search-command`.
+Builtin supports keyword mode only. The standalone release embeds the sidecar;
+Python-wheel installations need `pkb-search` on PATH or an explicit command.
+Switching provider requires `pkb search index` for the selected provider.
+
+Builtin indexes normalized sections in `<cache>/search/builtin/<slug>/` using
+immutable generations and atomic publication. Native hits include byte offsets
+into leased source records; Python verifies those sections against canonical
+knowledge before producing item-level, deduplicated citations with source line
+ranges. Failed/interrupted builds preserve the selected generation; post-build
+cleanup skips active readers. Brain removal refuses when native readers still
+hold generation leases. See [native storage](native-index-recovery.md).
+
+The same index/query/evaluation commands work with either provider. For QMD:
+
 QMD must already resolve through the configured command; Portable KB does not
 install it automatically. Versions `>=2.5.0,<3.0.0` are accepted, and CI runs
 the adapter against pinned `@tobilu/qmd@2.8.3`. The implemented model-free
@@ -379,6 +402,25 @@ the brain ID/slug, immutable item ID, bundle-relative path, type, lifecycle
 status, `stale_after`, and exact Git commit. Draft, deprecated, and stale
 signals are visible rather than silently promoted or hidden; this first slice
 does not apply an authority filter.
+
+## Retrieval evaluation
+
+Evaluate an already indexed brain with explicit JSON relevance labels and an
+explicit validation date:
+
+```console
+pkb search evaluate labels.json --brain <slug> --as-of 2026-08-17 --repeat 2
+```
+
+This command emits a JSON report with item-level precision at 5, recall at 10,
+reciprocal rank at 10, NDCG at 10, no-result accuracy, citation checks, repeated
+ranking stability, and end-to-end query latency. It never installs a provider
+or model, changes the brain, or rebuilds an index. Labels referring to absent
+item IDs, unhealthy brains, outdated indexes, and incorrect citations fail
+closed. Use `--config` to evaluate an isolated installation.
+
+See [retrieval evaluation](retrieval-evaluation.md) for the label format, metric
+definitions, starter QMD baseline, and comparison limits.
 
 ## Complete-item retrieval
 

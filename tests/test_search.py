@@ -15,6 +15,7 @@ from portable_kb.search import (
     qmd_status,
     search_keyword,
 )
+from portable_kb.search_provider import SearchHit
 from portable_kb.settings import Settings
 
 
@@ -256,3 +257,49 @@ def _git(repository: Path, *arguments: str) -> None:
         capture_output=True,
         text=True,
     )
+
+
+def test_alternative_provider_uses_shared_governance_and_citations(
+    tmp_path: Path, brain_repo_factory, fake_qmd, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from portable_kb import search
+
+    settings, _source = _installed_settings(tmp_path, brain_repo_factory, fake_qmd)
+    indexed = index_keyword_brain(settings, as_of="2026-08-12")
+
+    class TestProvider:
+        name = "test-ranker"
+        hits = [SearchHit("procedures/review-stale-knowledge.md", 25.0, "Provider title")]
+        calls = 0
+
+        def load_metadata(self, slug):
+            return {**indexed, "provider": self.name}
+
+        def query(self, brain, query, limit):
+            self.calls += 1
+            return self.hits
+
+    provider = TestProvider()
+    monkeypatch.setattr(search, "get_search_provider", lambda settings: provider)
+    found = search_keyword(settings, "review", as_of="2026-08-12")
+    assert found["provider"] == "test-ranker"
+    hit = found["results"][0]
+    assert hit["score"] == 25.0
+    assert hit["item_id"] == "urn:uuid:0adaf3c7-c3e0-4cdc-85f4-90438dd72020"
+    assert hit["citation"]["commit"] == indexed["commit"]
+    for unsafe in ("../brain.yaml", "index.md", ".hidden.md", "absent.md"):
+        provider.hits = [SearchHit(unsafe, 1.0, "Unsafe")]
+        with pytest.raises(SearchError):
+            search_keyword(settings, "review", as_of="2026-08-12")
+    for bad_hit in (
+        SearchHit(hit["path"], float("nan"), "Bad score"),
+        SearchHit(hit["path"], 1.0, "Bad line", line=99999),
+    ):
+        provider.hits = [bad_hit]
+        with pytest.raises(SearchError):
+            search_keyword(settings, "review", as_of="2026-08-12")
+    calls = provider.calls
+    (settings.data_dir / "brains/search-brain/knowledge/extra.md").write_text("Uncommitted")
+    with pytest.raises(SearchError, match="not clean"):
+        search_keyword(settings, "review", as_of="2026-08-12")
+    assert provider.calls == calls

@@ -85,6 +85,50 @@ jobs:
           "${RUNNER_TEMP}/package-smoke/bin/pkb" --version
           "${RUNNER_TEMP}/package-smoke/bin/pkb" --help >/dev/null
 
+  search-prototypes:
+    name: SQLite / Tantivy / QMD search prototypes
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Install benchmark dependencies
+        run: |
+          python -m pip install -e ".[dev]"
+          npm install --global @tobilu/qmd@2.8.3
+          rustup toolchain install 1.90.0 --profile minimal --component rustfmt --component clippy
+      - name: Check and build the Rust prototype
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --locked
+          cargo build --release --locked
+      - name: Test normalized sections, both engines, and native recovery
+        env:
+          PKB_TANTIVY_COMMAND: ${{ github.workspace }}/target/release/pkb-search
+          PKB_BENCHMARK_REFERENCE_EXPORT: ${{ runner.temp }}/pkb-reference-corpus
+        run: python -m pytest -q tests/test_search_records.py tests/test_search_benchmarks.py tests/test_search_recovery.py tests/test_tantivy_provider.py
+      - name: Compare shared reference and scale corpora
+        run: |
+          python -m benchmarks.search run "${RUNNER_TEMP}/pkb-reference-corpus" --output "${RUNNER_TEMP}/pkb-prototype-results/reference" --tantivy target/release/pkb-search --qmd qmd
+          python -m benchmarks.search generate --items 1000 --output "${RUNNER_TEMP}/pkb-scale-corpus"
+          python -m benchmarks.search run "${RUNNER_TEMP}/pkb-scale-corpus" --output "${RUNNER_TEMP}/pkb-prototype-results/1000" --tantivy target/release/pkb-search --qmd qmd
+      - name: Retain provider comparison reports
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: search-prototype-comparison
+          path: ${{ runner.temp }}/pkb-prototype-results/**/report.json
+          if-no-files-found: error
+
   qmd-compatibility:
     name: QMD 2.8.3 compatibility
     runs-on: ubuntu-24.04
@@ -109,4 +153,11 @@ jobs:
       - name: Exercise real keyword indexing and retrieval
         env:
           PKB_REAL_QMD: "1"
+          PKB_QMD_EVALUATION_REPORT: ${{ runner.temp }}/qmd-evaluation.json
         run: python -m pytest -q tests/test_qmd_integration.py
+      - name: Retain labeled QMD baseline report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: qmd-evaluation
+          path: ${{ runner.temp }}/qmd-evaluation.json
+          if-no-files-found: error

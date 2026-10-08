@@ -14,7 +14,7 @@ fixture. Knowledge brains live in their own repositories and are created with
 brain. A first consumer slice adds the `pkb` command, inline terminal setup
 prompts, and safe Git-backed brain installation and synchronization. It also
 provides isolated
-QMD BM25 indexing, cited keyword search, complete-item retrieval, and one
+Tantivy/QMD keyword indexing, cited keyword search, complete-item retrieval, and one
 portable workflow skill for Codex and Claude Code without model downloads.
 Plan-first authoring commands can create drafts and materially update existing
 items without silently publishing them, and an explicit push command safely
@@ -32,7 +32,9 @@ pkb --version
 pkb setup
 ```
 
-The installer detects Intel or ARM, downloads the matching standalone release,
+The standalone release embeds its native Tantivy engine. New setup uses it for
+keyword search; existing QMD configurations keep their provider. The installer
+detects Intel or ARM, downloads the matching standalone release,
 verifies it against the release `SHA256SUMS`, and atomically installs `pkb`
 under `~/.local/bin`. It does not require a system Python. Re-run the same
 command to upgrade to the latest release, or pin a release:
@@ -346,6 +348,17 @@ Primary references:
 - [Open Knowledge Format v0.2 specification](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)
 - [Original Google Cloud OKF announcement](https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing/)
 - [Google Cloud OKF v0.2 trust-signals announcement](https://cloud.google.com/blog/products/data-analytics/okf-v0-2-adds-trust-signals/)
+
+Keyword search now has an internal provider boundary and an item-level labeled
+evaluation command, `pkb search evaluate`. The real-QMD CI job retains a starter
+baseline report. The builtin Tantivy provider is integrated with canonical
+section checks, atomic rebuilds, recovery, reader leases, and safe cleanup.
+Shared SQLite/Tantivy benchmarks compare line-cited sections with QMD and
+exercise synthetic corpora through 100,000 items. See
+[retrieval evaluation](docs/retrieval-evaluation.md),
+[prototype benchmarks](docs/search-prototype-benchmarks.md),
+[native rebuild/recovery contract](docs/native-index-recovery.md), and the
+[built-in search plan](docs/pkb-search.md) for measured results and remaining work.
 
 ## Deferred capabilities
 

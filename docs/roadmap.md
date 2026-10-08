@@ -12,7 +12,7 @@ describe retrieval/integrations. Phases are gates, not calendar estimates.
 | 2 — Validation | Implemented | `portable_kb.validate_bundle()` covers the rule catalog with stable structured findings and offline explicit-date behavior. |
 | 3 — Lifecycle operations | Implemented | Reviewable planners cover create, update, promote, reverify, move, supersede, and archive with base/proposed validation and optimistic application. |
 | 4 — Test corpus | Implemented | Focused fixtures and transition/operation tests assert every catalog rule; time and network behavior are deterministic. |
-| 5 — Retrieval and CLI consumers | In progress | Inline/non-interactive setup, checksum-verified standalone CLI releases, local-first brain initialization with optional GitHub publication, plan-first draft creation and material update, explicit validated fast-forward push/sync, brain distribution, QMD BM25 search, complete-item retrieval, and setup-integrated Codex/Claude skill installation are implemented. Semantic/hybrid retrieval, trust filtering, and retrieval evaluation remain pending. |
+| 5 — Retrieval and CLI consumers | In progress | Inline/non-interactive setup, checksum-verified standalone CLI releases, local-first brain initialization with optional GitHub publication, plan-first draft creation and material update, explicit validated fast-forward push/sync, brain distribution, QMD BM25 search, complete-item retrieval, and setup-integrated Codex/Claude skill installation are implemented. The keyword provider boundary, labeled evaluation harness, normalized section records, SQLite/Tantivy prototypes, initial shared-corpus benchmarks, and native atomic rebuild/recovery with concurrent readers and reader-safe generation cleanup are implemented. Tantivy is integrated as the builtin provider, and native distribution is wired into the 0.2.0 release gate. Remote release validation, representative domain evaluations, semantic/hybrid retrieval, and trust filtering remain pending. |
 | 6+ — Applications and integrations | Deferred | MCP, native UI, authentication/authorization, and connectors remain outside the current implementation. |
 
 Technical implementation does not substitute for human governance. When a
@@ -202,11 +202,16 @@ search is the default setup tier and requires no model download.
   optional GitHub publication, manifest, install, catalog, selection, local
   status, and explicit validated fast-forward push/sync implemented);
 - a QMD adapter with one disposable index per selected worldview (BM25
-  indexing and keyword queries implemented);
+  indexing and keyword queries implemented), plus development-only native
+  atomic rebuild/recovery, concurrent-reader validation, and reader-safe
+  generation cleanup;
 - visible draft/deprecated/stale handling and a trust-policy boundary;
 - result citations retaining bundle, immutable item ID, path, and Git commit
   (implemented for keyword queries and complete-item retrieval);
-- keyword/semantic/hybrid retrieval evaluations; and
+- keyword/semantic/hybrid retrieval evaluations (item-level keyword harness,
+  reference section judgments, shared QMD/SQLite/Tantivy comparison, and synthetic
+  scale runs implemented; representative domain and semantic/hybrid evaluation
+  pending); and
 - machine-readable output for agent skills and future native clients
   (implemented for search, retrieval, and skill installation).
 
@@ -225,6 +230,10 @@ model-dependent embeddings, and hidden filtering.
 **Still deferred from this phase:** hosted search, organization identity,
 authorization, cross-organization multitenancy, background synchronization,
 MCP publication, and serving APIs.
+
+See [the built-in search plan](pkb-search.md) for the provider sequence and
+[retrieval evaluation](retrieval-evaluation.md) for labels, metrics, and the
+starter baseline's limits.
 
 ## Phase 6 — External integrations (high level only)
 
