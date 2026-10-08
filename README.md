@@ -275,6 +275,11 @@ boundary. See [agent evaluation setup and scoring](docs/agent-cli-evals.md) for
 individual scenarios, regrading, and limits. Retrieval relevance is evaluated
 separately with [`pkb search evaluate`](docs/retrieval-evaluation.md).
 
+To compare a Markdown wiki and its skill with Portable KB on the same captured
+knowledge, use the [matched-content agent benchmark](docs/wiki-comparison.md).
+It checks migration fidelity, independently grounded answers and observed effort,
+with private corpora and reports kept outside the repository.
+
 ## Documentation
 
 | Guide | What it covers |
@@ -283,6 +288,7 @@ separately with [`pkb search evaluate`](docs/retrieval-evaluation.md).
 | [Releases and installation](docs/releases.md) | Supported artifacts, checksums, upgrades, and recovery |
 | [Authoring handbook](docs/authoring-handbook.md) | Sources, lifecycle, and human review |
 | [Agent evaluations](docs/agent-cli-evals.md) | Actual CLI/skill trials, traces, and outcome grading |
+| [Wiki comparison](docs/wiki-comparison.md) | Matched wiki/Portable KB trials and CLI-based replication |
 | [Retrieval evaluation](docs/retrieval-evaluation.md) | Ranking quality, citation checks, and measured results |
 | [Native search](docs/pkb-search.md) | Tantivy integration and provider architecture |
 | [Architecture](docs/architecture.md) | Product boundaries, compatibility, and design decisions |

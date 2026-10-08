@@ -92,7 +92,9 @@ When future `knowledge/` concept files exist:
   mapping, namespace them, or update the profile through review.
 - Use body prose and normal Markdown links or resolved Portable KB wikilinks to
 explain relationships (see `docs/links.md`). Read-only link navigation is now
-authorized; whole-wiki import and graph databases remain deferred. Typed relation IDs
+authorized. Explicitly requested private wiki replication through existing CLI
+plans and matched-content wiki/skill benchmarks are authorized development work;
+production whole-wiki import and graph databases remain deferred. Typed relation IDs
   supplement rather than replace readable links.
 - Never silently overwrite, merge, delete, resolve a conflict, or infer
   supersession from semantic similarity.
