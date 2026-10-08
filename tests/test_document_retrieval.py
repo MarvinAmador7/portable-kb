@@ -32,7 +32,20 @@ def installed(tmp_path, brain_repo_factory):
 
 
 def git(root, *args):
-    return subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True).stdout
+    return subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.name=Document Test",
+            "-c",
+            "user.email=document-test@example.invalid",
+            *args,
+        ],
+        check=True,
+        capture_output=True,
+    ).stdout
 
 
 @pytest.mark.parametrize("path", ["index.md", "log.md", "curated/concepts/index.md"])
