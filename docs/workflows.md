@@ -23,6 +23,14 @@ integrations, and hosted workflows are not yet implemented.
 | Promote/deprecate/supersede | Approve when authoritative | Prepare atomic diff and validation report. |
 | Maintain indexes | Review generated change when material | Generate deterministically in a later phase. |
 
+## Read linked context
+
+Use `pkb links <item> --brain <slug> --json` and `pkb backlinks <item>` to
+inspect relationships before answering or planning changes. Follow only resolved
+links, retain explicit brain scope, retrieve complete target items, and cite
+their own pinned versions. Missing or ambiguous links remain diagnostics, not
+permission to invent a target. See [link navigation](links.md).
+
 ## 1. Capture
 
 **Purpose:** record an idea, fact, question, or source before it disappears,

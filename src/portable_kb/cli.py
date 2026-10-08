@@ -49,6 +49,7 @@ from .search import (
     get_search_provider,
     index_keyword_brain,
     keyword_index_path,
+    knowledge_links,
     qmd_status,
     search_keyword,
 )
@@ -298,7 +299,7 @@ def doctor(
 def get_item(
     reference: Annotated[
         str,
-        typer.Argument(help="Immutable item ID or knowledge-bundle-relative Markdown path."),
+        typer.Argument(help="Item UUID, bundle-relative path, unique slug, or [[wikilink]]."),
     ],
     slug: Annotated[
         str | None,
@@ -316,12 +317,15 @@ def get_item(
         bool,
         typer.Option("--json", help="Emit the complete cited item as JSON."),
     ] = False,
+    markdown_links: Annotated[
+        bool, typer.Option("--markdown-links", help="Add a standard Markdown view of resolved wikilinks."),
+    ] = False,
 ) -> None:
     """Retrieve a complete knowledge item from the current pinned brain."""
 
     settings = _load_cli_settings(config_path)
     try:
-        result = get_knowledge_item(settings, reference, slug, as_of=as_of)
+        result = get_knowledge_item(settings, reference, slug, as_of=as_of, markdown_links=markdown_links)
     except (BrainError, SearchError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
@@ -334,7 +338,75 @@ def get_item(
         f"{citation['path']} ({citation['item_id']})"
     )
     typer.echo()
-    typer.echo(result["item"]["content"], nl=False)
+    typer.echo(result["item"].get("rendered_content", result["item"]["content"]), nl=False)
+
+
+@app.command("links")
+def links_item(
+    reference: Annotated[
+        str, typer.Argument(help="Item UUID, path, unique slug, or [[wikilink]].")
+    ],
+    slug: Annotated[
+        str | None, typer.Option("--brain", help="Installed brain; defaults to active.")
+    ] = None,
+    config_path: Annotated[Path | None, typer.Option("--config")] = None,
+    as_of: Annotated[str | None, typer.Option("--as-of")] = None,
+    json_output: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    """List outgoing concept links and unresolved targets without a search index."""
+    _links_output(reference, slug, config_path, as_of, json_output, backlinks=False)
+
+
+@app.command("backlinks")
+def backlinks_item(
+    reference: Annotated[
+        str, typer.Argument(help="Item UUID, path, unique slug, or [[wikilink]].")
+    ],
+    slug: Annotated[
+        str | None, typer.Option("--brain", help="Installed brain; defaults to active.")
+    ] = None,
+    config_path: Annotated[Path | None, typer.Option("--config")] = None,
+    as_of: Annotated[str | None, typer.Option("--as-of")] = None,
+    json_output: Annotated[bool, typer.Option("--json")] = False,
+) -> None:
+    """Find concept pages that link to an item in the selected pinned brain."""
+    _links_output(reference, slug, config_path, as_of, json_output, backlinks=True)
+
+
+def _links_output(
+    reference: str,
+    slug: str | None,
+    config_path: Path | None,
+    as_of: str | None,
+    json_output: bool,
+    *,
+    backlinks: bool,
+) -> None:
+    settings = _load_cli_settings(config_path)
+    try:
+        result = knowledge_links(settings, reference, slug, backlinks=backlinks, as_of=as_of)
+    except (BrainError, SearchError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if json_output:
+        typer.echo(json.dumps(result, indent=2, sort_keys=True))
+        return
+    citation = result["citation"]
+    typer.echo(
+        f"{result['direction'].title()} links: {citation['brain_slug']}@{citation['commit'][:12]}:{citation['path']}"
+    )
+    for link in result["links"]:
+        source = link["source_citation"]["path"]
+        target = link["target_citation"]["path"] if link["target_citation"] else link["target"]
+        typer.echo(
+            f"{source}:{link['line']} -> {target} [{link['resolution']}; {link['target_status'] or 'unknown'}]"
+        )
+        if link["candidates"]:
+            typer.echo("  Candidates: " + ", ".join(link["candidates"]))
+        if link["get_command"]:
+            typer.echo("  " + shlex.join(link["get_command"]))
+    if not result["links"]:
+        typer.echo("No concept links found.")
 
 
 @brain_app.command("add")

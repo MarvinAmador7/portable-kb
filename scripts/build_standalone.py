@@ -13,6 +13,7 @@ import tarfile
 import tempfile
 from pathlib import Path
 
+import portable_kb
 from portable_kb import __version__
 
 
@@ -20,6 +21,26 @@ def run(*arguments: str, env: dict[str, str] | None = None) -> subprocess.Comple
     """Run one required build command with captured text output."""
 
     return subprocess.run(arguments, check=True, capture_output=True, text=True, env=env)
+
+
+def require_current_package(repository: Path, package: Path) -> None:
+    """A matching version alone cannot establish the installed build inputs."""
+    trees = (
+        (repository / "src/portable_kb", package, "*.py"),
+        (repository / "schemas", package / "schemas", "*"),
+        (repository / ".agents/skills/portable-kb", package / "skills/portable-kb", "*"),
+    )
+    for source, installed, pattern in trees:
+        for original in source.rglob(pattern):
+            if not original.is_file():
+                continue
+            candidate = installed / original.relative_to(source)
+            if (candidate.is_symlink() or not candidate.is_file()
+                    or candidate.read_bytes() != original.read_bytes()):
+                raise RuntimeError(
+                    f"Installed build input differs from checkout: {original.relative_to(repository)}. "
+                    "Build and install the current wheel before freezing the CLI."
+                )
 
 
 def main() -> None:
@@ -46,6 +67,7 @@ def main() -> None:
         )
 
     repository = Path.cwd()
+    require_current_package(repository, Path(portable_kb.__file__).resolve().parent)
     native = repository / "target/release/pkb-search"
     if not native.is_file() or native.is_symlink():
         raise RuntimeError("Build the native pkb-search sidecar before packaging pkb")
@@ -150,6 +172,8 @@ def main() -> None:
         skill = Path(temporary_home) / ".agents/skills/portable-kb/SKILL.md"
         if not skill.is_file():
             raise RuntimeError("Standalone executable omitted the bundled agent skill")
+        if skill.read_bytes() != (repository / ".agents/skills/portable-kb/SKILL.md").read_bytes():
+            raise RuntimeError("Standalone executable bundled an outdated agent skill")
 
     archive = arguments.output / f"pkb-v{__version__}-{arguments.target}.tar.gz"
     with tarfile.open(archive, "w:gz") as tar:

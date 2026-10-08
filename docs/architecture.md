@@ -133,7 +133,8 @@ Use a hybrid:
 
 - a shallow, stable folder structure for dominant workflow/context;
 - `type`, `status`, and immutable `id` for document semantics;
-- normal Markdown links for understandable relationships;
+- normal Markdown links and resolved local wikilinks for understandable
+  relationships, with UUID-backed navigation and a standard Markdown view;
 - only `related`, `supersedes`, and `superseded_by` as typed ID relations in
   v0.1; and
 - tags for cross-cutting discovery, never for lifecycle or authority.
@@ -325,7 +326,7 @@ own durable identifiers.
 | Current OKF compatibility | Targets v0.2 names, status values, actors, links, indexes, and logs; extensions are permitted. |
 | Human usability | Plain files, readable names, one-sentence descriptions, predictable body sections. |
 | Agent usability | Deterministic frontmatter, stable IDs, explicit states, citations, and proposed schema. |
-| Portability | UTF-8, CommonMark-compatible Markdown, YAML 1.2, relative/bundle links, no runtime dependency. |
+| Portability | UTF-8, YAML 1.2, standard Markdown links; optional local wikilinks have a derived CommonMark view. |
 | Git friendliness | Small text files, stable formatting, no generated binary state, explicit move rules. |
 | Extensibility | Namespaced extensions, open Markdown body, stable future consumer boundary. |
 | Provenance quality | Conditional source requirements, claim citations, actors, method, verification, Git history. |

@@ -17,6 +17,7 @@ from ruamel.yaml import YAML
 
 from .changes import ChangeSet, diff_trees
 from .indexes import generate_indexes
+from .links import LinkIndex
 from .models import ValidationReport
 from .parsing import RESERVED_NAMES, discover_concepts, parse_concept
 from .serialization import load_editable, quoted, render_concept
@@ -554,12 +555,15 @@ def _move_and_rewrite(root: Path, source: str, destination: str) -> None:
         if result.item is None:
             raise OperationError(f"Cannot move while a concept is unparseable: {path}")
         parsed_items.append(result.item)
+    link_index = LinkIndex(parsed_items, root)
+    rewritten_wiki = {item.relative_path: link_index.rewrite_wiki_move(item, source, destination)
+                      for item in parsed_items}
     destination_file.parent.mkdir(parents=True, exist_ok=True)
     source_file.replace(destination_file)
     for item in parsed_items:
         old_item_path = item.relative_path
         new_item_path = destination if old_item_path == source else old_item_path
-        rewritten = _rewrite_links(item.body, old_item_path, new_item_path, source, destination)
+        rewritten = _rewrite_links(rewritten_wiki[old_item_path], old_item_path, new_item_path, source, destination)
         target_path = root / new_item_path
         if rewritten != item.body or old_item_path == source:
             metadata, _body = load_editable(target_path, root)

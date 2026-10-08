@@ -8,8 +8,9 @@
   relationships, handling, then extensions.
 - Lists use block style. Empty optional lists are omitted.
 - The body begins with one H1 matching `title`; type sections use H2 headings.
-- Internal links are ordinary Markdown links. Tool-specific wiki links and
-  executable embedded HTML are not canonical.
+- Internal links use ordinary Markdown or resolved Portable KB wikilinks;
+  see [link resolution and Markdown views](links.md). Executable embedded HTML
+  remains disallowed. Reserved indexes/logs retain standard Markdown links.
 - Index entries use `* [Title](target) - description` and deterministic
   case-insensitive title ordering.
 - Log date headings are newest first.

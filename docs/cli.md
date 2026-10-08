@@ -504,3 +504,12 @@ an unrelated active brain's doctor summary.
 See [agent CLI evaluations](agent-cli-evals.md) for running real agents against
 an installed executable and its bundled skill, capturing traces, grading
 canonical outcomes, and comparing baseline and candidate reports.
+
+## Links and backlinks
+
+`pkb links <UUID|path|slug> --brain <slug> --json` lists outgoing concept links;
+`pkb backlinks` lists inbound occurrences. Both retain pinned citations, expose
+unresolved draft targets and require no keyword index. `pkb get` also accepts
+unique slugs and `[[wikilinks]]`; `--markdown-links` adds a derived standard
+Markdown view while keeping canonical JSON content unchanged. See
+[link syntax, diagnostics, and move behavior](links.md).

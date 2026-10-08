@@ -15,6 +15,7 @@ from jsonschema.exceptions import ValidationError
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString
 
+from .links import LinkIndex
 from .models import Finding, KnowledgeItem, Severity, ValidationReport, sorted_findings
 from .parsing import discover_concepts, discover_reserved, iter_mapping_paths, parse_concept
 
@@ -955,17 +956,6 @@ def _validate_body(item: KnowledgeItem) -> list[Finding]:
                 remediation="Mirror a lawful static artifact or use a descriptive external link.",
             )
         )
-    if re.search(r"\[\[[^\]]+\]\]", item.body):
-        severity = Severity.ERROR if item.status == "stable" else Severity.WARNING
-        findings.append(
-            _finding(
-                "KB-W407",
-                severity,
-                item,
-                "Tool-specific wiki-link syntax is present.",
-                remediation="Replace it with an ordinary Markdown link.",
-            )
-        )
     if item.status == "stable" and re.search(r"\b(TODO|TBD|REPLACE_[A-Z0-9_]+)\b", item.body):
         findings.append(
             _finding(
@@ -1021,10 +1011,11 @@ def _validate_corpus(root: Path, items: Sequence[KnowledgeItem], as_of: date) ->
                     )
                 )
 
+    link_index = LinkIndex(items, root)
     relation_edges: dict[str, set[str]] = defaultdict(set)
     for item in items:
-        findings.extend(_validate_links(item, root, by_path, inbound))
-        findings.extend(_validate_relations(item, by_id, relation_edges, as_of))
+        findings.extend(_validate_links(item, link_index, inbound))
+        findings.extend(_validate_relations(item, by_id, relation_edges, as_of, link_index))
         for index, source in enumerate(
             item.metadata.get("sources", [])
             if isinstance(item.metadata.get("sources"), list)
@@ -1153,74 +1144,28 @@ def _indexed_concept_paths(root: Path) -> set[str]:
 
 def _validate_links(
     item: KnowledgeItem,
-    root: Path,
-    by_path: Mapping[str, KnowledgeItem],
+    index: LinkIndex,
     inbound: Counter[str],
 ) -> list[Finding]:
     findings: list[Finding] = []
-    for target in MARKDOWN_LINK.findall(item.body):
-        parsed = urlsplit(target)
-        if parsed.scheme or target.startswith(("#", "mailto:")):
-            continue
-        clean = unquote(parsed.path)
-        if not clean:
-            continue
-        if clean.startswith("/"):
-            resolved = PurePosixPath(clean.lstrip("/"))
-        else:
-            resolved = PurePosixPath(item.relative_path).parent / clean
-        normalized = _normalize_posix(resolved)
-        if normalized == ".." or normalized.startswith("../"):
+    for link in index.outgoing(item):
+        if link.status == "resolved" and link.item is not None:
+            inbound[link.item.relative_path] += 1
+        elif link.status not in {"external", "resource"}:
+            curated = item.status == "stable" and not item.relative_path.startswith("inbox/")
+            code = (
+                "KB-W407" if link.reference.kind == "wiki" else "KB-E404" if curated else "KB-W405"
+            )
+            candidates = f"; candidates: {', '.join(link.candidates)}" if link.candidates else ""
             findings.append(
                 _finding(
-                    "KB-E404"
-                    if item.status == "stable" and not item.relative_path.startswith("inbox/")
-                    else "KB-W405",
-                    Severity.ERROR
-                    if item.status == "stable" and not item.relative_path.startswith("inbox/")
-                    else Severity.WARNING,
+                    code,
+                    Severity.ERROR if curated else Severity.WARNING,
                     item,
-                    f"Internal Markdown link escapes the bundle: {target}",
-                    remediation="Use a bundle-contained path or an absolute external URL.",
+                    f"Internal {link.reference.kind} link is {link.status}: {link.reference.target}{candidates}",
+                    remediation="Use a unique bundle-contained concept path and an existing heading. Labels do not resolve ambiguity.",
                 )
             )
-        else:
-            candidate = (root / normalized).resolve()
-            try:
-                candidate.relative_to(root.resolve())
-            except ValueError:
-                findings.append(
-                    _finding(
-                        "KB-E404"
-                        if item.status == "stable" and not item.relative_path.startswith("inbox/")
-                        else "KB-W405",
-                        Severity.ERROR
-                        if item.status == "stable" and not item.relative_path.startswith("inbox/")
-                        else Severity.WARNING,
-                        item,
-                        f"Internal Markdown link resolves outside the bundle: {target}",
-                        remediation="Replace the symlinked or escaping target with a safe resource.",
-                    )
-                )
-                continue
-            if normalized in by_path:
-                inbound[normalized] += 1
-            elif candidate.exists():
-                continue
-            else:
-                findings.append(
-                    _finding(
-                        "KB-E404"
-                        if item.status == "stable" and not item.relative_path.startswith("inbox/")
-                        else "KB-W405",
-                        Severity.ERROR
-                        if item.status == "stable" and not item.relative_path.startswith("inbox/")
-                        else Severity.WARNING,
-                        item,
-                        f"Internal Markdown link does not resolve: {target}",
-                        remediation="Correct the target path or add the missing concept in the same change.",
-                    )
-                )
     return findings
 
 
@@ -1244,9 +1189,11 @@ def _validate_relations(
     by_id: Mapping[str, Sequence[KnowledgeItem]],
     edges: dict[str, set[str]],
     as_of: date,
+    link_index: LinkIndex,
 ) -> list[Finding]:
     findings: list[Finding] = []
-    body_targets = _body_link_paths(item)
+    body_targets = {link.item.relative_path for link in link_index.outgoing(item)
+                    if link.status == "resolved" and link.item is not None}
     for field in ("related", "supersedes", "superseded_by"):
         values = item.metadata.get(field, [])
         if not isinstance(values, list):
@@ -1314,21 +1261,6 @@ def _validate_relations(
                     )
     return findings
 
-
-def _body_link_paths(item: KnowledgeItem) -> set[str]:
-    result: set[str] = set()
-    for target in MARKDOWN_LINK.findall(item.body):
-        parsed = urlsplit(target)
-        if parsed.scheme or target.startswith("#") or not parsed.path.endswith(".md"):
-            continue
-        if parsed.path.startswith("/"):
-            resolved = PurePosixPath(parsed.path.lstrip("/"))
-        else:
-            resolved = PurePosixPath(item.relative_path).parent / unquote(parsed.path)
-        normalized = _normalize_posix(resolved)
-        if normalized != ".." and not normalized.startswith("../"):
-            result.add(normalized)
-    return result
 
 
 def _validate_supersession_graph(
@@ -1753,22 +1685,18 @@ def _is_material_change(
 
 
 def _canonical_link_body(item: KnowledgeItem, by_path: Mapping[str, KnowledgeItem]) -> str:
-    def replace(match: re.Match[str]) -> str:
-        target = match.group(1)
-        parsed = urlsplit(target)
-        if parsed.scheme or target.startswith(("#", "mailto:")):
-            return match.group(0)
-        if parsed.path.startswith("/"):
-            resolved = PurePosixPath(parsed.path.lstrip("/"))
-        else:
-            resolved = PurePosixPath(item.relative_path).parent / unquote(parsed.path)
-        target_item = by_path.get(_normalize_posix(resolved))
-        if target_item is None or target_item.id is None:
-            return match.group(0)
-        canonical = f"urn:core-kb-link:{target_item.id}"
-        return match.group(0).replace(target, canonical, 1)
-
-    return MARKDOWN_LINK.sub(replace, item.body).rstrip()
+    root = item.path.parents[len(PurePosixPath(item.relative_path).parts) - 1]
+    index = LinkIndex(list(by_path.values()), root)
+    body = item.body
+    for link in reversed(index.outgoing(item)):
+        if link.status != "resolved" or link.item is None or link.item.id is None:
+            continue
+        canonical = f"urn:core-kb-link:{link.item.id}"
+        if link.fragment:
+            canonical += "#" + link.fragment
+        replacement = f"[{link.reference.label}]({canonical})"
+        body = body[:link.reference.start] + replacement + body[link.reference.end:]
+    return body.rstrip()
 
 
 def _verification_pairs(value: Any) -> set[tuple[str, str]]:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import http.server
+import importlib.util
 import io
 import os
 import platform
@@ -15,6 +16,34 @@ from pathlib import Path
 import pytest
 
 from portable_kb import __version__
+
+
+@pytest.mark.parametrize("stale", ["code", "skill", "missing-module", "schema"])
+def test_standalone_build_rejects_stale_installed_inputs(tmp_path: Path, stale: str) -> None:
+    script = Path(__file__).resolve().parents[1] / "scripts/build_standalone.py"
+    spec = importlib.util.spec_from_file_location("standalone_build_trial", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    repository, installed = tmp_path / "repository", tmp_path / "installed"
+    pairs = (
+        ("src/portable_kb/links.py", "links.py"),
+        (".agents/skills/portable-kb/SKILL.md", "skills/portable-kb/SKILL.md"),
+        ("schemas/knowledge-item.schema.yaml", "schemas/knowledge-item.schema.yaml"),
+    )
+    for source, target in pairs:
+        for path in (repository / source, installed / target):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("current build input\n")
+    module.require_current_package(repository, installed)
+    target = installed / {"code": "links.py", "missing-module": "links.py",
+                          "skill": "skills/portable-kb/SKILL.md",
+                          "schema": "schemas/knowledge-item.schema.yaml"}[stale]
+    if stale == "missing-module":
+        target.unlink()
+    else:
+        target.write_text("previous build input\n")
+    with pytest.raises(RuntimeError, match="Installed build input differs.*current wheel"):
+        module.require_current_package(repository, installed)
 
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):

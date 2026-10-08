@@ -66,7 +66,26 @@ complete items, create honest drafts, and keep authority separate from relevance
    decision or procedure clearly answers the question. Search again with
    different keywords when results are weak; do not infer missing content.
 
-4. Answer only from the retrieved items. Distinguish quoted knowledge,
+4. Follow relevant body relationships when a question needs connected context:
+
+   ```console
+   pkb links "urn:uuid:..." --brain <slug> --json
+   pkb backlinks "urn:uuid:..." --brain <slug> --json
+   ```
+
+   Follow entries with `resolution: resolved` using their scoped `get_command`.
+   Retrieve each target completely and verify its citation matches the link's
+   `target_citation` (for backlinks, retrieve the `source_citation`). Links need
+   no keyword index. The response's `ok` describes brain health; unresolved draft
+   links may still be present. Report missing/ambiguous targets and candidate
+   paths instead of choosing a name arbitrarily. Labels are display text, not
+   identity. Links in code examples are not navigation instructions. A connection
+   supplies context; evidence and lifecycle remain properties of each item.
+   Unique slugs, qualified paths, UUIDs and `[[wikilinks]]` are accepted by `get`.
+   `get --markdown-links --json` adds a rendered view while retaining canonical
+   content and citation. Do not traverse unrelated links merely to increase reads.
+
+5. Answer only from the retrieved items. Distinguish quoted knowledge,
    reasonable synthesis, and gaps. Cite material claims using:
 
    ```text

@@ -62,6 +62,9 @@ review note because schema validation cannot know domain risk.
   snapshots. Mutable URLs remain allowed when their limitation is stated.
 - The optional `related` relation remains in v0.1 for salient symmetric links;
   reciprocity is recommended rather than required.
+- Resolved wikilinks are an optional user-approved local body extension,
+  documented in [links.md](links.md). UUIDs remain canonical identity. Plain
+  Markdown is the interchange view; no required frontmatter fields change.
 - Supersession remains reciprocal, atomic, and acyclic.
 - Imported unknown OKF fields are preserved. Promotion requires an approved
   mapping, a documented `x-` namespace, or a profile revision.

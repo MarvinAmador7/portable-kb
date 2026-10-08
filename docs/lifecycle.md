@@ -182,7 +182,8 @@ retaining it.
 - Normally set `status: deprecated`, add `archived.at/reason`, and move under
   `archive/` in one commit.
 - Preserve `id`, `created_at`, provenance, and body.
-- Update all inbound Markdown links or deliberately leave a documented
+- Update inbound Markdown links and wikilinks through the reviewed move planner,
+  or deliberately leave a documented
   redirect concept if link stability requires it. The first milestone prefers
   updating links.
 - An abandoned draft question/candidate may archive without becoming stable;

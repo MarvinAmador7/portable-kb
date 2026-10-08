@@ -146,7 +146,7 @@ availability is a separate, opt-in future check and cannot determine truth.
 | `KB-E404` | Internal Markdown link in curated/stable content is broken. | Error profile-only; baseline OKF permits it |
 | `KB-W405` | Internal Markdown link in inbox/draft content is broken. | Warning |
 | `KB-W406` | Typed relationship has no explanatory body link, or salient body supersession lacks typed relation. | Warning |
-| `KB-W407` | Tool-specific wiki-link syntax is present. | Warning on import, error before promotion |
+| `KB-W407` | Wikilink is missing, ambiguous, escaping, or targets a missing heading. Resolved links pass. | Warning for drafts/inbox, error for stable curated content |
 | `KB-I408` | Stable item has no inbound concept links. | Information (orphan candidate, not automatically a defect) |
 
 ### Indexes, logs, and body

@@ -22,7 +22,9 @@ Define one durable subject.
 
 ## Context
 
-Explain why it matters and where it applies.
+Explain why it matters and where it applies. Link relevant existing concepts
+with `[Title](path.md)` or a unique `[[slug]]` / qualified `[[directory/slug]]`.
+Explain the connection in prose; add links when they provide useful context.
 
 ## Examples
 

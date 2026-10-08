@@ -125,3 +125,8 @@ All earlier CLI safety changes since the last published v0.1.0 are included,
 including conversational capture safeguards, brain removal and diagnostics,
 and skill drift handling. See the merged changes and
 [CLI hardening notes](production-hardening-0.1.2.md).
+
+Standalone builds verify that installed Python code, schemas, and the bundled
+skill match the checkout before freezing. Reinstall the current wheel when
+changing source; a matching version string alone does not establish current
+build inputs. The frozen smoke test also checks installed skill content.

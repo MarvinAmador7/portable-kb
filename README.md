@@ -123,6 +123,21 @@ The path above is the default for that title; use the returned path if you chose
 a different one. Saving refreshes complete-item retrieval immediately. Rebuild
 the search index before querying a new or changed draft.
 
+## Follow connected knowledge
+
+Explain relationships with Markdown links or `[[wikilinks]]`, then navigate them
+within the same pinned brain:
+
+```sh
+pkb links "customer-onboarding" --brain team --json
+pkb backlinks "customer-onboarding" --brain team --json
+pkb get "customer-onboarding" --brain team --markdown-links --json
+```
+
+Links resolve to item UUIDs and citations. Ambiguous names and missing targets
+remain visible; backlinks are computed from the saved content. No search index
+is required. See [link navigation](docs/links.md) for syntax and portability.
+
 ## Work with an existing brain
 
 Install a repository containing a `brain.yaml` manifest and governed bundle:
@@ -223,8 +238,9 @@ for the concurrency contract.
 ## Evaluate the CLI and skill
 
 The development harness tests a real executable and the skill it installs in
-six isolated synthetic scenarios: first run, draft correction, named-brain
-comparison, corpus gaps, embedded commands, and dirty-checkout refusal.
+seven isolated synthetic scenarios: first run, draft correction, named-brain
+comparison, corpus gaps, embedded commands, dirty-checkout refusal, and
+linked-context navigation.
 
 From this repository root, use Python 3.11+, Git, a standalone `pkb`, and an
 authenticated Codex runner with backend access. Choose a fresh evidence directory
