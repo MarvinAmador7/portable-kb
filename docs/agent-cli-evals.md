@@ -1,5 +1,11 @@
 # Evaluate the installed CLI and skill with agents
 
+For matched wiki/skill versus Portable KB trials and a CLI-authored replication
+demo, see [wiki comparison](wiki-comparison.md). Both harnesses share the CLI
+tracer, isolated product environment and runner evidence boundary. The
+`evals.agent_cli.observer` module supports explicitly delegated foreground chat
+agents when the native Codex runner is unavailable.
+
 `python -m evals.agent_cli` evaluates the actual chosen `pkb` executable and the
 workflow skill that executable installs. It is a repository tool, separate from
 `pkb search evaluate`: retrieval relevance labels test a ranker; these scenarios
