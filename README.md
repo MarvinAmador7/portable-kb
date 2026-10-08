@@ -301,6 +301,10 @@ The [reliability benchmark](docs/reliability-benchmark.md) adds concurrent edits
 stale citations, hard-killed moves and rollback trials, plus CLI read profiling.
 It retains blocked runs and reports recovery-fix candidates separately.
 
+The experimental [Groundray skill](docs/groundray.md) builds portable company
+brains in a Markdown wiki, preserving evidence and authority for each claim.
+It is a separate draft skill with manual installation and a fictional walkthrough.
+
 ## Documentation
 
 | Guide | What it covers |
