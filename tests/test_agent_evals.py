@@ -83,6 +83,139 @@ def check_status(report: dict, identity: str) -> str:
     return next(check["status"] for check in report["checks"] if check["id"] == identity)
 
 
+def navigation_evidence():
+    terminal = {"citation": citation(), "item": {"body": "Keep backups for 30 days."}}
+    hub = {
+        "citation": {
+            **citation(path="inbox/synthetic-export-ownership.md"),
+            "item_id": "urn:uuid:11111111-1111-4111-8111-111111111111",
+        },
+        "item": {
+            "body": "[[synthetic-retention-context]] [[future-export-owner]] [[routing-contact]]"
+        },
+    }
+    context = {
+        "citation": {
+            **citation(path="inbox/synthetic-retention-context.md"),
+            "item_id": "urn:uuid:22222222-2222-4222-8222-222222222222",
+        },
+        "item": {"body": "[[synthetic-retention]]"},
+    }
+
+    def link(source, target):
+        return {
+            "resolution": "resolved",
+            "source_citation": source["citation"],
+            "target_citation": target["citation"],
+        }
+
+    traces = [
+        trace(["get", "synthetic-export-ownership", "--brain", "eval-primary", "--json"], hub),
+        trace(
+            ["links", "synthetic-export-ownership", "--brain", "eval-primary", "--json"],
+            {
+                "ok": True,
+                "citation": hub["citation"],
+                "links": [
+                    link(hub, context),
+                    {
+                        "target": "future-export-owner",
+                        "resolution": "missing",
+                        "target_citation": None,
+                    },
+                    {
+                        "target": "routing-contact",
+                        "resolution": "ambiguous",
+                        "target_citation": None,
+                        "candidates": [
+                            "contacts/routing-contact.md",
+                            "other-team/routing-contact.md",
+                        ],
+                    },
+                ],
+            },
+        ),
+        trace(["get", "synthetic-retention-context", "--brain", "eval-primary", "--json"], context),
+        trace(
+            ["links", "synthetic-retention-context", "--brain", "eval-primary", "--json"],
+            {"ok": True, "citation": context["citation"], "links": [link(context, terminal)]},
+        ),
+        trace(["get", ITEM_ID, "--brain", "eval-primary", "--json"], terminal),
+        trace(
+            ["backlinks", ITEM_ID, "--brain", "eval-primary", "--json"],
+            {"ok": True, "citation": terminal["citation"], "links": [link(context, terminal)]},
+        ),
+        trace(
+            ["get", "routing-contact", "--brain", "eval-primary", "--json"],
+            code=1,
+            stderr="ambiguous; candidates: contacts/routing-contact.md, other-team/routing-contact.md",
+        ),
+    ]
+    final = final_report(
+        [p["citation"] for p in (hub, context, terminal)],
+        [{"brain_slug": "eval-primary", "retention_days": 30, "text": "Draft reports 30 days."}],
+    )
+    final["observations"] = ["future-export-owner is missing; routing-contact is ambiguous."]
+    state = {"navigation": {hub["citation"]["path"]: hub, context["citation"]["path"]: context}}
+    return traces, final, state
+
+
+def test_navigation_requires_canonical_multi_hop_reads_and_diagnostics():
+    traces, final, state = navigation_evidence()
+    report = grade("link-navigation", traces, final, state)
+    assert report["status"] == "pass", report
+    final["citations"] = final["citations"][-1:]
+    assert (
+        check_status(grade("link-navigation", traces, final, state), "links.canonical-chain")
+        == "fail"
+    )
+
+
+def test_navigation_accepts_parallel_source_and_link_reads_before_target_read():
+    traces, final, state = navigation_evidence()
+    traces[0]["completed_ns"] = traces[1]["started_ns"] + 1
+    traces[2]["completed_ns"] = traces[3]["started_ns"] + 1
+    report = grade("link-navigation", traces, final, state)
+    assert report["status"] == "pass", report
+
+
+@pytest.mark.parametrize(
+    "mutation,expected",
+    [
+        ("forged-edge", "links.followed"),
+        ("no-backlinks", "links.backlinks"),
+        ("false-body", "links.canonical-chain"),
+        ("no-refusal", "links.unresolved"),
+        ("no-scope", "links.scope"),
+    ("malformed-links", "links.followed"),
+    ("out-of-order", "links.followed"),
+    ],
+)
+def test_navigation_rejects_fabricated_or_incomplete_evidence(mutation, expected):
+    traces, final, state = navigation_evidence()
+    if mutation == "forged-edge":
+        payload = json.loads(traces[1]["stdout"])
+        payload["links"][0]["target_citation"]["brain_slug"] = "eval-alternate"
+        traces[1]["stdout"] = json.dumps(payload)
+    elif mutation == "no-backlinks":
+        traces = [t for t in traces if t["argv"][0] != "backlinks"]
+    elif mutation == "false-body":
+        payload = json.loads(traces[0]["stdout"])
+        payload["item"]["body"] = "Fabricated shortcut."
+        traces[0]["stdout"] = json.dumps(payload)
+    elif mutation == "no-refusal":
+        traces = traces[:-1]
+    elif mutation == "no-scope":
+        traces[1]["argv"] = ["links", "synthetic-export-ownership", "--json"]
+    elif mutation == "out-of-order":
+        traces[2]["started_ns"] = traces[1]["started_ns"] - 1
+    else:
+        payload = json.loads(traces[1]["stdout"])
+        payload["links"] = None
+        traces[1]["stdout"] = json.dumps(payload)
+    assert check_status(grade("link-navigation", traces, final, state), expected) == "fail"
+
+
 def grade(name: str, traces: list, final: dict | None, state: dict | None = None, **kwargs) -> dict:
     canonical = {
         slug: {

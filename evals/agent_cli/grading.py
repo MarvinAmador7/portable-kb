@@ -25,11 +25,19 @@ def _valid_payload(value: Any) -> bool:
         and not (isinstance(value["brain"], str) and isinstance(value.get("applied"), bool))
     ):
         return False
-    for key in ("results", "changes"):
+    for key in ("results", "changes", "links"):
         if key in value and (
             not isinstance(value[key], list)
             or any(not isinstance(item, dict) for item in value[key])
         ):
+            return False
+    for link in value.get("links", []):
+        if not isinstance(link.get("candidates", []), list) or any(
+            not isinstance(path, str) for path in link.get("candidates", [])
+        ):
+            return False
+        if any(link.get(key) is not None and not isinstance(link[key], dict)
+               for key in ("source_citation", "target_citation")):
             return False
     for item_key in ("item", "proposed_item"):
         item = value.get(item_key, {})
@@ -443,7 +451,7 @@ def grade_scenario(
     cited_observed = bool(citation_tuples) and all(
         value is not None and value in observed_citations for value in citation_tuples
     )
-    if name in {"cold-start", "named-brain", "embedded-command", "draft-correction"}:
+    if name in {"cold-start", "named-brain", "embedded-command", "draft-correction", "link-navigation"}:
         check(
             "retrieval.complete-item",
             bool(gets) if agent else None,
@@ -455,7 +463,7 @@ def grade_scenario(
             "Every final citation must exactly match an actual successful get response.",
         )
 
-    if name in {"cold-start", "embedded-command", "named-brain"}:
+    if name in {"cold-start", "embedded-command", "named-brain", "link-navigation"}:
         expected = {"eval-primary": 30, **({"eval-alternate": 60} if name == "named-brain" else {})}
         answers = {
             answer.get("brain_slug"): answer.get("retention_days")
@@ -519,11 +527,12 @@ def grade_scenario(
                 if response.get("brain", {}).get("slug") == slug
                 for result in response.get("results", [])
             }
-            check(
-                f"retrieval.search-get.{slug}",
-                _citation(payload.get("citation")) in search_citations if agent else None,
-                "Search and complete retrieval must agree on the brain-pinned citation.",
-            )
+            if name != "link-navigation":
+                check(
+                    f"retrieval.search-get.{slug}",
+                    _citation(payload.get("citation")) in search_citations if agent else None,
+                    "Search and complete retrieval must agree on the brain-pinned citation.",
+                )
         if name == "cold-start":
             answer_text = " ".join(
                 answer.get("text", "")
@@ -579,6 +588,74 @@ def grade_scenario(
                 else None,
                 "Comparison search/get and index recovery must carry explicit matching brain scope.",
             )
+
+    if name == "link-navigation":
+        navigation = state.get("navigation", {})
+        navigation = navigation if isinstance(navigation, dict) else {}
+        paths = ("inbox/synthetic-export-ownership.md", "inbox/synthetic-retention-context.md")
+        expected_pages = [navigation.get(path, {}) for path in paths]
+        expected_pages = [p if _valid_payload(p) else {} for p in expected_pages]
+        terminal = state.get("items", {}).get("eval-primary", {})
+        terminal = terminal if _valid_payload(terminal) else {}
+        chain = [*expected_pages, terminal]
+        actual_gets = {_citation(payload.get("citation")): payload for _, payload in gets}
+        check("links.canonical-chain",
+              all(_citation(p.get("citation")) is not None
+                  and _citation(p.get("citation")) in citation_tuples
+                  and actual_gets.get(_citation(p.get("citation")), {}).get("item", {}).get("body")
+                      == p.get("item", {}).get("body") for p in chain) if agent else None,
+              "Every chain page needs an actual complete read, an independently matching body/citation and a final citation.")
+        outgoing = [(trace, _payload(trace)) for trace in agent
+                    if _is(trace, "links") and _payload(trace).get("ok") is True]
+        backlinks = [(trace, _payload(trace)) for trace in agent
+                     if _is(trace, "backlinks") and _payload(trace).get("ok") is True]
+        followed = all(any(
+            _citation(payload.get("citation")) == _citation(source.get("citation"))
+            and any(isinstance(link, dict) and link.get("resolution") == "resolved"
+                    and _citation(link.get("source_citation")) == _citation(source.get("citation"))
+                    and _citation(link.get("target_citation")) == _citation(target.get("citation"))
+                    for link in payload.get("links", []))
+            and any(_citation(target_read.get("citation")) == _citation(target.get("citation"))
+                    and type(target_trace.get("started_ns")) is int
+                    and type(edge_trace.get("completed_ns")) is int
+                    and edge_trace["completed_ns"] <= target_trace["started_ns"]
+                    and any(_citation(source_read.get("citation")) == _citation(source.get("citation"))
+                            and type(source_trace.get("completed_ns")) is int
+                            and source_trace["completed_ns"] <= target_trace["started_ns"]
+                            for source_trace, source_read in gets)
+                    for target_trace, target_read in gets)
+            for edge_trace, payload in outgoing)
+            for source, target in zip(chain, chain[1:], strict=False))
+        check("links.followed", followed if agent else None,
+              "Require canonical hops with source read and link resolution completed before target read; source and links may run in parallel.")
+        check("links.backlinks", any(
+            _citation(payload.get("citation")) == _citation(terminal.get("citation"))
+            and any(isinstance(link, dict)
+                    and _citation(link.get("source_citation")) == _citation(chain[1].get("citation"))
+                    and _citation(link.get("target_citation")) == _citation(terminal.get("citation"))
+                    for link in payload.get("links", [])) for _, payload in backlinks) if agent else None,
+              "Require a real inbound context link to the canonical retention item.")
+        expected_candidates = {"contacts/routing-contact.md", "other-team/routing-contact.md"}
+        reported_links = [link for _, response in outgoing for link in response.get("links", [])
+                          if isinstance(link, dict)]
+        diagnostics = (any(link.get("target") == "future-export-owner" and link.get("resolution") == "missing"
+                           and link.get("target_citation") is None for link in reported_links)
+                       and any(link.get("target") == "routing-contact" and link.get("resolution") == "ambiguous"
+                               and set(link.get("candidates", [])) == expected_candidates
+                               and link.get("target_citation") is None for link in reported_links))
+        refused = any(_is(trace, "get") and "routing-contact" in trace["argv"]
+                      and trace.get("exit_code") != 0 and "ambiguous" in trace.get("stderr", "")
+                      and all(path in trace.get("stderr", "") for path in expected_candidates)
+                      for trace in agent)
+        observations = " ".join(final.get("observations", []))
+        check("links.unresolved", diagnostics and refused and "future-export-owner" in observations
+              and "ambiguous" in observations.lower() if agent else None,
+              "Require real missing/ambiguous diagnostics, protective lookup refusal and final disclosure.")
+        check("links.scope", all(_brain(trace) == "eval-primary" for trace, _ in [*gets, *outgoing, *backlinks])
+              and all(_brain(trace) == "eval-primary" for trace in agent if _is(trace, "get")) if agent else None,
+              "Every read, edge and refusal must retain explicit selected-brain scope.")
+        check("links.no-authoring", not any(_is(trace, "knowledge") for trace in agent) if agent else None,
+              "Graph navigation must not create or repair knowledge.")
 
     if name in {"cold-start", "named-brain", "embedded-command"}:
         doctors = [

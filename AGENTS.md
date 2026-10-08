@@ -90,7 +90,9 @@ When future `knowledge/` concept files exist:
   verification for the current snapshot.
 - Preserve unknown imported OKF fields. Do not silently drop them; request a
   mapping, namespace them, or update the profile through review.
-- Use body prose and normal links to explain relationships. Typed relation IDs
+- Use body prose and normal Markdown links or resolved Portable KB wikilinks to
+explain relationships (see `docs/links.md`). Read-only link navigation is now
+authorized; whole-wiki import and graph databases remain deferred. Typed relation IDs
   supplement rather than replace readable links.
 - Never silently overwrite, merge, delete, resolve a conflict, or infer
   supersession from semantic similarity.

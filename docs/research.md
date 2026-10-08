@@ -194,7 +194,10 @@ Recommendations:
 - Use explicit UTC timestamps and absolute stale dates.
 - Prefer one durable subject per file, but do not fragment procedures or
   decisions into unusably small notes.
-- Use standard links rather than tool-specific wiki-link syntax.
+- Standard links remain the portable interchange form. The user-approved
+  Portable KB wikilink extension adds exact local resolution and a standard
+  Markdown view; it is a local consumer convention, not upstream OKF syntax.
+  See [the contract and migration notes](links.md).
 - Keep generated indexes reproducible and never hand-edit generated regions.
 - Keep every important claim close to its citation.
 
@@ -254,3 +257,13 @@ Architectural recommendations:
 6. Keep canonical data in files and treat all future indexes as rebuildable.
 7. Defer attested computation, taxonomy standards, graph projection, and all
    retrieval/integration work until the file model is proven.
+
+## Wikilink consumer extension review
+
+On 2026-10-07, upstream cross-linking section 6 was rechecked at specification
+commit `62432a095456147ee71e70ac6e4dc0d2dea3ac30`. It defines standard Markdown
+relative/bundle-root links and untyped relationships conveyed by prose.
+Portable KB wikilinks are a local authoring/navigation extension with a derived
+standard Markdown view; this does not redefine upstream link semantics.
+The motivating private wiki was reviewed outside the source repository.
+Product fixtures and agent scenarios use independently invented content.
