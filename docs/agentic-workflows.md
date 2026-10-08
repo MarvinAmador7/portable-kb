@@ -121,7 +121,9 @@ tracker, or inspect production systems.
 ## First measured run
 
 Results from the matched run and retained pilot diagnostics are recorded in
-[the results note](agentic-workflow-results.md). Future scenarios can add staged
+[the results note](agentic-workflow-results.md). A targeted
+[move follow-up](knowledge-move-results.md) verifies the new supported CLI move.
+Future scenarios can add staged
 sessions, noisy evidence volumes, sync conflicts, authorized publication and
 recovery once their interfaces and independent checks are available. Extend
 `TASKS`, fixture evidence, grading and regression tests together; do not substitute
