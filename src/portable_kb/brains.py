@@ -645,6 +645,9 @@ def remove_brain(
     brain = catalog.get(slug)
     checkout = brain.checkout_path(settings)
     index = settings.cache_dir / "search" / "qmd" / slug
+    native_index = settings.cache_dir / "search" / "builtin" / slug
+    indexes = (index, native_index)
+    _require_removable_path(native_index, settings.cache_dir / "search" / "builtin", "native search index")
     _require_removable_path(checkout, settings.data_dir / "brains", "brain checkout")
     _require_removable_path(index, settings.cache_dir / "search" / "qmd", "search index")
     if checkout.exists():
@@ -666,43 +669,62 @@ def remove_brain(
                     "Installed checkout has local changes. Move or commit them, or use --force "
                     "to discard only this installed snapshot."
                 )
-    if index.exists() and (index.is_symlink() or not index.is_dir()):
-        raise BrainError(f"Search index is unsafe and was not removed: {index}")
+    for candidate in indexes:
+        if candidate.exists() and (candidate.is_symlink() or not candidate.is_dir()):
+            raise BrainError(f"Search index is unsafe and was not removed: {candidate}")
 
-    token = uuid.uuid4().hex
-    staged: list[tuple[Path, Path]] = []
-    try:
-        for path in (checkout, index):
-            if not path.exists():
-                continue
-            quarantine = path.parent / f".{path.name}.remove-{token}"
-            os.replace(path, quarantine)
-            staged.append((path, quarantine))
-        updated = catalog.removing(slug)
-        save_catalog(updated, settings)
-    except Exception:
-        for original, quarantine in reversed(staged):
-            if quarantine.exists() and not original.exists():
-                os.replace(quarantine, original)
-        raise
+    from .native_sidecar import NativeSidecar
+    from .search_provider import SearchError
 
-    cleanup_warnings: list[str] = []
-    for _original, quarantine in staged:
+    native_guard = None
+    if native_index.exists():
         try:
-            shutil.rmtree(quarantine)
-        except OSError as exc:
-            cleanup_warnings.append(f"Could not delete quarantined derived state: {exc}")
-    return {
-        "ok": not cleanup_warnings,
-        "slug": brain.slug,
-        "name": brain.name,
-        "removed_checkout": any(original == checkout for original, _ in staged),
-        "removed_index": any(original == index for original, _ in staged),
-        "authoring_preserved": brain.authoring,
-        "active": updated.active,
-        "legacy_demo": brain.slug == LEGACY_DEMO_SLUG and brain.id == LEGACY_DEMO_ID,
-        "cleanup_warnings": cleanup_warnings,
-    }
+            native_guard = NativeSidecar(settings.native_command)
+            native_guard.call({"op": "prepare_remove", "index_path": str(native_index)})
+        except SearchError as exc:
+            if native_guard is not None:
+                native_guard.close()
+            raise BrainError(f"Native index removal could not acquire reader leases: {exc}") from exc
+
+    try:
+        token = uuid.uuid4().hex
+        staged: list[tuple[Path, Path]] = []
+        try:
+            for path in (checkout, *indexes):
+                if not path.exists():
+                    continue
+                quarantine = path.parent / f".{path.name}.remove-{token}"
+                os.replace(path, quarantine)
+                staged.append((path, quarantine))
+            updated = catalog.removing(slug)
+            save_catalog(updated, settings)
+        except Exception:
+            for original, quarantine in reversed(staged):
+                if quarantine.exists() and not original.exists():
+                    os.replace(quarantine, original)
+            raise
+
+        cleanup_warnings: list[str] = []
+        for _original, quarantine in staged:
+            try:
+                shutil.rmtree(quarantine)
+            except OSError as exc:
+                cleanup_warnings.append(f"Could not delete quarantined derived state: {exc}")
+        return {
+            "ok": not cleanup_warnings,
+            "slug": brain.slug,
+            "name": brain.name,
+            "removed_checkout": any(original == checkout for original, _ in staged),
+            "removed_index": any(original in indexes for original, _ in staged),
+            "authoring_preserved": brain.authoring,
+            "active": updated.active,
+            "legacy_demo": brain.slug == LEGACY_DEMO_SLUG and brain.id == LEGACY_DEMO_ID,
+            "cleanup_warnings": cleanup_warnings,
+        }
+
+    finally:
+        if native_guard is not None:
+            native_guard.close()
 
 
 def legacy_demo_brains(catalog: BrainCatalog) -> tuple[InstalledBrain, ...]:

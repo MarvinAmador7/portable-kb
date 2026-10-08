@@ -7,6 +7,20 @@ Phase 5 CLI consumer. The currently authorized consumer surface includes local
 setup, inline terminal prompts, an installable brain manifest, and safe Git-backed brain
 installation, catalog, selection, status, and explicit fast-forward
 synchronization, plus isolated QMD BM25 indexing and cited keyword queries.
+The keyword provider boundary and read-only labeled retrieval evaluation with
+a real-QMD baseline are also authorized. Production Tantivy keyword integration
+and native distribution are now authorized; existing QMD configurations must
+be preserved.
+Development-only normalized section export, SQLite FTS5 and Rust/Tantivy
+prototypes, and shared-corpus benchmarks are authorized. Tantivy is the built-in
+keyword provider for new setup; QMD remains optional. No models or semantic
+retrieval are authorized by this change. Native
+prototype hardening through versioned full rebuilds, atomic publication,
+interruption recovery, concurrent-reader tests, and explicit rebuild-based index
+migration, and explicit reader-leased cleanup of disposable generations are
+authorized. Native packaging, configured provider selection, canonical section
+remapping, diagnostics, and lease-aware index removal are authorized production
+work for the 0.2.0 release.
 Complete-item retrieval and standalone or setup-integrated installation of the
 bundled workflow skill for Codex and Claude Code are also authorized, as is
 explicitly approved, plan-first creation of new draft knowledge through the

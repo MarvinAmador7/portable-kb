@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "name": "reference-bundle-keyword-v1",
+  "queries": [
+    {
+      "id": "stale-review",
+      "query": "review stale knowledge",
+      "relevance": {
+        "urn:uuid:0adaf3c7-c3e0-4cdc-85f4-90438dd72020": 3
+      }
+    },
+    {
+      "id": "move-item",
+      "query": "move knowledge item",
+      "relevance": {
+        "urn:uuid:b789bfab-271e-462d-bf06-ae61af138dee": 3
+      }
+    },
+    {
+      "id": "supersede-item",
+      "query": "supersede knowledge item",
+      "relevance": {
+        "urn:uuid:b9b75824-018d-40a3-864b-fdc0943e0b53": 3
+      }
+    },
+    {
+      "id": "material-change",
+      "query": "material change",
+      "relevance": {
+        "urn:uuid:7d657931-1613-4ff9-945b-5048617d7659": 3
+      }
+    },
+    {
+      "id": "verification",
+      "query": "verification evidence",
+      "relevance": {
+        "urn:uuid:3052cfa1-4270-45e1-8399-90ba1a02fe86": 3,
+        "urn:uuid:fe68dca6-0ad4-4769-9042-005e89d202b7": 1
+      }
+    },
+    {
+      "id": "okf-version",
+      "query": "pin OKF v0.2",
+      "relevance": {
+        "urn:uuid:31f5f4b3-0f8e-405a-a097-3e818ef67c99": 3,
+        "urn:uuid:cfc6bf19-7640-4c01-9508-eb9db7cd67c6": 2
+      }
+    },
+    {
+      "id": "no-result",
+      "query": "zxqvnotincorpus92817",
+      "relevance": {}
+    }
+  ]
+}

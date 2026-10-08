@@ -1,13 +1,14 @@
 # Built-in `pkb-search` plan
 
-## Decision to explore
+## Production integration
 
-Portable KB should evaluate a built-in, model-free search provider that removes
-QMD, Node.js, and Bun from the default keyword-search path. QMD remains a
+Portable KB 0.2.0 integrates a built-in, model-free Tantivy provider and embeds
+its native sidecar in standalone releases. New setup selects builtin keyword
+search; existing QMD settings are preserved. QMD remains a
 supported optional provider until a native engine matches its retrieval quality
 and operational reliability.
 
-The leading implementation candidate is a Rust engine built on Tantivy. SQLite
+The selected implementation is a Rust engine built on Tantivy. SQLite
 FTS5 is the required lower-complexity baseline, and QMD BM25 is the compatibility
 baseline. Zig is not selected for the first prototype because Portable KB would
 otherwise own substantially more tokenization, persistence, recovery, and index
@@ -172,15 +173,44 @@ reviewed benchmark decision rather than tuning only to a convenient fixture.
 
 ## Delivery phases
 
-1. Extract the provider interface without changing the default.
-2. Add the labeled retrieval evaluation harness and QMD baseline.
-3. Implement SQLite FTS5 and Tantivy benchmark prototypes.
+1. Extract the provider interface without changing the default. **Implemented:**
+   `KeywordSearchProvider` separates QMD execution/index details from the shared
+   brain health, safe path, canonical parsing, and citation checks. Settings
+   schema 1, existing QMD indexes, and CLI result schemas remain compatible.
+   Transactional index deletion remains with brain removal. The QMD adapter
+   continues to consume validated Markdown; the benchmark prototypes below
+   consume normalized section records and return section IDs.
+2. Add the labeled retrieval evaluation harness and QMD baseline. **Starter
+   implemented:** `pkb search evaluate` scores labeled item IDs, checks citations
+   and repeated rankings, and measures end-to-end query latency. The pinned-QMD
+   CI job retains its report. Section judgments, synthetic English/Spanish scale
+   data, and build/query/memory/disk measurements are implemented in the
+   prototype work below. Representative domain corpora and broader operational
+   evaluations remain pending. See [retrieval evaluation](retrieval-evaluation.md).
+3. Implement SQLite FTS5 and Tantivy benchmark prototypes. **Implemented:**
+   shared line-cited sections, a contentless FTS5 baseline, the Rust library and
+   bounded JSONL sidecar, literal Unicode queries, exact ID/path lookup,
+   explicit type/status filters, and deterministic score ties. The runner
+   compares both engines and unmodified QMD on the same logical section records.
+   Reference section judgments and reproducible synthetic corpora at 1,000,
+   10,000, and 100,000 items have been exercised. CI retains reference and
+   1,000-item comparison reports.
 4. Select the engine through measured quality, latency, footprint, and
-   operational complexity.
-5. Package the selected native engine and exercise clean install/upgrade/remove
-   paths on every release target.
-6. Offer `builtin` as opt-in, collect production-like evaluation evidence, then
-   consider a settings-schema migration that makes it the default.
+   operational complexity. **In progress:** Tantivy leads the initial Linux
+   measurements. Representative domain judgments, the reference Apple Silicon
+   run, broader filesystem/platform safety checks, incremental costs,
+   and the release matrix are still required before a default-provider choice.
+   Atomic full rebuilds, recovery, concurrent readers, and rebuild-based version
+   migration, plus explicit reader-leased generation cleanup, are implemented
+   and tested locally on Linux. See
+   [native index recovery](native-index-recovery.md) and
+   [prototype benchmarks](search-prototype-benchmarks.md).
+5. **Integrated for 0.2.0:** standalone packages embed the native sidecar, and
+   release runners gate publication on native tests and frozen index/query smoke
+   checks for all four targets. Remote release checks must still pass.
+6. **Integrated for 0.2.0:** setup selects `builtin` for new users, preserves
+   existing QMD configuration, and supports explicit provider choice. Continue
+   collecting representative domain and reference-machine evaluation evidence.
 
 ## Later semantic capability
 

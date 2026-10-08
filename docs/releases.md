@@ -44,8 +44,8 @@ pkb-vX.Y.Z-linux-x86_64.tar.gz
 SHA256SUMS
 ```
 
-Each standalone executable is built from the wheel on its native GitHub-hosted
-runner. Before upload, it must report the expected version, complete local
+Each standalone executable and its embedded Tantivy sidecar are built on their
+native GitHub-hosted runner. Before upload, it must report the expected version, complete local
 setup, initialize and validate a fresh brain with the bundled schemas, and
 install its bundled agent skill into an isolated temporary home. The publish
 job uses only the scoped workflow `GITHUB_TOKEN` with `contents: write`, creates
@@ -60,7 +60,7 @@ not release targets in this milestone.
 The workflow creates GitHub release assets; it does not publish to PyPI, alter
 repository visibility, notarize a future macOS application, or install QMD.
 
-The 0.1.2 CI and release gates install pinned `@tobilu/qmd@2.8.3` under Node.js
+The CI and release gates since 0.1.2 install pinned `@tobilu/qmd@2.8.3` under Node.js
 24 and exercise an isolated real keyword index plus cited query. This verifies
 the optional external provider without adding QMD to the standalone archive or
 downloading embedding models during installation.
@@ -84,3 +84,44 @@ Public repositories support the anonymous one-line `raw.githubusercontent.com`
 command. While this repository remains private, retrieve the script and assets
 with an exported `GH_TOKEN` and authenticated `gh` CLI. Repository visibility
 is a separate owner decision and is never changed by CI.
+
+## v0.2.0 release scope
+
+This release ships a production Tantivy keyword provider as `builtin`. New
+setup defaults to it; existing schema-1 QMD settings keep their provider and
+command. Choose either provider with `pkb setup --search-provider builtin` or
+`--search-provider qmd`. Builtin supports keyword mode only and downloads no
+models. Changing provider requires explicitly rebuilding its disposable index.
+
+Each standalone executable embeds the matching native `pkb-search` binary.
+The installer still installs one checksum-verified `pkb` file, so CLI and engine
+upgrade or uninstall together. The pure Python wheel requires `pkb-search` on
+PATH or a configured native executable; the standalone installer is the
+recommended complete installation. Rust is needed to build the source package,
+not to run the standalone release.
+
+Native release runners for Linux/macOS Intel/ARM build and test the engine,
+exercise canonical positive queries and recovery/cleanup, and smoke-test native
+indexing and querying through the frozen CLI before publication. These are
+required release checks; local Linux validation does not establish other
+platforms' success. Cross-platform benchmark targets and broader domain
+judgments remain ongoing evaluation work.
+
+Python indexes only a healthy pinned brain. It checks engine/index versions,
+brain identity and commit, leased section records, safe canonical paths, exact
+section content and lifecycle metadata before producing citations. Full
+rebuilds publish atomically; automatic post-build cleanup retains current and
+active reader generations. Brain removal acquires native reader leases before
+its existing catalog/quarantine transaction; active readers make removal fail
+without changing the catalog or checkout.
+
+The release also adds read-only `pkb search evaluate` for labeled relevance,
+canonical citation checks, ranking stability, and end-to-end latency. Source
+artifacts include the QMD/SQLite/Tantivy comparison and deterministic scale
+corpora generator. SQLite remains a benchmark baseline. Semantic/hybrid
+retrieval and model downloads remain deferred.
+
+All earlier CLI safety changes since the last published v0.1.0 are included,
+including conversational capture safeguards, brain removal and diagnostics,
+and skill drift handling. See the merged changes and
+[CLI hardening notes](production-hardening-0.1.2.md).

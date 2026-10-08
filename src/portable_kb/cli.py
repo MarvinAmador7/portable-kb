@@ -41,9 +41,11 @@ from .changes import ConcurrentChangeError
 from .knowledge_prompt import confirm_knowledge_apply, run_knowledge_create_prompts
 from .locks import LockError, inspect_operation_lock, operation_lock
 from .operations import OperationError
+from .retrieval_eval import EvaluationError, evaluate_retrieval
 from .search import (
     SearchError,
     get_knowledge_item,
+    get_search_provider,
     index_keyword_brain,
     keyword_index_path,
     qmd_status,
@@ -51,6 +53,7 @@ from .search import (
 )
 from .settings import (
     SearchMode,
+    SearchProvider,
     Settings,
     SettingsError,
     default_config_path,
@@ -108,8 +111,15 @@ def setup(
     ] = False,
     search_mode: Annotated[
         SearchMode,
+    SearchProvider,
         typer.Option("--search-mode", help="QMD capability tier."),
     ] = SearchMode.KEYWORD,
+    search_provider: Annotated[
+        SearchProvider | None, typer.Option("--search-provider", help="builtin (Tantivy) or qmd; preserves existing configuration."),
+    ] = None,
+    search_command: Annotated[
+        str | None, typer.Option("--search-command", help="Override the selected search executable."),
+    ] = None,
     config_path: Annotated[
         Path | None,
         typer.Option("--config", help="Override the user configuration path."),
@@ -138,15 +148,23 @@ def setup(
         typer.Option("--force-skill", help="Replace a conflicting agent skill installation."),
     ] = False,
 ) -> None:
-    """Configure local storage and QMD search quality."""
+    """Configure local storage and keyword search provider."""
 
     target = (config_path or default_config_path()).expanduser().absolute()
     initial = _initial_settings(target)
+    provider_choice = search_provider or initial.search_provider
+    selected_mode = search_mode if non_interactive else initial.search_mode
+    if provider_choice is SearchProvider.BUILTIN and selected_mode is not SearchMode.KEYWORD:
+        if non_interactive:
+            raise typer.BadParameter("builtin supports keyword mode only; choose --search-provider qmd for other tiers")
+        selected_mode = SearchMode.KEYWORD
     initial = Settings(
         data_dir=(data_dir or initial.data_dir).expanduser().resolve(),
         cache_dir=(cache_dir or initial.cache_dir).expanduser().resolve(),
-        search_mode=search_mode if non_interactive else initial.search_mode,
-        qmd_command=initial.qmd_command,
+        search_mode=selected_mode,
+        qmd_command=(search_command or initial.qmd_command) if (search_provider or initial.search_provider) is SearchProvider.QMD else initial.qmd_command,
+        native_command=(search_command or initial.native_command) if (search_provider or initial.search_provider) is SearchProvider.BUILTIN else initial.native_command,
+        search_provider=search_provider or initial.search_provider,
     )
     if non_interactive:
         try:
@@ -199,6 +217,7 @@ def doctor(
         )
         raise typer.Exit(1) from None
     qmd = qmd_status(settings)
+    search_tool = qmd if settings.search_provider is SearchProvider.QMD else get_search_provider(settings).status()
     git_path = shutil.which("git")
     gh_path = shutil.which("gh")
     errors: list[str] = []
@@ -235,8 +254,8 @@ def doctor(
     lock = inspect_operation_lock(settings.data_dir)
     if lock.get("locked"):
         warnings.append("Another Portable KB mutation is active or left a stale lock.")
-    if not qmd["ok"]:
-        errors.append(str(qmd.get("error", "QMD is unavailable.")))
+    if not search_tool["ok"]:
+        errors.append(str(search_tool.get("error", "Search engine is unavailable.")))
     if git_path is None:
         errors.append("Git executable was not found.")
     if active_health is not None and not active_health.get("ok"):
@@ -250,6 +269,8 @@ def doctor(
         "data_dir": str(settings.data_dir),
         "cache_dir": str(settings.cache_dir),
         "search_mode": settings.search_mode.value,
+        "search_provider": settings.search_provider.value,
+        "search_tool": search_tool,
         "qmd_command": settings.qmd_command,
         "qmd_path": qmd["path"],
         "qmd_version": qmd["version"],
@@ -1061,7 +1082,7 @@ def search_index(
         typer.Option("--json", help="Emit machine-readable index details."),
     ] = False,
 ) -> None:
-    """Build a disposable, model-free QMD keyword index."""
+    """Build a disposable, model-free keyword index."""
 
     settings = _load_cli_settings(config_path)
     try:
@@ -1076,6 +1097,10 @@ def search_index(
     typer.echo(f"Indexed brain: {result['brain_slug']}")
     typer.echo(f"Commit: {result['commit']}")
     typer.echo(f"Concepts: {result['concept_count']}")
+    typer.echo(f"Search provider: {result['provider']}")
+    cleanup = result.get("cleanup", {})
+    if cleanup.get("error"):
+        typer.echo(f"Index published; generation cleanup needs attention: {cleanup['error']}")
     typer.echo("Search mode: keyword (no models downloaded)")
 
 
@@ -1125,6 +1150,30 @@ def search_query(
         )
         if item.get("snippet"):
             typer.echo(f"    {item['snippet']}")
+
+
+@search_app.command("evaluate")
+def search_evaluate(
+    labels: Annotated[Path, typer.Argument(help="Version-1 JSON relevance labels.")],
+    as_of: Annotated[str, typer.Option("--as-of", help="Required ISO validation date.")],
+    slug: Annotated[
+        str | None, typer.Option("--brain", help="Installed brain; defaults to the active brain."),
+    ] = None,
+    config_path: Annotated[
+        Path | None, typer.Option("--config", help="Override the user configuration path."),
+    ] = None,
+    repeat: Annotated[
+        int, typer.Option("--repeat", min=1, max=20, help="Runs per query; checks ranking stability."),
+    ] = 2,
+) -> None:
+    """Emit a JSON relevance/latency report for the existing keyword index."""
+    settings = _load_cli_settings(config_path)
+    try:
+        result = evaluate_retrieval(settings, labels, slug, as_of=as_of, repeat=repeat)
+    except (BrainError, SearchError, EvaluationError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    typer.echo(json.dumps(result, indent=2, sort_keys=True))
 
 
 @skill_app.command("install")
@@ -1266,7 +1315,8 @@ def _persist(settings: Settings, target: Path, *, overwrite: bool) -> None:
         raise typer.Exit(2) from None
     typer.echo(f"Portable KB configured: {saved}")
     typer.echo(f"Search mode: {settings.search_mode.value}")
-    if shutil.which(settings.qmd_command) is None:
+    typer.echo(f"Search provider: {settings.search_provider.value}")
+    if settings.search_provider is SearchProvider.QMD and shutil.which(settings.qmd_command) is None:
         typer.echo("QMD is not installed yet; setup was saved without downloading anything.")
 
 
@@ -1300,6 +1350,15 @@ def _doctor_index_status(
     commit: str,
 ) -> dict[str, object]:
     path = keyword_index_path(settings, brain_slug)
+    if settings.search_provider is SearchProvider.BUILTIN:
+        result = {"path": str(path), "present": (path / "CURRENT.json").exists(), "current": False}
+        try:
+            payload = get_search_provider(settings).load_metadata(brain_slug)
+            result.update(provider="builtin", commit=payload["commit"],
+                          current=(payload["brain_id"], payload["brain_slug"], payload["commit"]) == (brain_id, brain_slug, commit))
+        except SearchError as exc:
+            result["error"] = str(exc)
+        return result
     metadata_path = path / "metadata.json"
     result: dict[str, object] = {
         "path": str(path),
@@ -1340,10 +1399,10 @@ def _doctor_output(result: dict[str, object], json_output: bool) -> None:
     mark = "✓" if result.get("config_valid") else "✗"
     typer.echo(f"{mark} Configuration: {result['config']}")
     if result.get("config_valid"):
-        qmd = result.get("qmd")
+        qmd = result.get("search_tool", result.get("qmd"))
         assert isinstance(qmd, dict)
         qmd_label = qmd.get("version") or qmd.get("path") or "not found"
-        typer.echo(f"{'✓' if qmd.get('ok') else '✗'} QMD: {qmd_label}")
+        typer.echo(f"{'✓' if qmd.get('ok') else '✗'} {result.get('search_provider', 'qmd')}: {qmd_label}")
         typer.echo(f"{'✓' if result.get('git_path') else '✗'} Git: {result.get('git_path') or 'not found'}")
         typer.echo(f"  Search mode: {result['search_mode']}")
         typer.echo(f"  Installed brains: {result['brain_count']}")

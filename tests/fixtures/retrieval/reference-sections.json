@@ -1,0 +1,60 @@
+{
+  "stale-review": [
+    {
+      "item_id": "urn:uuid:0adaf3c7-c3e0-4cdc-85f4-90438dd72020",
+      "heading": "Steps",
+      "grade": 3
+    },
+    {
+      "item_id": "urn:uuid:0adaf3c7-c3e0-4cdc-85f4-90438dd72020",
+      "heading": "Purpose",
+      "grade": 2
+    }
+  ],
+  "move-item": [
+    {
+      "item_id": "urn:uuid:b789bfab-271e-462d-bf06-ae61af138dee",
+      "heading": "Steps",
+      "grade": 3
+    },
+    {
+      "item_id": "urn:uuid:b789bfab-271e-462d-bf06-ae61af138dee",
+      "heading": "Preconditions",
+      "grade": 1
+    }
+  ],
+  "supersede-item": [
+    {
+      "item_id": "urn:uuid:b9b75824-018d-40a3-864b-fdc0943e0b53",
+      "heading": "Steps",
+      "grade": 3
+    },
+    {
+      "item_id": "urn:uuid:b9b75824-018d-40a3-864b-fdc0943e0b53",
+      "heading": "Safety",
+      "grade": 2
+    }
+  ],
+  "material-change": [
+    {
+      "item_id": "urn:uuid:7d657931-1613-4ff9-945b-5048617d7659",
+      "heading": "Definition",
+      "grade": 3
+    }
+  ],
+  "verification": [
+    {
+      "item_id": "urn:uuid:3052cfa1-4270-45e1-8399-90ba1a02fe86",
+      "heading": "Definition",
+      "grade": 3
+    }
+  ],
+  "okf-version": [
+    {
+      "item_id": "urn:uuid:31f5f4b3-0f8e-405a-a097-3e818ef67c99",
+      "heading": "Decision",
+      "grade": 3
+    }
+  ],
+  "no-result": []
+}

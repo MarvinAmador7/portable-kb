@@ -16,6 +16,11 @@ class SettingsError(ValueError):
     """Raised when local settings cannot be loaded safely."""
 
 
+class SearchProvider(StrEnum):
+    QMD = "qmd"
+    BUILTIN = "builtin"
+
+
 class SearchMode(StrEnum):
     """QMD capability tiers exposed by Portable KB."""
 
@@ -41,6 +46,12 @@ class Settings:
     search_mode: SearchMode = SearchMode.KEYWORD
     qmd_command: str = "qmd"
     schema_version: int = 1
+    search_provider: SearchProvider = SearchProvider.QMD
+    native_command: str = "pkb-search"
+
+    def __post_init__(self) -> None:
+        if self.search_provider is SearchProvider.BUILTIN and self.search_mode is not SearchMode.KEYWORD:
+            raise SettingsError("The builtin provider supports keyword mode only.")
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -48,9 +59,9 @@ class Settings:
             "data_dir": str(self.data_dir),
             "cache_dir": str(self.cache_dir),
             "search": {
-                "provider": "qmd",
+                "provider": self.search_provider.value,
                 "mode": self.search_mode.value,
-                "command": self.qmd_command,
+                "command": self.qmd_command if self.search_provider is SearchProvider.QMD else self.native_command,
             },
         }
 
@@ -77,7 +88,7 @@ def default_cache_dir() -> Path:
 
 
 def default_settings() -> Settings:
-    return Settings(data_dir=default_data_dir(), cache_dir=default_cache_dir())
+    return Settings(data_dir=default_data_dir(), cache_dir=default_cache_dir(), search_provider=SearchProvider.BUILTIN)
 
 
 def load_settings(path: str | Path | None = None) -> Settings:
@@ -101,13 +112,15 @@ def load_settings(path: str | Path | None = None) -> Settings:
     search = payload.get("search")
     if not isinstance(search, dict) or set(search) != {"provider", "mode", "command"}:
         raise SettingsError("Search settings are incomplete.")
-    if search.get("provider") != "qmd":
-        raise SettingsError("Only the qmd search provider is supported.")
+    try:
+        provider = SearchProvider(search.get("provider"))
+    except ValueError as exc:
+        raise SettingsError("Search provider must be qmd or builtin.") from exc
     data_dir = payload.get("data_dir")
     cache_dir = payload.get("cache_dir")
     command = search.get("command")
     if not all(isinstance(value, str) and value.strip() for value in (data_dir, cache_dir, command)):
-        raise SettingsError("Settings paths and QMD command must be non-empty strings.")
+        raise SettingsError("Settings paths and search command must be non-empty strings.")
     try:
         mode = SearchMode(search.get("mode"))
     except ValueError as exc:
@@ -116,7 +129,9 @@ def load_settings(path: str | Path | None = None) -> Settings:
         data_dir=_absolute(data_dir),
         cache_dir=_absolute(cache_dir),
         search_mode=mode,
-        qmd_command=command.strip(),
+        qmd_command=command.strip() if provider is SearchProvider.QMD else "qmd",
+        native_command=command.strip() if provider is SearchProvider.BUILTIN else "pkb-search",
+        search_provider=provider,
     )
 
 
