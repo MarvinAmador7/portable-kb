@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import socket
+import sys
 import time
 import uuid
 from collections.abc import Iterator, Mapping
@@ -132,6 +133,16 @@ def _pid_is_alive(pid: int) -> bool:
         return False
     except PermissionError:
         return True
+    if sys.platform == "linux":
+        # kill(pid, 0) also succeeds for an unreaped zombie. Such a process
+        # has exited and cannot release its lock or resume a mutation.
+        try:
+            stat = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8")
+            fields = stat.rsplit(")", 1)[1].split()
+        except (OSError, UnicodeError, IndexError):
+            return True  # Unknown ownership must remain protected.
+        if fields and fields[0] in {"Z", "X"}:
+            return False
     return True
 
 
@@ -155,7 +166,11 @@ def _remove_stale_lock(path: Path, expected: Mapping[str, Any]) -> bool:
     if not _is_stale(payload, age_seconds):
         return False
     for key in ("token", "pid", "hostname", "operation"):
-        if key in expected and isinstance(payload, Mapping) and payload.get(key) != expected.get(key):
+        if (
+            key in expected
+            and isinstance(payload, Mapping)
+            and payload.get(key) != expected.get(key)
+        ):
             return False
     try:
         path.unlink()
