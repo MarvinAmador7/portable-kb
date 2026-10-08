@@ -25,7 +25,7 @@ migration, and explicit reader-leased cleanup of disposable generations are
 authorized. Native packaging, configured provider selection, canonical section
 remapping, diagnostics, and lease-aware index removal are authorized production
 work for the 0.2.0 release.
-Complete-item retrieval and standalone or setup-integrated installation of the
+Complete-item and read-only reserved index/log retrieval, and standalone or setup-integrated installation of the
 bundled workflow skill for Codex and Claude Code are also authorized, as is
 explicitly approved, plan-first creation of new draft knowledge through the
 existing lifecycle API, material updates that preserve identity and invalidate

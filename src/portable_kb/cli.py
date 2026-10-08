@@ -47,7 +47,7 @@ from .operations import OperationError
 from .retrieval_eval import EvaluationError, evaluate_retrieval
 from .search import (
     SearchError,
-    get_knowledge_item,
+    get_knowledge,
     get_search_provider,
     index_keyword_brain,
     keyword_index_path,
@@ -315,7 +315,7 @@ def doctor(
 def get_item(
     reference: Annotated[
         str,
-        typer.Argument(help="Item UUID, bundle-relative path, unique slug, or [[wikilink]]."),
+        typer.Argument(help="Item UUID, slug, [[wikilink]], or bundle-relative concept/index.md/log.md path."),
     ],
     slug: Annotated[
         str | None,
@@ -331,7 +331,7 @@ def get_item(
     ] = None,
     json_output: Annotated[
         bool,
-        typer.Option("--json", help="Emit the complete cited item as JSON."),
+        typer.Option("--json", help="Emit the complete cited item or reserved document as JSON."),
     ] = False,
     markdown_links: Annotated[
         bool,
@@ -340,11 +340,11 @@ def get_item(
         ),
     ] = False,
 ) -> None:
-    """Retrieve a complete knowledge item from the current pinned brain."""
+    """Retrieve a complete item, index or log from the current pinned brain."""
 
     settings = _load_cli_settings(config_path)
     try:
-        result = get_knowledge_item(
+        result = get_knowledge(
             settings, reference, slug, as_of=as_of, markdown_links=markdown_links
         )
     except (BrainError, SearchError, ValueError) as exc:
@@ -354,12 +354,14 @@ def get_item(
         typer.echo(json.dumps(result, indent=2, sort_keys=True))
         return
     citation = result["citation"]
+    identity = f" ({citation['item_id']})" if "item_id" in citation else ""
     typer.echo(
         f"Citation: {citation['brain_slug']}@{citation['commit'][:12]}:"
-        f"{citation['path']} ({citation['item_id']})"
+        f"{citation['path']}{identity}"
     )
     typer.echo()
-    typer.echo(result["item"].get("rendered_content", result["item"]["content"]), nl=False)
+    document = result.get("document") or result["item"]
+    typer.echo(document.get("rendered_content", document["content"]), nl=False)
 
 
 @app.command("links")

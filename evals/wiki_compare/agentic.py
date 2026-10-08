@@ -247,6 +247,25 @@ def observe(case: Path, *, initial: bool = False) -> dict:
                 )
                 if isinstance(payload.get("item"), dict):
                     state["pages"][key_prefix + relative.removeprefix("inbox/")] = payload
+            state.setdefault("documents", {}).update(
+                {
+                    key_prefix + path.relative_to(source / "knowledge").as_posix(): {
+                        "document": {
+                            "kind": path.stem,
+                            "path": path.relative_to(source / "knowledge").as_posix(),
+                            "content": path.read_bytes().decode("utf-8"),
+                        },
+                        "citation": {
+                            "brain_id": status.get("id"),
+                            "brain_slug": slug,
+                            "commit": status.get("commit"),
+                            "path": path.relative_to(source / "knowledge").as_posix(),
+                        },
+                    }
+                    for path in (source / "knowledge").rglob("*.md")
+                    if path.name in {"index.md", "log.md"} and not path.is_symlink()
+                }
+            )
             try:
                 index = LinkIndex.load(source / "knowledge")
                 state["links"].extend(graph(index, world, native=True))

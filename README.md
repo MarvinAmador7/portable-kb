@@ -214,6 +214,8 @@ pkb knowledge move "urn:uuid:..." "procedures/client-export-runbook.md" \
 
 Moves preserve identity, provenance and review status, and repair affected links
 and indexes in one local commit. Repeat with `--apply` after inspecting the diff.
+Inspect complete saved navigation and history with `pkb get index.md --brain team`
+and `pkb get log.md --brain team`; nested index paths work too.
 
 New agent-authored knowledge remains draft. Material updates preserve `id` and
 `created_at`, update provenance, and invalidate prior verification. Human review

@@ -478,3 +478,41 @@ def test_move_repair_proof_requires_matching_diff_commit_and_brain():
     tampered = copy.deepcopy(pages)
     tampered[key]["item"]["content"] += "Unauthorized fact\n"
     assert not saved_by_trace(trace, key, tampered, initial)
+
+
+def test_reserved_document_read_proof_rejects_previews_stale_commits_and_wrong_scope():
+    from evals.wiki_compare.workflow_grading import reserved_documents_read
+
+    expected = {
+        "document": {"kind": "log", "path": "log.md", "content": "# Complete saved history\n"},
+        "citation": {
+            "brain_id": "brain",
+            "brain_slug": "sim-northstar",
+            "commit": "saved",
+            "path": "log.md",
+        },
+    }
+    save = {
+        "argv": ["knowledge", "move", "source", "destination", "--apply"],
+        "exit_code": 0,
+        "completed_ns": 10,
+    }
+    read = {
+        "argv": ["get", "log.md", "--brain", "sim-northstar", "--json"],
+        "exit_code": 0,
+        "started_ns": 11,
+        "stdout": json.dumps(expected),
+    }
+    documents = {"log.md": expected}
+    assert reserved_documents_read([save, read], documents, ["log.md"])
+    assert not reserved_documents_read([save], documents, ["log.md"])
+    assert not reserved_documents_read([save, {**read, "started_ns": 9}], documents, ["log.md"])
+    for field, changed in (("content", "# Preview only"), ("commit", "stale")):
+        payload = copy.deepcopy(expected)
+        payload["document" if field == "content" else "citation"][field] = changed
+        assert not reserved_documents_read(
+            [save, {**read, "stdout": json.dumps(payload)}], documents, ["log.md"]
+        )
+    wrong_scope = {**read, "argv": ["get", "log.md", "--brain", "sim-harbor", "--json"]}
+    assert not reserved_documents_read([save, wrong_scope], documents, ["log.md"])
+    assert not reserved_documents_read([save, read], documents, ["log.md", "index.md"])

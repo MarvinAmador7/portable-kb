@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import math
+import shutil
+import subprocess
 from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -83,6 +85,77 @@ def search_keyword(
         },
         "index_commit": str(metadata["commit"]),
         "results": results,
+        "validation_warnings": health["validation_warnings"],
+        "ok": True,
+    }
+
+
+def get_knowledge(
+    settings: Settings,
+    reference: str,
+    slug: str | None = None,
+    *,
+    as_of: str | None = None,
+    markdown_links: bool = False,
+) -> dict[str, Any]:
+    """Retrieve a complete concept or an explicitly named reserved document."""
+    normalized = reference.strip()
+    if PurePosixPath(normalized).name in RESERVED_NAMES:
+        if markdown_links:
+            raise SearchError("--markdown-links applies to knowledge items, not reserved documents.")
+        return get_knowledge_document(settings, normalized, slug, as_of=as_of)
+    return get_knowledge_item(
+        settings, reference, slug, as_of=as_of, markdown_links=markdown_links
+    )
+
+
+def get_knowledge_document(
+    settings: Settings,
+    reference: str,
+    slug: str | None = None,
+    *,
+    as_of: str | None = None,
+) -> dict[str, Any]:
+    """Read the exact saved UTF-8 index/log blob without assigning concept metadata."""
+    relative_text = reference.strip().removeprefix("knowledge/")
+    relative = PurePosixPath(relative_text)
+    if (
+        not relative_text
+        or "\\" in reference
+        or "\x00" in reference
+        or relative.is_absolute()
+        or ".." in relative.parts
+        or relative.name not in RESERVED_NAMES
+        or any(part.startswith(".") for part in relative_text.split("/"))
+    ):
+        raise SearchError("Reserved document requires a safe bundle-relative index.md or log.md path.")
+    brain, checkout, bundle, health = _healthy_brain(settings, slug, as_of=as_of)
+    path = bundle.joinpath(*relative.parts)
+    if (
+        not path.resolve().is_relative_to(bundle.resolve())
+        or any(bundle.joinpath(*relative.parts[:i]).is_symlink() for i in range(len(relative.parts) + 1))
+        or not path.is_file()
+    ):
+        raise SearchError(f"Reserved document was not found safely in the selected brain: {relative_text}")
+    git = shutil.which("git")
+    if git is None:
+        raise SearchError("Git is required to retrieve the saved document.")
+    repository_path = path.relative_to(checkout).as_posix()
+    try:
+        saved = subprocess.run(
+            [git, "--no-replace-objects", "-C", str(checkout), "cat-file", "blob", f"{brain.commit}:{repository_path}"],
+            capture_output=True, check=True, timeout=120,
+        )
+        content = saved.stdout.decode("utf-8")
+    except (OSError, subprocess.SubprocessError, UnicodeDecodeError) as exc:
+        raise SearchError("The reserved document could not be read as saved UTF-8 content.") from exc
+    return {
+        "brain": {"id": brain.id, "slug": brain.slug, "name": brain.name, "commit": brain.commit},
+        "document": {"kind": relative.stem, "path": relative.as_posix(), "content": content},
+        "citation": {
+            "brain_id": brain.id, "brain_slug": brain.slug,
+            "commit": brain.commit, "path": relative.as_posix(),
+        },
         "validation_warnings": health["validation_warnings"],
         "ok": True,
     }

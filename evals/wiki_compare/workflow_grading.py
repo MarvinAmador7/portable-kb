@@ -271,6 +271,33 @@ def saved_by_trace(trace: dict, key: str, pages: dict, initial: dict) -> bool:
     )
 
 
+def reserved_documents_read(traces: list[dict], documents: dict, paths: list[str]) -> bool:
+    """Require complete saved document responses at the final commit after the move."""
+    saved_at = max(
+        (
+            t.get("completed_ns", 0)
+            for t in traces
+            if _is(t, "knowledge", "move")
+            and t.get("exit_code") == 0
+            and "--apply" in t.get("argv", [])
+        ),
+        default=0,
+    )
+    return bool(paths) and all(
+        path in documents
+        and any(
+            _is(trace, "get")
+            and trace.get("exit_code") == 0
+            and _option(trace.get("argv", []), "--brain") == PRIMARY
+            and trace.get("started_ns", 0) >= saved_at
+            and _payload(trace).get("document") == documents[path]["document"]
+            and _payload(trace).get("citation") == documents[path]["citation"]
+            for trace in traces
+        )
+        for path in paths
+    )
+
+
 def grade_case(case: Path, task: dict, state: dict) -> dict:
     config = load_json(case / "case.json")
     arm, name = config["arm"], config["task"]
@@ -555,6 +582,15 @@ def grade_case(case: Path, task: dict, state: dict) -> dict:
             for old in old_inbound
         )
         outcomes["moved_page_read"] = MOVED in read
+        if arm == "portable-kb":
+            document_paths = [
+                path.removeprefix("knowledge/")
+                for path in mutations.get("primary", [])
+                if path.startswith("knowledge/") and Path(path).name in {"index.md", "log.md"}
+            ]
+            outcomes["complete_saved_navigation_and_history_read"] = reserved_documents_read(
+                traces, state.get("documents", {}), document_paths
+            )
     help_seen = any(
         _help_requested(t.get("argv", []))
         and t.get("exit_code") == 0
