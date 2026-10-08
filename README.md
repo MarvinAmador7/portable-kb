@@ -297,6 +297,10 @@ checks, including scoped amendments and a runbook move.
 For agents correcting requirements, handling conflicts, isolating clients, and
 maintaining links, use the [workplace workflow suite](docs/agentic-workflows.md).
 
+The [reliability benchmark](docs/reliability-benchmark.md) adds concurrent edits,
+stale citations, hard-killed moves and rollback trials, plus CLI read profiling.
+It retains blocked runs and reports recovery-fix candidates separately.
+
 ## Documentation
 
 | Guide | What it covers |

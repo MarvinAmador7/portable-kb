@@ -1,0 +1,2214 @@
+{
+  "baseline": {
+    "grader_sha256": "b8cd46823aaf0aa72511ee57323708920626dffe57473e424382b65e06b2587d",
+    "implementation_commit": "ed80afad59e2943e33e2d2d032518060925305e0",
+    "inputs": {
+      "cli_sha256": "5d54f982379037556801f1dd710382f6efe980ca0b3d9065e50699c5db987c18",
+      "fault_library_sha256": "e442166303835aae7e0528a2b823990f8399d50e1e2dced0c06d2db12db8d40c",
+      "labels_sha256": "fc193b90ba03a1ff268b75784c043bcf3d78a410c4ce19c0351fe0c1621bac98",
+      "native_sha256": "10106ae08f5f1a4e8c434c5a26cc6a14cc23b46d20ade671289a7369f0e51552",
+      "oracle_sha256": "216379da46eb7b1b7c0492cec2a00bbc217be17835b497eadee44d3486141161",
+      "parent_manifest_sha256": "5f614d84bf9e61d0596a549071e872212982224bb4da0ef9e5a67e901e0ef42f",
+      "protocol_version": 2,
+      "reliability_version": 1,
+      "repetitions": 2,
+      "version": 1,
+      "wiki_sha256": "84f641f86510bca5a5dcdf343ad0a97f761fad521efc9d7c3bec825c86ba09e4",
+      "wiki_skill_sha256": "0229e37c1783fcac5b77cfb3242703666cf4aa472d2ae85b6bd5279756b515b6",
+      "world_sha256": "ba6b27e49819403774a09a888c2121c47d746f2cfa6a273a1a27c1450676ea62"
+    },
+    "matched_success_median_time_ratio": 1.3243321359671802,
+    "matched_successful_pairs": 6,
+    "pairs": [
+      {
+        "portable-kb": {
+          "constraint_status": "pass",
+          "facts": {
+            "contact_window": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "active_selection_preserved": true,
+            "authorized_changes_only": true,
+            "checkout_matches_source": true,
+            "evidence_unchanged": true,
+            "explicit_brain_scope": true,
+            "honest_draft_authorship": true,
+            "no_account_save_before_checkpoint": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "plans_before_successful_saves": true,
+            "prompt_unchanged": true,
+            "saved_through_supported_cli": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 1,
+            "cli_calls": 17,
+            "cli_errors": 0,
+            "complete_final_pages_read": 1,
+            "elapsed_seconds": 162.867173921,
+            "output_characters": 92744,
+            "shell_calls": 19,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [
+              "@git_head",
+              "knowledge/inbox/merchants/lumen/account.md",
+              "knowledge/log.md"
+            ],
+            "primary-checkout": [
+              "@git_head",
+              "knowledge/inbox/merchants/lumen/account.md",
+              "knowledge/log.md"
+            ]
+          },
+          "outcomes": {
+            "both_sources_recorded": true,
+            "change_logged": true,
+            "checkpoint_after_original_inspection": true,
+            "collaborator_contact_preserved": true,
+            "collaborator_snapshot_reinspected": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_read:merchants/lumen/account.md": true,
+            "current_and_historical_duration_saved": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "saved_amendment_searchable": true,
+            "structured_facts": true
+          },
+          "repetition": 1,
+          "status": "pass",
+          "task": "concurrent-update",
+          "task_status": "completed"
+        },
+        "repetition": 1,
+        "task": "concurrent-update",
+        "wiki": {
+          "constraint_status": "pass",
+          "facts": {
+            "contact_window": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "authorized_changes_only": true,
+            "evidence_unchanged": true,
+            "honest_draft_status": true,
+            "log_history_preserved": true,
+            "no_account_save_before_checkpoint": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "prompt_unchanged": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 1,
+            "cli_calls": 0,
+            "cli_errors": 0,
+            "complete_final_pages_read": 4,
+            "elapsed_seconds": 124.074253554,
+            "output_characters": 97474,
+            "shell_calls": 12,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [
+              "index.md",
+              "log.md",
+              "merchants/index.md",
+              "merchants/lumen/account.md",
+              "merchants/lumen/index.md",
+              "raw/retention-amendment.md"
+            ]
+          },
+          "outcomes": {
+            "both_sources_recorded": true,
+            "change_logged": true,
+            "checkpoint_after_original_inspection": true,
+            "collaborator_contact_preserved": true,
+            "collaborator_snapshot_reinspected": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_read:merchants/lumen/account.md": true,
+            "current_and_historical_duration_saved": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "saved_amendment_searchable": true,
+            "structured_facts": true
+          },
+          "repetition": 1,
+          "status": "pass",
+          "task": "concurrent-update",
+          "task_status": "completed"
+        }
+      },
+      {
+        "portable-kb": {
+          "constraint_status": "pass",
+          "facts": {
+            "contact_window": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "active_selection_preserved": true,
+            "authorized_changes_only": true,
+            "checkout_matches_source": true,
+            "evidence_unchanged": true,
+            "explicit_brain_scope": true,
+            "honest_draft_authorship": true,
+            "no_account_save_before_checkpoint": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "plans_before_successful_saves": true,
+            "prompt_unchanged": true,
+            "saved_through_supported_cli": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 1,
+            "cli_calls": 14,
+            "cli_errors": 0,
+            "complete_final_pages_read": 1,
+            "elapsed_seconds": 130.487247472,
+            "output_characters": 86474,
+            "shell_calls": 10,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [
+              "@git_head",
+              "knowledge/inbox/merchants/lumen/account.md",
+              "knowledge/log.md"
+            ],
+            "primary-checkout": [
+              "@git_head",
+              "knowledge/inbox/merchants/lumen/account.md",
+              "knowledge/log.md"
+            ]
+          },
+          "outcomes": {
+            "both_sources_recorded": true,
+            "change_logged": true,
+            "checkpoint_after_original_inspection": true,
+            "collaborator_contact_preserved": true,
+            "collaborator_snapshot_reinspected": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_read:merchants/lumen/account.md": true,
+            "current_and_historical_duration_saved": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "saved_amendment_searchable": true,
+            "structured_facts": true
+          },
+          "repetition": 2,
+          "status": "pass",
+          "task": "concurrent-update",
+          "task_status": "completed"
+        },
+        "repetition": 2,
+        "task": "concurrent-update",
+        "wiki": {
+          "constraint_status": "pass",
+          "facts": {
+            "contact_window": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "authorized_changes_only": true,
+            "evidence_unchanged": true,
+            "honest_draft_status": true,
+            "log_history_preserved": true,
+            "no_account_save_before_checkpoint": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "prompt_unchanged": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 1,
+            "cli_calls": 0,
+            "cli_errors": 0,
+            "complete_final_pages_read": 3,
+            "elapsed_seconds": 74.619157056,
+            "output_characters": 61970,
+            "shell_calls": 9,
+            "shell_errors": 1
+          },
+          "mutations": {
+            "primary": [
+              "index.md",
+              "log.md",
+              "merchants/index.md",
+              "merchants/lumen/account.md",
+              "merchants/lumen/index.md",
+              "raw/collaborator-change.md",
+              "raw/retention-amendment.md"
+            ]
+          },
+          "outcomes": {
+            "both_sources_recorded": true,
+            "change_logged": true,
+            "checkpoint_after_original_inspection": true,
+            "collaborator_contact_preserved": true,
+            "collaborator_snapshot_reinspected": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_read:merchants/lumen/account.md": true,
+            "current_and_historical_duration_saved": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "saved_amendment_searchable": true,
+            "structured_facts": true
+          },
+          "repetition": 2,
+          "status": "pass",
+          "task": "concurrent-update",
+          "task_status": "completed"
+        }
+      },
+      {
+        "portable-kb": {
+          "constraint_status": "pass",
+          "facts": {
+            "units": {
+              "accurate": true,
+              "grounded": false,
+              "passed": false
+            }
+          },
+          "integrity": {
+            "active_selection_preserved": true,
+            "authorized_changes_only": true,
+            "checkout_matches_source": true,
+            "evidence_unchanged": true,
+            "explicit_brain_scope": true,
+            "honest_draft_authorship": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "plans_before_successful_saves": true,
+            "prompt_unchanged": true,
+            "saved_through_supported_cli": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 0,
+            "cli_calls": 26,
+            "cli_errors": 1,
+            "complete_final_pages_read": 11,
+            "elapsed_seconds": 154.007933183,
+            "output_characters": 123749,
+            "shell_calls": 9,
+            "shell_errors": 1
+          },
+          "mutations": {
+            "primary": [],
+            "primary-checkout": []
+          },
+          "outcomes": {
+            "all_affected_callers_read": true,
+            "all_inbound_links_repaired": false,
+            "change_logged": false,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_navigation_and_history_read": false,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "move_preserves_original": false,
+            "original_removed_new_path_saved": false,
+            "real_interruption_observed": true,
+            "recovery_inspected_before_completion": true,
+            "structured_facts": false
+          },
+          "repetition": 1,
+          "status": "blocked",
+          "task": "interrupted-move",
+          "task_status": "blocked"
+        },
+        "repetition": 1,
+        "task": "interrupted-move",
+        "wiki": {
+          "constraint_status": "pass",
+          "facts": {
+            "units": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "authorized_changes_only": true,
+            "evidence_unchanged": true,
+            "honest_draft_status": true,
+            "log_history_preserved": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "prompt_unchanged": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 11,
+            "cli_calls": 0,
+            "cli_errors": 0,
+            "complete_final_pages_read": 11,
+            "elapsed_seconds": 112.05402072,
+            "output_characters": 91397,
+            "shell_calls": 11,
+            "shell_errors": 2
+          },
+          "mutations": {
+            "primary": [
+              "incidents/inc-005.md",
+              "incidents/inc-017.md",
+              "log.md",
+              "merchants/cedar-market/account.md",
+              "merchants/northwind/account.md",
+              "runbooks/cold-chain-dispatch.md",
+              "runbooks/index.md",
+              "runbooks/temperature-dispatch.md",
+              "warehouses/cedar.md",
+              "warehouses/harbor.md",
+              "warehouses/maple.md",
+              "warehouses/quartz.md",
+              "warehouses/ridge.md",
+              "warehouses/tundra.md"
+            ]
+          },
+          "outcomes": {
+            "all_affected_callers_read": true,
+            "all_inbound_links_repaired": true,
+            "change_logged": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_navigation_and_history_read": true,
+            "complete_saved_read:incidents/inc-005.md": true,
+            "complete_saved_read:incidents/inc-017.md": true,
+            "complete_saved_read:merchants/cedar-market/account.md": true,
+            "complete_saved_read:merchants/northwind/account.md": true,
+            "complete_saved_read:runbooks/cold-chain-dispatch.md": true,
+            "complete_saved_read:warehouses/cedar.md": true,
+            "complete_saved_read:warehouses/harbor.md": true,
+            "complete_saved_read:warehouses/maple.md": true,
+            "complete_saved_read:warehouses/quartz.md": true,
+            "complete_saved_read:warehouses/ridge.md": true,
+            "complete_saved_read:warehouses/tundra.md": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "move_preserves_original": true,
+            "original_removed_new_path_saved": true,
+            "real_interruption_observed": true,
+            "recovery_inspected_before_completion": true,
+            "structured_facts": true
+          },
+          "repetition": 1,
+          "status": "pass",
+          "task": "interrupted-move",
+          "task_status": "completed"
+        }
+      },
+      {
+        "portable-kb": {
+          "constraint_status": "pass",
+          "facts": {
+            "units": {
+              "accurate": true,
+              "grounded": false,
+              "passed": false
+            }
+          },
+          "integrity": {
+            "active_selection_preserved": true,
+            "authorized_changes_only": true,
+            "checkout_matches_source": true,
+            "evidence_unchanged": true,
+            "explicit_brain_scope": true,
+            "honest_draft_authorship": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "plans_before_successful_saves": true,
+            "prompt_unchanged": true,
+            "saved_through_supported_cli": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 0,
+            "cli_calls": 28,
+            "cli_errors": 1,
+            "complete_final_pages_read": 11,
+            "elapsed_seconds": 163.757815356,
+            "output_characters": 166553,
+            "shell_calls": 12,
+            "shell_errors": 1
+          },
+          "mutations": {
+            "primary": [],
+            "primary-checkout": []
+          },
+          "outcomes": {
+            "all_affected_callers_read": true,
+            "all_inbound_links_repaired": false,
+            "change_logged": false,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_navigation_and_history_read": false,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "move_preserves_original": false,
+            "original_removed_new_path_saved": false,
+            "real_interruption_observed": true,
+            "recovery_inspected_before_completion": true,
+            "structured_facts": false
+          },
+          "repetition": 2,
+          "status": "blocked",
+          "task": "interrupted-move",
+          "task_status": "blocked"
+        },
+        "repetition": 2,
+        "task": "interrupted-move",
+        "wiki": {
+          "constraint_status": "pass",
+          "facts": {
+            "units": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "authorized_changes_only": true,
+            "evidence_unchanged": true,
+            "honest_draft_status": true,
+            "log_history_preserved": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "prompt_unchanged": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 11,
+            "cli_calls": 0,
+            "cli_errors": 0,
+            "complete_final_pages_read": 11,
+            "elapsed_seconds": 100.563464195,
+            "output_characters": 83966,
+            "shell_calls": 9,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [
+              "incidents/inc-005.md",
+              "incidents/inc-017.md",
+              "log.md",
+              "merchants/cedar-market/account.md",
+              "merchants/northwind/account.md",
+              "runbooks/cold-chain-dispatch.md",
+              "runbooks/index.md",
+              "runbooks/temperature-dispatch.md",
+              "warehouses/cedar.md",
+              "warehouses/harbor.md",
+              "warehouses/maple.md",
+              "warehouses/quartz.md",
+              "warehouses/ridge.md",
+              "warehouses/tundra.md"
+            ]
+          },
+          "outcomes": {
+            "all_affected_callers_read": true,
+            "all_inbound_links_repaired": true,
+            "change_logged": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_navigation_and_history_read": true,
+            "complete_saved_read:incidents/inc-005.md": true,
+            "complete_saved_read:incidents/inc-017.md": true,
+            "complete_saved_read:merchants/cedar-market/account.md": true,
+            "complete_saved_read:merchants/northwind/account.md": true,
+            "complete_saved_read:runbooks/cold-chain-dispatch.md": true,
+            "complete_saved_read:warehouses/cedar.md": true,
+            "complete_saved_read:warehouses/harbor.md": true,
+            "complete_saved_read:warehouses/maple.md": true,
+            "complete_saved_read:warehouses/quartz.md": true,
+            "complete_saved_read:warehouses/ridge.md": true,
+            "complete_saved_read:warehouses/tundra.md": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "move_preserves_original": true,
+            "original_removed_new_path_saved": true,
+            "real_interruption_observed": true,
+            "recovery_inspected_before_completion": true,
+            "structured_facts": true
+          },
+          "repetition": 2,
+          "status": "pass",
+          "task": "interrupted-move",
+          "task_status": "completed"
+        }
+      },
+      {
+        "portable-kb": {
+          "constraint_status": "pass",
+          "facts": {
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "mistaken_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "active_selection_preserved": true,
+            "authorized_changes_only": true,
+            "checkout_matches_source": true,
+            "evidence_unchanged": true,
+            "explicit_brain_scope": true,
+            "honest_draft_authorship": true,
+            "mistaken_revision_history_preserved": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "plans_before_successful_saves": true,
+            "prompt_unchanged": true,
+            "saved_through_supported_cli": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 1,
+            "cli_calls": 11,
+            "cli_errors": 0,
+            "complete_final_pages_read": 1,
+            "elapsed_seconds": 92.229484586,
+            "output_characters": 70949,
+            "shell_calls": 8,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [
+              "@git_head",
+              "knowledge/inbox/merchants/lumen/account.md",
+              "knowledge/log.md"
+            ],
+            "primary-checkout": [
+              "@git_head",
+              "knowledge/inbox/merchants/lumen/account.md",
+              "knowledge/log.md"
+            ]
+          },
+          "outcomes": {
+            "change_logged": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_read:merchants/lumen/account.md": true,
+            "current_account_completely_read": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "new_revision_saved": true,
+            "rollback_retains_mistake_as_history": true,
+            "rollback_source_recorded": true,
+            "saved_rollback_searchable": true,
+            "structured_facts": true
+          },
+          "repetition": 1,
+          "status": "pass",
+          "task": "rollback-amendment",
+          "task_status": "completed"
+        },
+        "repetition": 1,
+        "task": "rollback-amendment",
+        "wiki": {
+          "constraint_status": "pass",
+          "facts": {
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "mistaken_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "authorized_changes_only": true,
+            "evidence_unchanged": true,
+            "honest_draft_status": true,
+            "log_history_preserved": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "prompt_unchanged": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 1,
+            "cli_calls": 0,
+            "cli_errors": 0,
+            "complete_final_pages_read": 4,
+            "elapsed_seconds": 77.870909817,
+            "output_characters": 44552,
+            "shell_calls": 9,
+            "shell_errors": 1
+          },
+          "mutations": {
+            "primary": [
+              "index.md",
+              "log.md",
+              "merchants/index.md",
+              "merchants/lumen/account.md",
+              "merchants/lumen/index.md",
+              "raw/revision-source.md",
+              "raw/rollback-authorization.md"
+            ]
+          },
+          "outcomes": {
+            "change_logged": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_read:merchants/lumen/account.md": true,
+            "current_account_completely_read": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "rollback_retains_mistake_as_history": true,
+            "rollback_source_recorded": true,
+            "saved_rollback_searchable": true,
+            "structured_facts": true
+          },
+          "repetition": 1,
+          "status": "pass",
+          "task": "rollback-amendment",
+          "task_status": "completed"
+        }
+      },
+      {
+        "portable-kb": {
+          "constraint_status": "pass",
+          "facts": {
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "mistaken_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "active_selection_preserved": true,
+            "authorized_changes_only": true,
+            "checkout_matches_source": true,
+            "evidence_unchanged": true,
+            "explicit_brain_scope": true,
+            "honest_draft_authorship": true,
+            "mistaken_revision_history_preserved": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "plans_before_successful_saves": true,
+            "prompt_unchanged": true,
+            "saved_through_supported_cli": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 1,
+            "cli_calls": 13,
+            "cli_errors": 0,
+            "complete_final_pages_read": 1,
+            "elapsed_seconds": 99.973891683,
+            "output_characters": 71580,
+            "shell_calls": 9,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [
+              "@git_head",
+              "knowledge/inbox/merchants/lumen/account.md",
+              "knowledge/log.md"
+            ],
+            "primary-checkout": [
+              "@git_head",
+              "knowledge/inbox/merchants/lumen/account.md",
+              "knowledge/log.md"
+            ]
+          },
+          "outcomes": {
+            "change_logged": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_read:merchants/lumen/account.md": true,
+            "current_account_completely_read": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "new_revision_saved": true,
+            "rollback_retains_mistake_as_history": true,
+            "rollback_source_recorded": true,
+            "saved_rollback_searchable": true,
+            "structured_facts": true
+          },
+          "repetition": 2,
+          "status": "pass",
+          "task": "rollback-amendment",
+          "task_status": "completed"
+        },
+        "repetition": 2,
+        "task": "rollback-amendment",
+        "wiki": {
+          "constraint_status": "pass",
+          "facts": {
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "mistaken_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "authorized_changes_only": true,
+            "evidence_unchanged": true,
+            "honest_draft_status": true,
+            "log_history_preserved": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "prompt_unchanged": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 1,
+            "cli_calls": 0,
+            "cli_errors": 0,
+            "complete_final_pages_read": 1,
+            "elapsed_seconds": 82.906014587,
+            "output_characters": 39958,
+            "shell_calls": 8,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [
+              "index.md",
+              "log.md",
+              "merchants/index.md",
+              "merchants/lumen/account.md",
+              "merchants/lumen/index.md",
+              "raw/lumen-revision-source.md",
+              "raw/lumen-rollback-authorization.md"
+            ]
+          },
+          "outcomes": {
+            "change_logged": true,
+            "complete_incoming_evidence_read": true,
+            "complete_saved_read:merchants/lumen/account.md": true,
+            "current_account_completely_read": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "rollback_retains_mistake_as_history": true,
+            "rollback_source_recorded": true,
+            "saved_rollback_searchable": true,
+            "structured_facts": true
+          },
+          "repetition": 2,
+          "status": "pass",
+          "task": "rollback-amendment",
+          "task_status": "completed"
+        }
+      },
+      {
+        "portable-kb": {
+          "constraint_status": "pass",
+          "facts": {
+            "cached_is_current": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "previous_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "active_selection_preserved": true,
+            "authorized_changes_only": true,
+            "checkout_matches_source": true,
+            "evidence_unchanged": true,
+            "explicit_brain_scope": true,
+            "honest_draft_authorship": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "plans_before_successful_saves": true,
+            "prompt_unchanged": true,
+            "saved_through_supported_cli": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 0,
+            "cli_calls": 7,
+            "cli_errors": 0,
+            "complete_final_pages_read": 3,
+            "elapsed_seconds": 68.820854089,
+            "output_characters": 57041,
+            "shell_calls": 7,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [],
+            "primary-checkout": []
+          },
+          "outcomes": {
+            "complete_incoming_evidence_read": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "latest_and_historical_duration_grounded": true,
+            "structured_facts": true
+          },
+          "repetition": 1,
+          "status": "pass",
+          "task": "stale-citation",
+          "task_status": "completed"
+        },
+        "repetition": 1,
+        "task": "stale-citation",
+        "wiki": {
+          "constraint_status": "pass",
+          "facts": {
+            "cached_is_current": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "previous_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "authorized_changes_only": true,
+            "evidence_unchanged": true,
+            "honest_draft_status": true,
+            "log_history_preserved": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "prompt_unchanged": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 0,
+            "cli_calls": 0,
+            "cli_errors": 0,
+            "complete_final_pages_read": 3,
+            "elapsed_seconds": 51.512408437,
+            "output_characters": 36647,
+            "shell_calls": 7,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": []
+          },
+          "outcomes": {
+            "complete_incoming_evidence_read": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "latest_and_historical_duration_grounded": true,
+            "structured_facts": true
+          },
+          "repetition": 1,
+          "status": "pass",
+          "task": "stale-citation",
+          "task_status": "completed"
+        }
+      },
+      {
+        "portable-kb": {
+          "constraint_status": "pass",
+          "facts": {
+            "cached_is_current": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "previous_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "active_selection_preserved": true,
+            "authorized_changes_only": true,
+            "checkout_matches_source": true,
+            "evidence_unchanged": true,
+            "explicit_brain_scope": true,
+            "honest_draft_authorship": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "plans_before_successful_saves": true,
+            "prompt_unchanged": true,
+            "saved_through_supported_cli": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 0,
+            "cli_calls": 7,
+            "cli_errors": 0,
+            "complete_final_pages_read": 3,
+            "elapsed_seconds": 77.537960079,
+            "output_characters": 57041,
+            "shell_calls": 11,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": [],
+            "primary-checkout": []
+          },
+          "outcomes": {
+            "complete_incoming_evidence_read": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "latest_and_historical_duration_grounded": true,
+            "structured_facts": true
+          },
+          "repetition": 2,
+          "status": "pass",
+          "task": "stale-citation",
+          "task_status": "completed"
+        },
+        "repetition": 2,
+        "task": "stale-citation",
+        "wiki": {
+          "constraint_status": "pass",
+          "facts": {
+            "cached_is_current": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "current_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            },
+            "previous_days": {
+              "accurate": true,
+              "grounded": true,
+              "passed": true
+            }
+          },
+          "integrity": {
+            "authorized_changes_only": true,
+            "evidence_unchanged": true,
+            "honest_draft_status": true,
+            "log_history_preserved": true,
+            "no_embedded_execution": true,
+            "no_fabricated_review": true,
+            "original_metadata_and_sources_preserved": true,
+            "prompt_unchanged": true,
+            "skill_unchanged": true,
+            "valid_saved_corpus_and_links": true
+          },
+          "metrics": {
+            "changed_knowledge_pages": 0,
+            "cli_calls": 0,
+            "cli_errors": 0,
+            "complete_final_pages_read": 3,
+            "elapsed_seconds": 40.03844384,
+            "output_characters": 36370,
+            "shell_calls": 6,
+            "shell_errors": 0
+          },
+          "mutations": {
+            "primary": []
+          },
+          "outcomes": {
+            "complete_incoming_evidence_read": true,
+            "final_response_recorded": true,
+            "installed_skill_read": true,
+            "latest_and_historical_duration_grounded": true,
+            "structured_facts": true
+          },
+          "repetition": 2,
+          "status": "pass",
+          "task": "stale-citation",
+          "task_status": "completed"
+        }
+      }
+    ],
+    "totals": {
+      "portable-kb": {
+        "blocked": 2,
+        "cli_errors": 2,
+        "completed": 6,
+        "completed_median_seconds": 96.1016881345,
+        "completed_with_constraints": 6,
+        "constraint_passes": 8,
+        "facts": 16,
+        "failed": 0,
+        "grounded_accurate_facts": 14,
+        "incomplete": 0,
+        "shell_errors": 2,
+        "trials": 8
+      },
+      "wiki": {
+        "blocked": 0,
+        "cli_errors": 0,
+        "completed": 8,
+        "completed_median_seconds": 80.388462202,
+        "completed_with_constraints": 8,
+        "constraint_passes": 8,
+        "facts": 16,
+        "failed": 0,
+        "grounded_accurate_facts": 16,
+        "incomplete": 0,
+        "shell_errors": 4,
+        "trials": 8
+      }
+    }
+  },
+  "candidate": {
+    "arm": "portable-kb",
+    "cases": [
+      {
+        "constraint_status": "pass",
+        "facts": {
+          "units": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 11,
+          "cli_calls": 26,
+          "cli_errors": 0,
+          "complete_final_pages_read": 11,
+          "elapsed_seconds": 181.810381023,
+          "output_characters": 159522,
+          "shell_calls": 10,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": [
+            "@git_head",
+            "knowledge/inbox/incidents/inc-005.md",
+            "knowledge/inbox/incidents/inc-017.md",
+            "knowledge/inbox/merchants/cedar-market/account.md",
+            "knowledge/inbox/merchants/northwind/account.md",
+            "knowledge/inbox/runbooks/cold-chain-dispatch.md",
+            "knowledge/inbox/runbooks/index.md",
+            "knowledge/inbox/runbooks/temperature-dispatch.md",
+            "knowledge/inbox/warehouses/cedar.md",
+            "knowledge/inbox/warehouses/harbor.md",
+            "knowledge/inbox/warehouses/maple.md",
+            "knowledge/inbox/warehouses/quartz.md",
+            "knowledge/inbox/warehouses/ridge.md",
+            "knowledge/inbox/warehouses/tundra.md",
+            "knowledge/log.md"
+          ],
+          "primary-checkout": [
+            "@git_head",
+            "knowledge/inbox/incidents/inc-005.md",
+            "knowledge/inbox/incidents/inc-017.md",
+            "knowledge/inbox/merchants/cedar-market/account.md",
+            "knowledge/inbox/merchants/northwind/account.md",
+            "knowledge/inbox/runbooks/cold-chain-dispatch.md",
+            "knowledge/inbox/runbooks/index.md",
+            "knowledge/inbox/runbooks/temperature-dispatch.md",
+            "knowledge/inbox/warehouses/cedar.md",
+            "knowledge/inbox/warehouses/harbor.md",
+            "knowledge/inbox/warehouses/maple.md",
+            "knowledge/inbox/warehouses/quartz.md",
+            "knowledge/inbox/warehouses/ridge.md",
+            "knowledge/inbox/warehouses/tundra.md",
+            "knowledge/log.md"
+          ]
+        },
+        "outcomes": {
+          "all_affected_callers_read": true,
+          "all_inbound_links_repaired": true,
+          "change_logged": true,
+          "complete_incoming_evidence_read": true,
+          "complete_saved_navigation_and_history_read": true,
+          "complete_saved_read:incidents/inc-005.md": true,
+          "complete_saved_read:incidents/inc-017.md": true,
+          "complete_saved_read:merchants/cedar-market/account.md": true,
+          "complete_saved_read:merchants/northwind/account.md": true,
+          "complete_saved_read:runbooks/cold-chain-dispatch.md": true,
+          "complete_saved_read:warehouses/cedar.md": true,
+          "complete_saved_read:warehouses/harbor.md": true,
+          "complete_saved_read:warehouses/maple.md": true,
+          "complete_saved_read:warehouses/quartz.md": true,
+          "complete_saved_read:warehouses/ridge.md": true,
+          "complete_saved_read:warehouses/tundra.md": true,
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "move_preserves_original": true,
+          "original_removed_new_path_saved": true,
+          "real_interruption_observed": true,
+          "recovery_inspected_before_completion": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "interrupted-move",
+        "task_status": "completed"
+      },
+      {
+        "constraint_status": "pass",
+        "facts": {
+          "units": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 11,
+          "cli_calls": 31,
+          "cli_errors": 0,
+          "complete_final_pages_read": 11,
+          "elapsed_seconds": 200.308805884,
+          "output_characters": 201198,
+          "shell_calls": 14,
+          "shell_errors": 1
+        },
+        "mutations": {
+          "primary": [
+            "@git_head",
+            "knowledge/inbox/incidents/inc-005.md",
+            "knowledge/inbox/incidents/inc-017.md",
+            "knowledge/inbox/merchants/cedar-market/account.md",
+            "knowledge/inbox/merchants/northwind/account.md",
+            "knowledge/inbox/runbooks/cold-chain-dispatch.md",
+            "knowledge/inbox/runbooks/index.md",
+            "knowledge/inbox/runbooks/temperature-dispatch.md",
+            "knowledge/inbox/warehouses/cedar.md",
+            "knowledge/inbox/warehouses/harbor.md",
+            "knowledge/inbox/warehouses/maple.md",
+            "knowledge/inbox/warehouses/quartz.md",
+            "knowledge/inbox/warehouses/ridge.md",
+            "knowledge/inbox/warehouses/tundra.md",
+            "knowledge/log.md"
+          ],
+          "primary-checkout": [
+            "@git_head",
+            "knowledge/inbox/incidents/inc-005.md",
+            "knowledge/inbox/incidents/inc-017.md",
+            "knowledge/inbox/merchants/cedar-market/account.md",
+            "knowledge/inbox/merchants/northwind/account.md",
+            "knowledge/inbox/runbooks/cold-chain-dispatch.md",
+            "knowledge/inbox/runbooks/index.md",
+            "knowledge/inbox/runbooks/temperature-dispatch.md",
+            "knowledge/inbox/warehouses/cedar.md",
+            "knowledge/inbox/warehouses/harbor.md",
+            "knowledge/inbox/warehouses/maple.md",
+            "knowledge/inbox/warehouses/quartz.md",
+            "knowledge/inbox/warehouses/ridge.md",
+            "knowledge/inbox/warehouses/tundra.md",
+            "knowledge/log.md"
+          ]
+        },
+        "outcomes": {
+          "all_affected_callers_read": true,
+          "all_inbound_links_repaired": true,
+          "change_logged": true,
+          "complete_incoming_evidence_read": true,
+          "complete_saved_navigation_and_history_read": true,
+          "complete_saved_read:incidents/inc-005.md": true,
+          "complete_saved_read:incidents/inc-017.md": true,
+          "complete_saved_read:merchants/cedar-market/account.md": true,
+          "complete_saved_read:merchants/northwind/account.md": true,
+          "complete_saved_read:runbooks/cold-chain-dispatch.md": true,
+          "complete_saved_read:warehouses/cedar.md": true,
+          "complete_saved_read:warehouses/harbor.md": true,
+          "complete_saved_read:warehouses/maple.md": true,
+          "complete_saved_read:warehouses/quartz.md": true,
+          "complete_saved_read:warehouses/ridge.md": true,
+          "complete_saved_read:warehouses/tundra.md": true,
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "move_preserves_original": true,
+          "original_removed_new_path_saved": true,
+          "real_interruption_observed": true,
+          "recovery_inspected_before_completion": true,
+          "structured_facts": true
+        },
+        "repetition": 2,
+        "status": "pass",
+        "task": "interrupted-move",
+        "task_status": "completed"
+      }
+    ],
+    "grader_sha256": "b8cd46823aaf0aa72511ee57323708920626dffe57473e424382b65e06b2587d",
+    "implementation_commit": "fcbc3f610c0ac14d2ca4759abec733daac3d7a5e",
+    "inputs": {
+      "cli_sha256": "9a5d10b778bdad511817a2a8483995f591c36afef1e620214035011c33b1ffd4",
+      "fault_library_sha256": "e442166303835aae7e0528a2b823990f8399d50e1e2dced0c06d2db12db8d40c",
+      "labels_sha256": "fc193b90ba03a1ff268b75784c043bcf3d78a410c4ce19c0351fe0c1621bac98",
+      "native_sha256": "10106ae08f5f1a4e8c434c5a26cc6a14cc23b46d20ade671289a7369f0e51552",
+      "oracle_sha256": "bdccdd9a2a6f5fe1dfce120c75c865b293ca8609eb35285fb7508ed5948af9fa",
+      "parent_manifest_sha256": "5f614d84bf9e61d0596a549071e872212982224bb4da0ef9e5a67e901e0ef42f",
+      "protocol_version": 2,
+      "reliability_version": 1,
+      "repetitions": 2,
+      "version": 1,
+      "wiki_sha256": "84f641f86510bca5a5dcdf343ad0a97f761fad521efc9d7c3bec825c86ba09e4",
+      "wiki_skill_sha256": "0229e37c1783fcac5b77cfb3242703666cf4aa472d2ae85b6bd5279756b515b6",
+      "world_sha256": "ba6b27e49819403774a09a888c2121c47d746f2cfa6a273a1a27c1450676ea62"
+    },
+    "prepared_unexecuted_wiki_cases": 2,
+    "production_change": "Linux zombie/dead operation-lock ownership detection only",
+    "pull_request": "https://github.com/MarvinAmador7/portable-kb/pull/14",
+    "scope": "Two fresh native-only trials; original failures retained. No candidate wiki comparison or full four-task candidate benchmark.",
+    "tasks": [
+      "interrupted-move"
+    ],
+    "totals": {
+      "blocked": 0,
+      "cli_errors": 0,
+      "completed": 2,
+      "completed_median_seconds": 191.05959345349999,
+      "completed_with_constraints": 2,
+      "constraint_passes": 2,
+      "facts": 2,
+      "failed": 0,
+      "grounded_accurate_facts": 2,
+      "incomplete": 0,
+      "shell_errors": 1,
+      "trials": 2
+    }
+  },
+  "corpus": {
+    "documents": 220,
+    "frozen_parent_manifest_sha256": "5f614d84bf9e61d0596a549071e872212982224bb4da0ef9e5a67e901e0ef42f",
+    "new_worlds": 0
+  },
+  "date": "2026-10-08",
+  "experiment": "Atlas reliability and read-cost follow-up",
+  "limitations": [
+    "One 220-page mostly templated world, two repetitions per matched task; no statistical or universal-winner claim.",
+    "Concurrent task explicitly announces collaborator save and requires reread; it is not a blind simultaneous-writer race.",
+    "SIGKILL boundary is destination rename in each workflow, not identical amounts of partial work; both arms use trusted Git fallback.",
+    "Linux container process supervisor retained exited child as zombie; macOS/other supervisor recovery not measured.",
+    "Candidate runs cover two native interrupted-move cases only; clarified prompts and exact changed executable hash disclosed.",
+    "Execution order not randomized; shared-host times include deliberation, startup and validation. Unequal completed-task medians have different coverage.",
+    "Independent stale-draft probe is native-only and is not a paired agent race benchmark. Stale-draft precondition remains an open product gap.",
+    "Uninstrumented medians and instrumented source profiles are separate measurements; no token/API-cost measurement.",
+    "Raw copied skills and command traces remain private."
+  ],
+  "method_clarifications": [
+    "Wiki interrupted-move r1 received native-only CLI interface clarification; remaining fresh agents received the same distinction. No task facts or recovery steps supplied.",
+    "Portable KB rollback r1 received clarification that kb-fault checkpoint only applies to concurrent-update; it did not invoke the controller.",
+    "Candidate/future prompts state these interface points explicitly; actual original trial prompts remain unchanged."
+  ],
+  "preparation_failure": "First preparation failed before any agent on controller fixture footnote/source ID mismatch; failed output retained, fresh run prepared after fixture correction.",
+  "profiling": {
+    "canonical_sha256": "2a45415374f772a1b2357c4c60187c6952457022f269af668d2b25c77e4d51b0",
+    "canonical_unchanged": true,
+    "cli_sha256": "5d54f982379037556801f1dd710382f6efe980ca0b3d9065e50699c5db987c18",
+    "core": {
+      "brain_status": {
+        "median_ms": 1436.593360005645,
+        "profile": {
+          "exclusive_categories": {
+            "jsonschema": 0.35398203900000014,
+            "other": 1.1671825680000003,
+            "pathlib": 0.4104934910000001,
+            "portable_kb": 0.178346667,
+            "subprocess": 0.0009273810000000001,
+            "yaml": 1.9110778399999993
+          },
+          "exclusive_category_fraction": {
+            "jsonschema": 0.08801122827445913,
+            "other": 0.2901988239867091,
+            "pathlib": 0.10206177817282032,
+            "portable_kb": 0.04434267135606262,
+            "subprocess": 0.00023057650359598094,
+            "yaml": 0.4751549217063529
+          },
+          "exclusive_seconds": 4.022009986,
+          "note": "Exclusive categories do not overlap. Cumulative rows include callees and must not be added together. Profiling overhead is excluded from normal-operation medians.",
+          "parse_calls": 220,
+          "top_cumulative": [
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.0279920140000005,
+              "exclusive_seconds": 1.2388e-05,
+              "function": "profiling.py:120:<lambda>",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.0279796260000005,
+              "exclusive_seconds": 0.0028465490000000003,
+              "function": "portable_kb/brains.py:916:brain_status",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.9955659100000003,
+              "exclusive_seconds": 0.001638019,
+              "function": "portable_kb/validation.py:130:validate_bundle",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 220,
+              "cumulative_seconds": 2.30694936,
+              "exclusive_seconds": 0.001128543,
+              "function": "portable_kb/parsing.py:73:parse_concept",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 220,
+              "cumulative_seconds": 2.2969178,
+              "exclusive_seconds": 0.006582505000000001,
+              "function": "portable_kb/parsing.py:79:parse_concept_bytes",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 228,
+              "cumulative_seconds": 2.158396718,
+              "exclusive_seconds": 0.005565391,
+              "function": "main.py:437:load",
+              "primitive_calls": 228
+            },
+            {
+              "calls": 228,
+              "cumulative_seconds": 2.13427591,
+              "exclusive_seconds": 0.0027363720000000004,
+              "function": "constructor.py:115:get_single_data",
+              "primitive_calls": 228
+            },
+            {
+              "calls": 220,
+              "cumulative_seconds": 1.961555866,
+              "exclusive_seconds": 0.0007780510000000001,
+              "function": "composer.py:65:get_single_node",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 220,
+              "cumulative_seconds": 1.921071871,
+              "exclusive_seconds": 0.00044927000000000004,
+              "function": "composer.py:89:compose_document",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 10120,
+              "cumulative_seconds": 1.9160782250000001,
+              "exclusive_seconds": 0.032787703,
+              "function": "composer.py:105:compose_node",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 880,
+              "cumulative_seconds": 1.89521497,
+              "exclusive_seconds": 0.011894581000000001,
+              "function": "composer.py:188:compose_mapping_node",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 29480,
+              "cumulative_seconds": 1.651538686,
+              "exclusive_seconds": 0.020791103000000002,
+              "function": "parser.py:137:check_event",
+              "primitive_calls": 29480
+            },
+            {
+              "calls": 88000,
+              "cumulative_seconds": 1.0975856130000001,
+              "exclusive_seconds": 0.08317062800000001,
+              "function": "scanner.py:1733:check_token",
+              "primitive_calls": 88000
+            },
+            {
+              "calls": 4620,
+              "cumulative_seconds": 1.010842135,
+              "exclusive_seconds": 0.016785905,
+              "function": "parser.py:627:parse_block_mapping_value",
+              "primitive_calls": 4620
+            },
+            {
+              "calls": 133980,
+              "cumulative_seconds": 0.919588107,
+              "exclusive_seconds": 0.109212506,
+              "function": "scanner.py:1755:_gather_comments",
+              "primitive_calls": 133980
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 0.760086849,
+              "exclusive_seconds": 0.00359587,
+              "function": "portable_kb/validation.py:992:_validate_corpus",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 14300,
+              "cumulative_seconds": 0.701989814,
+              "exclusive_seconds": 0.03839236,
+              "function": "scanner.py:211:fetch_more_tokens",
+              "primitive_calls": 14300
+            },
+            {
+              "calls": 440,
+              "cumulative_seconds": 0.624531501,
+              "exclusive_seconds": 0.001363016,
+              "function": "portable_kb/links.py:241:outgoing",
+              "primitive_calls": 440
+            },
+            {
+              "calls": 1958,
+              "cumulative_seconds": 0.527294094,
+              "exclusive_seconds": 0.002024747,
+              "function": "portable_kb/links.py:242:<genexpr>",
+              "primitive_calls": 1958
+            },
+            {
+              "calls": 1518,
+              "cumulative_seconds": 0.525269347,
+              "exclusive_seconds": 0.007226233,
+              "function": "portable_kb/links.py:163:resolve",
+              "primitive_calls": 1518
+            }
+          ]
+        },
+        "samples_ms": [
+          1421.8213490094058,
+          1444.750918992213,
+          1436.593360005645
+        ]
+      },
+      "get_index": {
+        "median_ms": 1114.9932800035458,
+        "profile": {
+          "exclusive_categories": {
+            "jsonschema": 0.29787206500000013,
+            "other": 1.0905742790000004,
+            "pathlib": 0.3909542849999999,
+            "portable_kb": 0.16538936600000004,
+            "subprocess": 0.0008820329999999998,
+            "yaml": 1.6452759959999996
+          },
+          "exclusive_category_fraction": {
+            "jsonschema": 0.0829508149405618,
+            "other": 0.3037009368309365,
+            "pathlib": 0.1088721647840815,
+            "portable_kb": 0.04605729876751901,
+            "subprocess": 0.0002456267799213347,
+            "yaml": 0.45817315789697977
+          },
+          "exclusive_seconds": 3.5909480240000002,
+          "note": "Exclusive categories do not overlap. Cumulative rows include callees and must not be added together. Profiling overhead is excluded from normal-operation medians.",
+          "parse_calls": 220,
+          "top_cumulative": [
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.5964322060000002,
+              "exclusive_seconds": 3.3650000000000004e-06,
+              "function": "profiling.py:123:<lambda>",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.5964288410000003,
+              "exclusive_seconds": 1.9288000000000002e-05,
+              "function": "portable_kb/search.py:93:get_knowledge",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.5963848350000003,
+              "exclusive_seconds": 4.3254e-05,
+              "function": "portable_kb/search.py:112:get_knowledge_document",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.5934241090000003,
+              "exclusive_seconds": 2.8892e-05,
+              "function": "portable_kb/search.py:218:_healthy_brain",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.5807574260000004,
+              "exclusive_seconds": 0.003148109,
+              "function": "portable_kb/brains.py:916:brain_status",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.553030264,
+              "exclusive_seconds": 0.001398029,
+              "function": "portable_kb/validation.py:130:validate_bundle",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 220,
+              "cumulative_seconds": 1.9859694570000002,
+              "exclusive_seconds": 0.001033911,
+              "function": "portable_kb/parsing.py:73:parse_concept",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 220,
+              "cumulative_seconds": 1.977437869,
+              "exclusive_seconds": 0.005555077,
+              "function": "portable_kb/parsing.py:79:parse_concept_bytes",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 232,
+              "cumulative_seconds": 1.859163233,
+              "exclusive_seconds": 0.004753914000000001,
+              "function": "main.py:437:load",
+              "primitive_calls": 232
+            },
+            {
+              "calls": 232,
+              "cumulative_seconds": 1.840904147,
+              "exclusive_seconds": 0.0026041370000000003,
+              "function": "constructor.py:115:get_single_data",
+              "primitive_calls": 232
+            },
+            {
+              "calls": 220,
+              "cumulative_seconds": 1.6961768460000002,
+              "exclusive_seconds": 0.000696819,
+              "function": "composer.py:65:get_single_node",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 220,
+              "cumulative_seconds": 1.658407898,
+              "exclusive_seconds": 0.000389584,
+              "function": "composer.py:89:compose_document",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 10120,
+              "cumulative_seconds": 1.654453251,
+              "exclusive_seconds": 0.029546263000000003,
+              "function": "composer.py:105:compose_node",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 880,
+              "cumulative_seconds": 1.63572979,
+              "exclusive_seconds": 0.010402808000000001,
+              "function": "composer.py:188:compose_mapping_node",
+              "primitive_calls": 220
+            },
+            {
+              "calls": 29480,
+              "cumulative_seconds": 1.426834326,
+              "exclusive_seconds": 0.016117556,
+              "function": "parser.py:137:check_event",
+              "primitive_calls": 29480
+            },
+            {
+              "calls": 88000,
+              "cumulative_seconds": 0.950393829,
+              "exclusive_seconds": 0.076571819,
+              "function": "scanner.py:1733:check_token",
+              "primitive_calls": 88000
+            },
+            {
+              "calls": 4620,
+              "cumulative_seconds": 0.870212347,
+              "exclusive_seconds": 0.014939717000000002,
+              "function": "parser.py:627:parse_block_mapping_value",
+              "primitive_calls": 4620
+            },
+            {
+              "calls": 133980,
+              "cumulative_seconds": 0.7998050670000001,
+              "exclusive_seconds": 0.097440182,
+              "function": "scanner.py:1755:_gather_comments",
+              "primitive_calls": 133980
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 0.757009021,
+              "exclusive_seconds": 0.0034572670000000004,
+              "function": "portable_kb/validation.py:992:_validate_corpus",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 440,
+              "cumulative_seconds": 0.6397448880000001,
+              "exclusive_seconds": 0.001346917,
+              "function": "portable_kb/links.py:241:outgoing",
+              "primitive_calls": 440
+            }
+          ]
+        },
+        "samples_ms": [
+          1114.9932800035458,
+          1065.5856689991197,
+          1327.2218839993002
+        ]
+      },
+      "get_path": {
+        "median_ms": 1490.4134769894881,
+        "profile": {
+          "exclusive_categories": {
+            "jsonschema": 0.353442478,
+            "other": 1.179319526000001,
+            "pathlib": 0.484013912,
+            "portable_kb": 0.17475208,
+            "subprocess": 0.0010192640000000002,
+            "yaml": 1.914985521
+          },
+          "exclusive_category_fraction": {
+            "jsonschema": 0.08604739069518821,
+            "other": 0.2871114094220057,
+            "pathlib": 0.1178356784488435,
+            "portable_kb": 0.04254429345234725,
+            "subprocess": 0.00024814506769483527,
+            "yaml": 0.46621308291392055
+          },
+          "exclusive_seconds": 4.107532781000001,
+          "note": "Exclusive categories do not overlap. Cumulative rows include callees and must not be added together. Profiling overhead is excluded from normal-operation medians.",
+          "parse_calls": 221,
+          "top_cumulative": [
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.1131214720000004,
+              "exclusive_seconds": 3.3760000000000004e-06,
+              "function": "profiling.py:121:<lambda>",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.113118096,
+              "exclusive_seconds": 1.9659000000000003e-05,
+              "function": "portable_kb/search.py:93:get_knowledge",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.113065988000001,
+              "exclusive_seconds": 0.00010817,
+              "function": "portable_kb/search.py:164:get_knowledge_item",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.017882431,
+              "exclusive_seconds": 2.7291e-05,
+              "function": "portable_kb/search.py:218:_healthy_brain",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.000617369,
+              "exclusive_seconds": 0.0036665430000000004,
+              "function": "portable_kb/brains.py:916:brain_status",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.961649276,
+              "exclusive_seconds": 0.0018117860000000001,
+              "function": "portable_kb/validation.py:130:validate_bundle",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 221,
+              "cumulative_seconds": 2.311060677,
+              "exclusive_seconds": 0.0011695470000000002,
+              "function": "portable_kb/parsing.py:73:parse_concept",
+              "primitive_calls": 221
+            },
+            {
+              "calls": 221,
+              "cumulative_seconds": 2.3015112610000004,
+              "exclusive_seconds": 0.0064142290000000005,
+              "function": "portable_kb/parsing.py:79:parse_concept_bytes",
+              "primitive_calls": 221
+            },
+            {
+              "calls": 233,
+              "cumulative_seconds": 2.1626070100000003,
+              "exclusive_seconds": 0.00579042,
+              "function": "main.py:437:load",
+              "primitive_calls": 233
+            },
+            {
+              "calls": 233,
+              "cumulative_seconds": 2.142427665,
+              "exclusive_seconds": 0.00378209,
+              "function": "constructor.py:115:get_single_data",
+              "primitive_calls": 233
+            },
+            {
+              "calls": 221,
+              "cumulative_seconds": 1.981970035,
+              "exclusive_seconds": 0.000752059,
+              "function": "composer.py:65:get_single_node",
+              "primitive_calls": 221
+            },
+            {
+              "calls": 221,
+              "cumulative_seconds": 1.9405360040000001,
+              "exclusive_seconds": 0.00045133200000000004,
+              "function": "composer.py:89:compose_document",
+              "primitive_calls": 221
+            },
+            {
+              "calls": 10166,
+              "cumulative_seconds": 1.9360131790000001,
+              "exclusive_seconds": 0.034091006,
+              "function": "composer.py:105:compose_node",
+              "primitive_calls": 221
+            },
+            {
+              "calls": 884,
+              "cumulative_seconds": 1.914154651,
+              "exclusive_seconds": 0.012018823000000001,
+              "function": "composer.py:188:compose_mapping_node",
+              "primitive_calls": 221
+            },
+            {
+              "calls": 29614,
+              "cumulative_seconds": 1.6661932990000001,
+              "exclusive_seconds": 0.018764649,
+              "function": "parser.py:137:check_event",
+              "primitive_calls": 29614
+            },
+            {
+              "calls": 88400,
+              "cumulative_seconds": 1.108561468,
+              "exclusive_seconds": 0.087097409,
+              "function": "scanner.py:1733:check_token",
+              "primitive_calls": 88400
+            },
+            {
+              "calls": 4641,
+              "cumulative_seconds": 1.01056938,
+              "exclusive_seconds": 0.017011909000000002,
+              "function": "parser.py:627:parse_block_mapping_value",
+              "primitive_calls": 4641
+            },
+            {
+              "calls": 134589,
+              "cumulative_seconds": 0.9304870340000001,
+              "exclusive_seconds": 0.113232149,
+              "function": "scanner.py:1755:_gather_comments",
+              "primitive_calls": 134589
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 0.7606074,
+              "exclusive_seconds": 0.004159034000000001,
+              "function": "portable_kb/validation.py:992:_validate_corpus",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 14365,
+              "cumulative_seconds": 0.713642966,
+              "exclusive_seconds": 0.038734237000000005,
+              "function": "scanner.py:211:fetch_more_tokens",
+              "primitive_calls": 14365
+            }
+          ]
+        },
+        "samples_ms": [
+          1490.4134769894881,
+          1582.4202049989253,
+          1484.7028590011178
+        ]
+      },
+      "get_uuid": {
+        "median_ms": 1491.3997909898171,
+        "profile": {
+          "exclusive_categories": {
+            "jsonschema": 0.30456337399999983,
+            "other": 1.3074112390000003,
+            "pathlib": 0.465886668,
+            "portable_kb": 0.186170117,
+            "subprocess": 0.000811458,
+            "yaml": 2.618774286000001
+          },
+          "exclusive_category_fraction": {
+            "jsonschema": 0.06236430193937585,
+            "other": 0.26771370502327557,
+            "pathlib": 0.09539786892655638,
+            "portable_kb": 0.03812135791704532,
+            "subprocess": 0.00016615921690939133,
+            "yaml": 0.5362366069768375
+          },
+          "exclusive_seconds": 4.883617142000001,
+          "note": "Exclusive categories do not overlap. Cumulative rows include callees and must not be added together. Profiling overhead is excluded from normal-operation medians.",
+          "parse_calls": 354,
+          "top_cumulative": [
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.889025299,
+              "exclusive_seconds": 3.475e-06,
+              "function": "profiling.py:122:<lambda>",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.889021824,
+              "exclusive_seconds": 2.0301e-05,
+              "function": "portable_kb/search.py:93:get_knowledge",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 4.88897317,
+              "exclusive_seconds": 0.00011870000000000001,
+              "function": "portable_kb/search.py:164:get_knowledge_item",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.5333547860000003,
+              "exclusive_seconds": 2.3556000000000003e-05,
+              "function": "portable_kb/search.py:218:_healthy_brain",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.5130953930000004,
+              "exclusive_seconds": 0.0031732080000000003,
+              "function": "portable_kb/brains.py:916:brain_status",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 3.487031274,
+              "exclusive_seconds": 0.0013092000000000002,
+              "function": "portable_kb/validation.py:130:validate_bundle",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 354,
+              "cumulative_seconds": 3.192778391,
+              "exclusive_seconds": 0.0017043030000000001,
+              "function": "portable_kb/parsing.py:73:parse_concept",
+              "primitive_calls": 354
+            },
+            {
+              "calls": 354,
+              "cumulative_seconds": 3.177446835,
+              "exclusive_seconds": 0.008671548000000001,
+              "function": "portable_kb/parsing.py:79:parse_concept_bytes",
+              "primitive_calls": 354
+            },
+            {
+              "calls": 366,
+              "cumulative_seconds": 2.979323545,
+              "exclusive_seconds": 0.0076903100000000005,
+              "function": "main.py:437:load",
+              "primitive_calls": 366
+            },
+            {
+              "calls": 366,
+              "cumulative_seconds": 2.9527485110000002,
+              "exclusive_seconds": 0.004885854,
+              "function": "constructor.py:115:get_single_data",
+              "primitive_calls": 366
+            },
+            {
+              "calls": 354,
+              "cumulative_seconds": 2.746391641,
+              "exclusive_seconds": 0.001191241,
+              "function": "composer.py:65:get_single_node",
+              "primitive_calls": 354
+            },
+            {
+              "calls": 354,
+              "cumulative_seconds": 2.6883691950000004,
+              "exclusive_seconds": 0.0006365590000000001,
+              "function": "composer.py:89:compose_document",
+              "primitive_calls": 354
+            },
+            {
+              "calls": 16284,
+              "cumulative_seconds": 2.682339437,
+              "exclusive_seconds": 0.046111283,
+              "function": "composer.py:105:compose_node",
+              "primitive_calls": 354
+            },
+            {
+              "calls": 1416,
+              "cumulative_seconds": 2.653813136,
+              "exclusive_seconds": 0.016681487000000002,
+              "function": "composer.py:188:compose_mapping_node",
+              "primitive_calls": 354
+            },
+            {
+              "calls": 47436,
+              "cumulative_seconds": 2.3119458170000002,
+              "exclusive_seconds": 0.025971586,
+              "function": "parser.py:137:check_event",
+              "primitive_calls": 47436
+            },
+            {
+              "calls": 141600,
+              "cumulative_seconds": 1.5391577010000002,
+              "exclusive_seconds": 0.125116118,
+              "function": "scanner.py:1733:check_token",
+              "primitive_calls": 141600
+            },
+            {
+              "calls": 7434,
+              "cumulative_seconds": 1.411286124,
+              "exclusive_seconds": 0.025211885,
+              "function": "parser.py:627:parse_block_mapping_value",
+              "primitive_calls": 7434
+            },
+            {
+              "calls": 1,
+              "cumulative_seconds": 1.3553698490000001,
+              "exclusive_seconds": 0.001812645,
+              "function": "portable_kb/search.py:240:_find_item",
+              "primitive_calls": 1
+            },
+            {
+              "calls": 215586,
+              "cumulative_seconds": 1.289846344,
+              "exclusive_seconds": 0.15831039800000002,
+              "function": "scanner.py:1755:_gather_comments",
+              "primitive_calls": 215586
+            },
+            {
+              "calls": 23010,
+              "cumulative_seconds": 0.974133008,
+              "exclusive_seconds": 0.053544385,
+              "function": "scanner.py:211:fetch_more_tokens",
+              "primitive_calls": 23010
+            }
+          ]
+        },
+        "samples_ms": [
+          1491.3997909898171,
+          1463.6349200009136,
+          1598.4006260114256
+        ]
+      }
+    },
+    "core_source_sha256": "4cf3b58d14d512533193cba72336a79f312d021ce75888ae2423b4b5cb75b84a",
+    "documents": 220,
+    "limitations": [
+      "One 220-document world on the current Linux host; profiles explain this workload only.",
+      "Core profiles instrument source/library reads, not the frozen bootloader; path/UUID payload equality with the actual executable is checked.",
+      "Standalone timings include validation, CLI startup and shim overhead; help is a contextual control, not a precise decomposition."
+    ],
+    "samples": 3,
+    "standalone": {
+      "brain_status": {
+        "median_ms": 2448.0451679992257,
+        "samples_ms": [
+          2188.4228590060957,
+          2448.0451679992257,
+          2541.8083049880806
+        ],
+        "scope": "Fresh standalone CLI process plus recorded shim and JSON handling."
+      },
+      "get_index": {
+        "median_ms": 2211.6173959948355,
+        "samples_ms": [
+          2211.69042600377,
+          2211.6173959948355,
+          2067.763761995593
+        ],
+        "scope": "Fresh standalone CLI process plus recorded shim and JSON handling."
+      },
+      "get_path": {
+        "median_ms": 2402.6419279980473,
+        "samples_ms": [
+          2402.6419279980473,
+          2415.5779119901126,
+          2188.337642000988
+        ],
+        "scope": "Fresh standalone CLI process plus recorded shim and JSON handling."
+      },
+      "get_uuid": {
+        "median_ms": 2549.8100289987633,
+        "samples_ms": [
+          2714.6277989959344,
+          2549.8100289987633,
+          2492.019502999028
+        ],
+        "scope": "Fresh standalone CLI process plus recorded shim and JSON handling."
+      },
+      "help": {
+        "median_ms": 675.8581089961808,
+        "samples_ms": [
+          664.8413559887558,
+          675.8581089961808,
+          695.4839740064926
+        ],
+        "scope": "Fresh standalone CLI process plus recorded shim and JSON handling."
+      },
+      "keyword_query": {
+        "median_ms": 2221.4798539935146,
+        "samples_ms": [
+          2201.5148119971855,
+          2221.4798539935146,
+          2467.8489699872443
+        ],
+        "scope": "Fresh standalone CLI process plus recorded shim and JSON handling."
+      }
+    }
+  },
+  "rubric_corrections": {
+    "no_agent_reruns": true,
+    "reason": "Single-input raw-copy permission and exact raw filename checks incorrectly rejected authorized unchanged incoming evidence copies.",
+    "regressions": "Changed/new unrelated raw bytes, modified existing raw files, and escaping source paths remain rejected.",
+    "retained_original_wiki_totals": {
+      "blocked": 0,
+      "cli_errors": 0,
+      "completed": 7,
+      "completed_median_seconds": 76.037936316,
+      "completed_with_constraints": 4,
+      "constraint_passes": 4,
+      "facts": 16,
+      "failed": 1,
+      "grounded_accurate_facts": 16,
+      "incomplete": 0,
+      "shell_errors": 4,
+      "trials": 8
+    },
+    "rule": "Allow new raw/ copies only when their SHA-256 equals preserved incoming evidence; resolve metadata raw source references and require identical bytes, including descriptive renamed copies. Existing raw files remain protected."
+  },
+  "runner": "fresh Codex chat subagents through recorded-shell observer; model inherited/unknown",
+  "schema_version": 1,
+  "stale_draft_probe": {
+    "apply_saved_version": "75d35e633fa28eeda1703a17d8ad0b1c446eadc7",
+    "cli_sha256": "5d54f982379037556801f1dd710382f6efe980ca0b3d9065e50699c5db987c18",
+    "collaborator_commit": "d71fab5ba1d315dfebc47706f376baac59b705de",
+    "collaborator_contact_recorded": true,
+    "collaborator_source_preserved": true,
+    "final_contact_preserved": false,
+    "final_current14": true,
+    "kind": "actual-CLI-preview-then-concurrent-write-then-stale-body-apply",
+    "scope": "Independent deterministic native CLI probe; not an agent trial or paired race benchmark."
+  },
+  "validation": {
+    "eval_suite": {
+      "coverage_percent": 87.1,
+      "real_qmd": true,
+      "real_tantivy": true,
+      "tests": 459
+    },
+    "production_fix_suite": {
+      "coverage_percent": 87.07,
+      "real_qmd": true,
+      "real_tantivy": true,
+      "tests": 438
+    },
+    "standalone_candidate": "Built from matching installed wheel; real builtin index/query and installed skill smoke tests passed."
+  }
+}
