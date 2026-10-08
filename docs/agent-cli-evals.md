@@ -1,7 +1,8 @@
 # Evaluate the installed CLI and skill with agents
 
 For matched wiki/skill versus Portable KB trials and a CLI-authored replication
-demo, see [wiki comparison](wiki-comparison.md). Both harnesses share the CLI
+demo, see [wiki comparison](wiki-comparison.md). For knowledge maintenance and
+workplace tasks, see [agentic workflows](agentic-workflows.md). The harnesses share the CLI
 tracer, isolated product environment and runner evidence boundary. The
 `evals.agent_cli.observer` module supports explicitly delegated foreground chat
 agents when the native Codex runner is unavailable.

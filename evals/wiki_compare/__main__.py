@@ -6,6 +6,7 @@ from pathlib import Path
 
 from evals.agent_cli.harness import run
 
+from . import agentic
 from .harness import compare, grade, prepare
 
 
@@ -37,9 +38,45 @@ def main() -> int:
     comparison.add_argument("wiki", type=Path)
     comparison.add_argument("portable", type=Path)
     comparison.add_argument("--output", type=Path, required=True)
+    workflow_prepare = commands.add_parser(
+        "prepare-agentic", help="Seed matched fictional workplace workflows."
+    )
+    for option in ("output", "wiki-skill", "cli"):
+        workflow_prepare.add_argument(f"--{option}", type=Path, required=True)
+    workflow_prepare.add_argument("--repetitions", type=int, default=2)
+    workflow_prepare.add_argument("--scenario", action="append", dest="scenarios")
+    workflow_grade = commands.add_parser("grade-agentic")
+    workflow_grade.add_argument("--output", type=Path, required=True)
+    workflow_run = commands.add_parser("run-agentic")
+    workflow_run.add_argument("--output", type=Path, required=True)
+    workflow_run.add_argument("--runner", default="codex")
+    workflow_run.add_argument("--timeout", type=int, default=600)
+    workflow_run.add_argument("--jobs", type=int, default=1)
+    workflow_compare = commands.add_parser("compare-agentic")
+    workflow_compare.add_argument("wiki", type=Path)
+    workflow_compare.add_argument("portable", type=Path)
+    workflow_compare.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     try:
-        if args.action == "prepare":
+        if args.action == "prepare-agentic":
+            result = agentic.prepare(
+                args.output, args.cli, args.wiki_skill, args.repetitions, args.scenarios
+            )
+            print(json.dumps(result))
+        elif args.action in {"run-agentic", "grade-agentic"}:
+            if args.action == "run-agentic":
+                run(args.output.resolve(), runner=args.runner, timeout=args.timeout, jobs=args.jobs)
+            result = agentic.grade(args.output.resolve())
+            print(json.dumps(result["totals"]))
+            return 0 if all(c["status"] == "pass" for c in result["cases"]) else 1
+        elif args.action == "compare-agentic":
+            result = agentic.compare(
+                json.loads(args.wiki.read_text()),
+                json.loads(args.portable.read_text()),
+                args.output,
+            )
+            print(json.dumps({"wiki": result["wiki"], "portable-kb": result["portable-kb"]}))
+        elif args.action == "prepare":
             result = prepare(
                 args.output,
                 arm=args.arm,

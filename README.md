@@ -279,6 +279,8 @@ To compare a Markdown wiki and its skill with Portable KB on the same captured
 knowledge, use the [matched-content agent benchmark](docs/wiki-comparison.md).
 It checks migration fidelity, independently grounded answers and observed effort,
 with private corpora and reports kept outside the repository.
+For agents correcting requirements, handling conflicts, isolating clients, and
+maintaining links, use the [workplace workflow suite](docs/agentic-workflows.md).
 
 ## Documentation
 
@@ -289,6 +291,7 @@ with private corpora and reports kept outside the repository.
 | [Authoring handbook](docs/authoring-handbook.md) | Sources, lifecycle, and human review |
 | [Agent evaluations](docs/agent-cli-evals.md) | Actual CLI/skill trials, traces, and outcome grading |
 | [Wiki comparison](docs/wiki-comparison.md) | Matched wiki/Portable KB trials and CLI-based replication |
+| [Agent workflows](docs/agentic-workflows.md) | Saved changes, conflicts, client isolation, handoffs, and safe capability blocking |
 | [Retrieval evaluation](docs/retrieval-evaluation.md) | Ranking quality, citation checks, and measured results |
 | [Native search](docs/pkb-search.md) | Tantivy integration and provider architecture |
 | [Architecture](docs/architecture.md) | Product boundaries, compatibility, and design decisions |
