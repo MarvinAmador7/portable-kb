@@ -109,7 +109,7 @@ def test_keyword_search_refuses_missing_stale_and_unsafe_results(
 ) -> None:
     settings, source = _installed_settings(tmp_path, brain_repo_factory, fake_qmd)
     _executable, _log, results_file = fake_qmd
-    with pytest.raises(SearchError, match="missing"):
+    with pytest.raises(SearchError, match="missing.*pkb search index search-brain"):
         search_keyword(settings, "knowledge", as_of="2026-08-12")
 
     index_keyword_brain(settings, as_of="2026-08-12")
@@ -136,7 +136,7 @@ def test_keyword_search_refuses_missing_stale_and_unsafe_results(
     _git(source, "add", "brain.yaml")
     _git(source, "commit", "--quiet", "-m", "Update searchable brain")
     sync_brain(settings, as_of="2026-08-12")
-    with pytest.raises(SearchError, match="stale"):
+    with pytest.raises(SearchError, match="stale.*pkb search index search-brain"):
         search_keyword(settings, "knowledge", as_of="2026-08-12")
 
 

@@ -43,11 +43,13 @@ class TantivyProvider:
         _safe_root(root)
         path = root / "CURRENT.json"
         if not path.is_file() or path.is_symlink() or path.stat().st_size > 65_536:
-            raise SearchError("Native keyword index is unavailable; run `pkb search index`.")
+            raise SearchError(f"Native keyword index is unavailable; run `pkb search index {slug}`.")
         try:
             return _metadata(json.loads(path.read_text()))
+        except SearchError as exc:
+            raise SearchError(f"{exc} Run `pkb search index {slug}`.") from exc
         except (OSError, UnicodeError, ValueError, TypeError) as exc:
-            raise SearchError("Native index manifest is invalid; rebuild the index.") from exc
+            raise SearchError(f"Native index manifest is invalid; run `pkb search index {slug}`.") from exc
 
     def build(self, brain: InstalledBrain, bundle: Path) -> dict[str, Any]:
         root = self.index_path(brain.slug)
@@ -90,7 +92,7 @@ class TantivyProvider:
             metadata = _metadata(result.get("manifest"))
             if (metadata["brain_id"], metadata["brain_slug"], metadata["commit"]) != (
                 brain.id, brain.slug, brain.commit):
-                raise SearchError("Native index changed brain identity or commit; rebuild it.")
+                raise SearchError(f"Native index changed brain identity or commit; run `pkb search index {brain.slug}`.")
             generation = metadata["generation"]
             records_path = root / "generations" / generation / "records.jsonl"
             if not isinstance(result.get("records_path"), str) or Path(result["records_path"]) != records_path:

@@ -147,7 +147,7 @@ def _healthy_brain(
     if not health["ok"]:
         raise SearchError(
             "Brain checkout is not clean, pinned, identity-matched, and valid; "
-            "run `pkb brain status` for details."
+            f"run `pkb brain status {brain.slug}` for details."
         )
     checkout = brain.checkout_path(settings)
     manifest = read_manifest(checkout)
@@ -194,9 +194,9 @@ def _plain_value(value: Any) -> Any:
 
 def _require_current_index(metadata: Mapping[str, Any], brain: InstalledBrain) -> None:
     if metadata.get("brain_id") != brain.id or metadata.get("brain_slug") != brain.slug:
-        raise SearchError("Keyword index identity differs from the selected brain; rebuild it.")
+        raise SearchError(f"Keyword index identity differs from the selected brain; run `pkb search index {brain.slug}`.")
     if metadata.get("commit") != brain.commit:
-        raise SearchError("Keyword index is stale after a brain change; rebuild it.")
+        raise SearchError(f"Keyword index is stale after a brain change; run `pkb search index {brain.slug}`.")
 
 
 def _cited_result(

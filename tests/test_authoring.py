@@ -69,6 +69,12 @@ def test_plan_knowledge_create_is_reviewable_then_applies_to_authoring_repo(
     target = repository / "knowledge/inbox/customer-activation.md"
     assert not target.exists()
     assert plan.change_set.validation.profile_passes
+    preview = plan.as_dict(applied=False)
+    assert preview["proposed_item"]["status"] == "draft"
+    assert preview["proposed_item"]["body"].strip() == body.strip()
+    assert preview["proposed_item"]["metadata"]["sensitivity"] == "internal"
+    assert preview["proposed_item"]["metadata"]["tags"] == ["customer-success"]
+    assert preview["item_id"] == preview["proposed_item"]["id"]
     assert {change.relative_path for change in plan.change_set.changes} >= {
         "inbox/customer-activation.md",
         "inbox/index.md",
@@ -80,6 +86,13 @@ def test_plan_knowledge_create_is_reviewable_then_applies_to_authoring_repo(
     item = parse_concept(target, repository / "knowledge").item
     assert item is not None
     assert item.status == "draft"
+    saved_payload = result.as_dict()
+    assert saved_payload["item_id"] == item.id == preview["item_id"]
+    assert saved_payload["citation"]["commit"] == result.commit
+    assert saved_payload["citation"]["brain_slug"] == "business"
+    assert saved_payload["needs_reindex"] is True
+    assert saved_payload["search_ready"] is False
+    assert saved_payload["retrieval_ready"] is True
     assert item.metadata["generated"] == {
         "by": "human:marvin",
         "at": "2026-08-13T15:00:00Z",
@@ -142,6 +155,11 @@ The practice may inform a future internal procedure.
         timestamp="2026-08-13T15:00:00Z",
         as_of="2026-08-13",
     )
+    payload = plan.as_dict(applied=False)
+    assert payload["proposed_item"]["metadata"]["sources"][0]["id"] == "guide"
+    assert payload["proposed_item"]["metadata"]["confidence"]["level"] == "medium"
+    assert payload["proposed_item"]["metadata"]["generated"]["method"] == "agent-generated"
+    assert not (repository / "knowledge/inbox/onboarding-evidence.md").exists()
     plan.change_set.apply()
 
     item = parse_concept(
@@ -211,7 +229,12 @@ def test_plan_and_save_update_preserves_identity_and_refreshes_active_brain(
     )
 
     assert update.item.id == original.id
-    assert update.as_dict(applied=False)["applied"] is False
+    preview = update.as_dict(applied=False)
+    assert preview["applied"] is False
+    assert preview["proposed_item"]["id"] == original.id
+    assert preview["proposed_item"]["metadata"]["x-owner-note"] == "preserve-on-future-updates"
+    assert preview["proposed_item"]["metadata"]["generated"]["by"] == "openai/codex"
+    assert "first verified customer realization" in preview["proposed_item"]["body"]
     assert "verified" not in update.item.metadata
     stable_item = replace(
         update.item,

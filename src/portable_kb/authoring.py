@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from difflib import unified_diff
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -21,7 +22,7 @@ from .brains import (
 from .changes import ChangeSet
 from .models import KnowledgeItem
 from .operations import OperationError, plan_create, plan_update
-from .parsing import RESERVED_NAMES, discover_concepts, parse_concept
+from .parsing import RESERVED_NAMES, discover_concepts, parse_concept, parse_concept_bytes
 from .settings import Settings
 
 
@@ -76,18 +77,18 @@ class KnowledgeCreatePlan:
     change_set: ChangeSet
 
     def as_dict(self, *, applied: bool) -> dict[str, Any]:
+        proposed = _item_preview(self.change_set, self.relative_path)
         return {
             "brain": self.brain.slug,
             "repository": str(self.repository),
             "path": self.relative_path,
+            "item_id": proposed["id"],
+            "proposed_item": proposed,
             "operation": self.change_set.operation,
             "applied": applied,
             "saved_version": None,
             "active_brain_updated": False,
-            "changes": [
-                {"path": change.relative_path, "kind": change.kind}
-                for change in self.change_set.changes
-            ],
+            "changes": _change_previews(self.change_set),
             "validation_warnings": [
                 finding.as_dict() for finding in self.change_set.validation.warnings
             ],
@@ -109,6 +110,9 @@ class KnowledgeCreateResult:
         payload["saved_version"] = self.commit
         payload["active_brain_updated"] = True
         payload["previous_version"] = self.refresh["previous_commit"]
+        payload.update(
+            _saved_item_actions(self.plan.brain, payload["item_id"], payload["path"], self.commit)
+        )
         return payload
 
 
@@ -139,6 +143,7 @@ class KnowledgeUpdatePlan:
             "item_id": self.item.id,
             "path": self.item.relative_path,
             "title": self.item.metadata.get("title"),
+            "proposed_item": _item_preview(self.change_set, self.item.relative_path),
             "operation": self.change_set.operation,
             "previous_status": self.item.status,
             "resulting_status": resulting_status,
@@ -146,10 +151,7 @@ class KnowledgeUpdatePlan:
             "applied": applied,
             "saved_version": None,
             "active_brain_updated": False,
-            "changes": [
-                {"path": change.relative_path, "kind": change.kind}
-                for change in self.change_set.changes
-            ],
+            "changes": _change_previews(self.change_set),
             "validation_warnings": [
                 finding.as_dict() for finding in self.change_set.validation.warnings
             ],
@@ -171,7 +173,73 @@ class KnowledgeUpdateResult:
         payload["saved_version"] = self.commit
         payload["active_brain_updated"] = True
         payload["previous_version"] = self.refresh["previous_commit"]
+        payload.update(
+            _saved_item_actions(self.plan.brain, payload["item_id"], payload["path"], self.commit)
+        )
         return payload
+
+
+def _proposed_item(change_set: ChangeSet, relative_path: str) -> KnowledgeItem:
+    change = next(change for change in change_set.changes if change.relative_path == relative_path)
+    if change.after is None:
+        raise ValueError("An authoring plan must contain its proposed knowledge item.")
+    parsed = parse_concept_bytes(
+        change_set.bundle / relative_path, change_set.bundle, change.after.encode("utf-8")
+    )
+    if parsed.item is None:
+        raise ValueError("The proposed knowledge item cannot be parsed.")
+    return parsed.item
+
+
+def _item_preview(change_set: ChangeSet, relative_path: str) -> dict[str, Any]:
+    item = _proposed_item(change_set, relative_path)
+    return {
+        "id": item.id,
+        "path": item.relative_path,
+        "title": item.metadata.get("title"),
+        "type": item.type,
+        "status": item.status,
+        "metadata": dict(item.metadata),
+        "body": item.body,
+        "content": item.source_text,
+    }
+
+
+def _change_previews(change_set: ChangeSet) -> list[dict[str, Any]]:
+    return [
+        {
+            "path": change.relative_path,
+            "kind": change.kind,
+            "diff": "".join(
+                unified_diff(
+                    (change.before or "").splitlines(keepends=True),
+                    (change.after or "").splitlines(keepends=True),
+                    fromfile=change.relative_path if change.before is not None else "/dev/null",
+                    tofile=change.relative_path if change.after is not None else "/dev/null",
+                )
+            ),
+        }
+        for change in change_set.changes
+    ]
+
+
+def _saved_item_actions(
+    brain: InstalledBrain, item_id: str, path: str, commit: str
+) -> dict[str, Any]:
+    return {
+        "citation": {
+            "brain_id": brain.id,
+            "brain_slug": brain.slug,
+            "commit": commit,
+            "item_id": item_id,
+            "path": path,
+        },
+        "retrieval_ready": True,
+        "search_ready": False,
+        "needs_reindex": True,
+        "get_command": ["pkb", "get", item_id, "--brain", brain.slug, "--json"],
+        "reindex_command": ["pkb", "search", "index", brain.slug, "--json"],
+    }
 
 
 def plan_knowledge_create(
@@ -243,8 +311,7 @@ def save_knowledge_create(
         raise ValueError("The brain changed while this knowledge was being prepared.")
     plan.change_set.apply()
     repository_paths = tuple(
-        f"{plan.manifest.bundle}/{change.relative_path}"
-        for change in plan.change_set.changes
+        f"{plan.manifest.bundle}/{change.relative_path}" for change in plan.change_set.changes
     )
     title = " ".join(plan.relative_path.rsplit("/", 1)[-1].removesuffix(".md").split("-"))
     commit = commit_authoring_changes(
@@ -334,8 +401,7 @@ def save_knowledge_update(
         raise ValueError("The brain changed while this update was being prepared.")
     plan.change_set.apply()
     repository_paths = tuple(
-        f"{plan.manifest.bundle}/{change.relative_path}"
-        for change in plan.change_set.changes
+        f"{plan.manifest.bundle}/{change.relative_path}" for change in plan.change_set.changes
     )
     title = str(plan.item.metadata.get("title") or PurePosixPath(plan.item.relative_path).stem)
     commit = commit_authoring_changes(

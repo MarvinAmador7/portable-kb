@@ -102,6 +102,7 @@ An item can therefore be valid OKF but invalid under this profile.
 ## Documents
 
 - [Research](docs/research.md): source-backed findings and comparisons.
+- [Agent CLI evaluations](docs/agent-cli-evals.md): actual CLI/skill trials, traces, and outcome grading.
 - [Architecture](docs/architecture.md): principles, structure, compatibility,
   security, risks, and open questions.
 - [Schema](docs/schema.md): required and extended frontmatter and content types.

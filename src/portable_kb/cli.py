@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 import shutil
 import sys
 from collections.abc import Mapping
@@ -777,8 +778,9 @@ def knowledge_create(
 
     if not json_output:
         typer.echo(f"Validated draft plan: {plan.relative_path}")
-        for change in plan.change_set.changes:
-            typer.echo(f"  {change.kind:<6} {change.relative_path}")
+        preview = plan.as_dict(applied=False)
+        for change in preview["changes"]:
+            typer.echo(change["diff"], nl=False)
         if plan.change_set.validation.warnings:
             typer.echo(f"Validation warnings: {len(plan.change_set.validation.warnings)}")
 
@@ -798,12 +800,20 @@ def knowledge_create(
             typer.echo(f"Draft could not be saved: {exc}", err=True)
             raise typer.Exit(1) from None
     payload = saved.as_dict() if saved is not None else plan.as_dict(applied=False)
+    if saved is not None:
+        for action in ("get_command", "reindex_command"):
+            if config_path is not None:
+                payload[action].extend(["--config", str(config_path)])
+            if as_of is not None:
+                payload[action].extend(["--as-of", as_of])
     if json_output:
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     elif saved is not None:
         typer.echo("◆ Draft saved")
         typer.echo(f"◇ Active brain updated: {saved.plan.brain.name}")
-        typer.echo("◇ Ready for local search and agent retrieval")
+        typer.echo(f"◇ Item: {payload['item_id']}")
+        typer.echo("◇ Ready for complete-item retrieval")
+        typer.echo(f"◇ Search needs an index rebuild: {shlex.join(payload['reindex_command'])}")
         typer.echo("◇ Not shared with the organization")
     else:
         typer.echo("Plan only; no files changed. Re-run with --apply to write it.")
@@ -895,8 +905,9 @@ def knowledge_update(
             )
         if "verified" in plan.item.metadata:
             typer.echo("Verification: invalidated by material update")
-        for change in plan.change_set.changes:
-            typer.echo(f"  {change.kind:<6} {change.relative_path}")
+        preview = plan.as_dict(applied=False)
+        for change in preview["changes"]:
+            typer.echo(change["diff"], nl=False)
         if plan.change_set.validation.warnings:
             typer.echo(f"Validation warnings: {len(plan.change_set.validation.warnings)}")
 
@@ -909,12 +920,20 @@ def knowledge_update(
             typer.echo(f"Update could not be saved: {exc}", err=True)
             raise typer.Exit(1) from None
     payload = saved.as_dict() if saved is not None else plan.as_dict(applied=False)
+    if saved is not None:
+        for action in ("get_command", "reindex_command"):
+            if config_path is not None:
+                payload[action].extend(["--config", str(config_path)])
+            if as_of is not None:
+                payload[action].extend(["--as-of", as_of])
     if json_output:
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
     elif saved is not None:
         typer.echo("◆ Update saved")
         typer.echo(f"◇ Active brain updated: {saved.plan.brain.name}")
-        typer.echo("◇ Ready for local search and agent retrieval")
+        typer.echo(f"◇ Item: {payload['item_id']}")
+        typer.echo("◇ Ready for complete-item retrieval")
+        typer.echo(f"◇ Search needs an index rebuild: {shlex.join(payload['reindex_command'])}")
         typer.echo("◇ Not shared with the organization")
     else:
         typer.echo("Plan only; no files changed. Re-run with --apply to save it.")

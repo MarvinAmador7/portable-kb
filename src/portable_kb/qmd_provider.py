@@ -307,11 +307,11 @@ def _publish_index(stage: Path, target: Path, root: Path) -> None:
 def _load_index_metadata(state: Path) -> Mapping[str, Any]:
     path = state / "metadata.json"
     if state.is_symlink() or not state.is_dir() or path.is_symlink() or not path.is_file():
-        raise SearchError("Keyword index is missing; run `pkb search index` first.")
+        raise SearchError(f"Keyword index is missing; run `pkb search index {state.name}` first.")
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        raise SearchError("Keyword index metadata is invalid; rebuild the index.") from exc
+        raise SearchError(f"Keyword index metadata is invalid; run `pkb search index {state.name}`.") from exc
     expected = {
         "schema_version",
         "provider",
@@ -324,7 +324,7 @@ def _load_index_metadata(state: Path) -> Mapping[str, Any]:
         "qmd_version",
     }
     if not isinstance(payload, Mapping) or set(payload) != expected:
-        raise SearchError("Keyword index metadata has an unsupported structure; rebuild it.")
+        raise SearchError(f"Keyword index metadata has an unsupported structure; run `pkb search index {state.name}`.")
     if (
         payload.get("schema_version") != INDEX_SCHEMA_VERSION
         or payload.get("provider") != "qmd"
@@ -338,7 +338,7 @@ def _load_index_metadata(state: Path) -> Mapping[str, Any]:
         or not isinstance(payload.get("concept_count"), int)
         or payload.get("concept_count", -1) < 0
     ):
-        raise SearchError("Keyword index metadata is incompatible; rebuild it.")
+        raise SearchError(f"Keyword index metadata is incompatible; run `pkb search index {state.name}`.")
     return payload
 
 
