@@ -168,6 +168,13 @@ A first preparation attempt failed on a fixture footnote/source-ID mismatch
 before any agent started. It is retained as a preparation failure; the matched
 baseline was prepared afresh after correcting the controller fixture.
 
+Local verification passed 459 evaluation tests at 87.10% coverage and 438
+production-fix tests at 87.07%, including real Tantivy and QMD. GitHub Linux CI
+also exposed an inherited reserved-document fixture that relied on a global Git
+author; its helper now supplies a synthetic test identity. The affected tests
+pass with global/system Git configuration disabled. This test-only correction
+does not change the measured executables or agent outcomes.
+
 This is one mostly templated synthetic world, two repetitions, one Linux host
 and its process supervisor. Execution order was not randomized, and agents
 shared the host. Completed-task medians have different coverage because two

@@ -2197,6 +2197,14 @@
     "scope": "Independent deterministic native CLI probe; not an agent trial or paired race benchmark."
   },
   "validation": {
+    "ci_fixture_repair": {
+      "isolated_git_config_tests": {
+        "eval_branch": 30,
+        "fix_branch": 33
+      },
+      "original_ci_failure": "Inherited reserved-document managed-checkout fixture failed before product assertions with Author identity unknown on Linux.",
+      "scope": "Test-only explicit synthetic Git identity; no change to either benchmark executable, production fix implementation or agent outcomes."
+    },
     "eval_suite": {
       "coverage_percent": 87.1,
       "real_qmd": true,
