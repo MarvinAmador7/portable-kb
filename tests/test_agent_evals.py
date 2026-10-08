@@ -540,15 +540,18 @@ def test_actual_noop_runner_is_rejected(tmp_path: Path) -> None:
     (directory / "home/.agents/skills/portable-kb/SKILL.md").write_text(
         "# Portable KB\n## Trust boundary\n"
     )
-    install_shim(directory, Path("/bin/true"), 10)
+    product = tmp_path / "synthetic-cli"
+    product.write_text(f"#!{sys.executable}\nprint('{{}}')\n")
+    product.chmod(0o755)
+    install_shim(directory, product, 10)
     (directory / "prompt.txt").write_text("Read the skill and use the CLI.")
     write_json(directory / "final-schema.json", {})
     write_json(directory / "scenario.json", {"sources": {}, "checkouts": {}})
     write_json(
         root / "manifest.json",
         {
-            "cli": "/bin/true",
-            "cli_sha256": digest(Path("/bin/true")),
+            "cli": str(product),
+            "cli_sha256": digest(product),
             "cli_version": "synthetic-test",
             "original_codex_home": str(tmp_path / "unused-auth"),
             "fixture": FIXTURE,
