@@ -393,3 +393,88 @@ def test_preupdate_search_of_unrelated_daily_text_is_not_correction_verification
         }
     )
     assert wiki_search_verified(events, pages)
+
+
+def test_move_plan_requires_same_destination_and_scope():
+    before = {
+        "argv": [
+            "knowledge",
+            "move",
+            "item-id",
+            "inbox/new.md",
+            "--brain",
+            "sim-northstar",
+            "--json",
+        ],
+        "exit_code": 0,
+        "started_ns": 1,
+        "completed_ns": 2,
+        "stdout": json.dumps({"applied": False}),
+    }
+    after = {**before, "argv": [*before["argv"], "--apply"], "started_ns": 3, "completed_ns": 4}
+    assert planned_saves([before, after])
+    assert not planned_saves([after])
+    changed = copy.deepcopy(after)
+    changed["argv"][3] = "inbox/other.md"
+    assert not planned_saves([before, changed])
+
+
+def test_move_repair_proof_requires_matching_diff_commit_and_brain():
+    from difflib import unified_diff
+
+    from evals.wiki_compare.workflow_grading import patch_result, saved_by_trace
+
+    before = "# Caller\n\n[Runbook](old.md)\n"
+    after = "# Caller\n\n[Runbook](new.md)\n"
+    diff = "".join(
+        unified_diff(
+            before.splitlines(True),
+            after.splitlines(True),
+            fromfile="caller.md",
+            tofile="caller.md",
+        )
+    )
+    assert patch_result(before, diff) == after
+    assert patch_result("Changed original\n", diff) is None
+    assert patch_result("a\nb\nc\n", "--- a\n+++ b\n@@ -3,0 +4 @@\n+d\n") == "a\nb\nc\nd\n"
+    key = "caller.md"
+    initial = {"pages": {key: {"item": {"content": before}}}}
+    pages = {
+        key: {
+            "item": {"id": "caller", "path": "inbox/caller.md", "body": after, "content": after},
+            "citation": {"commit": "saved"},
+        }
+    }
+    trace = {
+        "argv": [
+            "knowledge",
+            "move",
+            "moved",
+            "inbox/new.md",
+            "--brain",
+            "sim-northstar",
+            "--apply",
+        ],
+        "exit_code": 0,
+        "stdout": json.dumps(
+            {
+                "item_id": "moved",
+                "saved_version": "saved",
+                "changes": [{"path": "inbox/caller.md", "diff": diff}],
+            }
+        ),
+    }
+    assert saved_by_trace(trace, key, pages, initial)
+    for field, value in (("saved_version", "stale"), ("changes", [])):
+        payload = json.loads(trace["stdout"])
+        payload[field] = value
+        assert not saved_by_trace({**trace, "stdout": json.dumps(payload)}, key, pages, initial)
+    assert not saved_by_trace(
+        {**trace, "argv": ["knowledge", "move", "moved", "inbox/new.md", "--apply"]},
+        key,
+        pages,
+        initial,
+    )
+    tampered = copy.deepcopy(pages)
+    tampered[key]["item"]["content"] += "Unauthorized fact\n"
+    assert not saved_by_trace(trace, key, tampered, initial)

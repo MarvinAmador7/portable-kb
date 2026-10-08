@@ -29,7 +29,8 @@ Complete-item retrieval and standalone or setup-integrated installation of the
 bundled workflow skill for Codex and Claude Code are also authorized, as is
 explicitly approved, plan-first creation of new draft knowledge through the
 existing lifecycle API, material updates that preserve identity and invalidate
-prior verification through the existing update planner, and explicit validated
+prior verification through the existing update planner, mechanical plan-first CLI
+moves with identity/provenance preservation and scoped link/index repair, and explicit validated
 fast-forward publication of the active saved brain version. Standalone CLI
 packaging, checksum-verifying installation, CI, and version-driven GitHub
 release automation are authorized distribution work.

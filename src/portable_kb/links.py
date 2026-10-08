@@ -11,7 +11,7 @@ import posixpath
 import re
 from collections import defaultdict
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path, PurePosixPath
 from urllib.parse import quote, unquote, urlsplit
 
@@ -285,17 +285,44 @@ class LinkIndex:
             )
         return body
 
-    def rewrite_wiki_move(self, item: KnowledgeItem, moved_from: str, moved_to: str) -> str:
+    def rewrite_wiki_move(
+        self,
+        item: KnowledgeItem,
+        moved_from: str,
+        moved_to: str,
+        *,
+        proposed: LinkIndex | None = None,
+    ) -> str:
         """Preserve resolved identity and display labels through a reviewed move."""
         body = item.body
+        if proposed is None:
+            proposed = LinkIndex(
+                [
+                    replace(i, relative_path=moved_to, path=self.root / moved_to)
+                    if i.relative_path == moved_from
+                    else i
+                    for i in self.items.values()
+                ],
+                self.root,
+            )
+        source = proposed.items.get(
+            moved_to if item.relative_path == moved_from else item.relative_path, item
+        )
         for link in reversed(self.outgoing(item)):
             if link.reference.kind != "wiki" or link.status != "resolved" or link.item is None:
                 continue
             if link.reference.target.startswith(("urn:uuid:", "#")):
                 continue
             target = moved_to if link.item.relative_path == moved_from else link.item.relative_path
-            # Qualify every resolved name so the move cannot introduce a collision
-            # or change an explicit relative link's source context.
+            after = proposed.resolve(source, link.reference)
+            if (
+                after.status == "resolved"
+                and after.item is not None
+                and after.item.relative_path == target
+            ):
+                continue
+            # Qualify only affected references, including names made ambiguous
+            # by the destination stem and relative links in a moved directory.
             target = target.removesuffix(".md")
             if link.fragment:
                 target += "#" + link.fragment

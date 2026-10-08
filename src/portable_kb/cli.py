@@ -19,8 +19,10 @@ from .authoring import (
     KnowledgeType,
     Sensitivity,
     plan_knowledge_create,
+    plan_knowledge_move,
     plan_knowledge_update,
     save_knowledge_create,
+    save_knowledge_move,
     save_knowledge_update,
 )
 from .brain_prompt import run_brain_init_prompts, run_brain_publish_prompt
@@ -113,14 +115,18 @@ def setup(
     ] = False,
     search_mode: Annotated[
         SearchMode,
-    SearchProvider,
+        SearchProvider,
         typer.Option("--search-mode", help="QMD capability tier."),
     ] = SearchMode.KEYWORD,
     search_provider: Annotated[
-        SearchProvider | None, typer.Option("--search-provider", help="builtin (Tantivy) or qmd; preserves existing configuration."),
+        SearchProvider | None,
+        typer.Option(
+            "--search-provider", help="builtin (Tantivy) or qmd; preserves existing configuration."
+        ),
     ] = None,
     search_command: Annotated[
-        str | None, typer.Option("--search-command", help="Override the selected search executable."),
+        str | None,
+        typer.Option("--search-command", help="Override the selected search executable."),
     ] = None,
     config_path: Annotated[
         Path | None,
@@ -158,14 +164,20 @@ def setup(
     selected_mode = search_mode if non_interactive else initial.search_mode
     if provider_choice is SearchProvider.BUILTIN and selected_mode is not SearchMode.KEYWORD:
         if non_interactive:
-            raise typer.BadParameter("builtin supports keyword mode only; choose --search-provider qmd for other tiers")
+            raise typer.BadParameter(
+                "builtin supports keyword mode only; choose --search-provider qmd for other tiers"
+            )
         selected_mode = SearchMode.KEYWORD
     initial = Settings(
         data_dir=(data_dir or initial.data_dir).expanduser().resolve(),
         cache_dir=(cache_dir or initial.cache_dir).expanduser().resolve(),
         search_mode=selected_mode,
-        qmd_command=(search_command or initial.qmd_command) if (search_provider or initial.search_provider) is SearchProvider.QMD else initial.qmd_command,
-        native_command=(search_command or initial.native_command) if (search_provider or initial.search_provider) is SearchProvider.BUILTIN else initial.native_command,
+        qmd_command=(search_command or initial.qmd_command)
+        if (search_provider or initial.search_provider) is SearchProvider.QMD
+        else initial.qmd_command,
+        native_command=(search_command or initial.native_command)
+        if (search_provider or initial.search_provider) is SearchProvider.BUILTIN
+        else initial.native_command,
         search_provider=search_provider or initial.search_provider,
     )
     if non_interactive:
@@ -219,7 +231,11 @@ def doctor(
         )
         raise typer.Exit(1) from None
     qmd = qmd_status(settings)
-    search_tool = qmd if settings.search_provider is SearchProvider.QMD else get_search_provider(settings).status()
+    search_tool = (
+        qmd
+        if settings.search_provider is SearchProvider.QMD
+        else get_search_provider(settings).status()
+    )
     git_path = shutil.which("git")
     gh_path = shutil.which("gh")
     errors: list[str] = []
@@ -318,14 +334,19 @@ def get_item(
         typer.Option("--json", help="Emit the complete cited item as JSON."),
     ] = False,
     markdown_links: Annotated[
-        bool, typer.Option("--markdown-links", help="Add a standard Markdown view of resolved wikilinks."),
+        bool,
+        typer.Option(
+            "--markdown-links", help="Add a standard Markdown view of resolved wikilinks."
+        ),
     ] = False,
 ) -> None:
     """Retrieve a complete knowledge item from the current pinned brain."""
 
     settings = _load_cli_settings(config_path)
     try:
-        result = get_knowledge_item(settings, reference, slug, as_of=as_of, markdown_links=markdown_links)
+        result = get_knowledge_item(
+            settings, reference, slug, as_of=as_of, markdown_links=markdown_links
+        )
     except (BrainError, SearchError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from None
@@ -569,9 +590,7 @@ def brain_init(
         typer.echo("Retry later with `pkb brain publish --to org/repo`.", err=True)
         raise typer.Exit(1) from None
     if json_output:
-        payload = publication.as_dict(
-            active=publication.brain.slug == published_catalog.active
-        )
+        payload = publication.as_dict(active=publication.brain.slug == published_catalog.active)
         payload["validation_warnings"] = [finding.as_dict() for finding in report.warnings]
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         return
@@ -720,7 +739,9 @@ def knowledge_create(
     ] = None,
     actor: Annotated[
         str | None,
-        typer.Option("--actor", help="Producer identity: human:id, process:id, or producer/version."),
+        typer.Option(
+            "--actor", help="Producer identity: human:id, process:id, or producer/version."
+        ),
     ] = None,
     method: Annotated[
         GenerationMethod,
@@ -899,7 +920,9 @@ def knowledge_update(
     ],
     actor: Annotated[
         str,
-        typer.Option("--actor", help="Producer identity: human:id, process:id, or producer/version."),
+        typer.Option(
+            "--actor", help="Producer identity: human:id, process:id, or producer/version."
+        ),
     ],
     method: Annotated[
         GenerationMethod,
@@ -972,8 +995,7 @@ def knowledge_update(
         typer.echo(f"Identity preserved: {plan.item.id}")
         if plan.item.status != plan.as_dict(applied=False)["resulting_status"]:
             typer.echo(
-                f"Lifecycle: {plan.item.status} → "
-                f"{plan.as_dict(applied=False)['resulting_status']}"
+                f"Lifecycle: {plan.item.status} → {plan.as_dict(applied=False)['resulting_status']}"
             )
         if "verified" in plan.item.metadata:
             typer.echo("Verification: invalidated by material update")
@@ -1004,6 +1026,80 @@ def knowledge_update(
         typer.echo("◆ Update saved")
         typer.echo(f"◇ Active brain updated: {saved.plan.brain.name}")
         typer.echo(f"◇ Item: {payload['item_id']}")
+        typer.echo("◇ Ready for complete-item retrieval")
+        typer.echo(f"◇ Search needs an index rebuild: {shlex.join(payload['reindex_command'])}")
+        typer.echo("◇ Not shared with the organization")
+    else:
+        typer.echo("Plan only; no files changed. Re-run with --apply to save it.")
+
+
+@knowledge_app.command("move")
+def knowledge_move(
+    reference: Annotated[
+        str, typer.Argument(help="Immutable item ID or bundle-relative Markdown path.")
+    ],
+    destination: Annotated[
+        str,
+        typer.Argument(
+            help="New bundle-relative Markdown path; existing files are never overwritten."
+        ),
+    ],
+    timestamp: Annotated[
+        str | None, typer.Option("--timestamp", help="Strict UTC RFC 3339 time for the move log.")
+    ] = None,
+    slug: Annotated[
+        str | None,
+        typer.Option("--brain", help="Installed brain slug; defaults to the active brain."),
+    ] = None,
+    apply: Annotated[
+        bool, typer.Option("--apply", help="Save the validated move and all link/index repairs.")
+    ] = False,
+    config_path: Annotated[
+        Path | None, typer.Option("--config", help="Override the user configuration path.")
+    ] = None,
+    as_of: Annotated[
+        str | None, typer.Option("--as-of", help="Explicit ISO date for deterministic validation.")
+    ] = None,
+    json_output: Annotated[
+        bool, typer.Option("--json", help="Emit the plan or applied result as JSON.")
+    ] = False,
+) -> None:
+    """Move knowledge with identity, provenance and link meaning preserved."""
+    settings = _load_cli_settings(config_path)
+    try:
+        plan = plan_knowledge_move(
+            settings, reference, destination, timestamp=timestamp, slug=slug, as_of=as_of
+        )
+    except (BrainError, OperationError, OSError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from None
+    if not json_output:
+        typer.echo(f"Validated move plan: {plan.item.relative_path} → {plan.destination}")
+        typer.echo(f"Identity and lifecycle preserved: {plan.item.id} ({plan.item.status})")
+        for change in plan.as_dict(applied=False)["changes"]:
+            typer.echo(change["diff"], nl=False)
+        if plan.change_set.validation.warnings:
+            typer.echo(f"Validation warnings: {len(plan.change_set.validation.warnings)}")
+    saved = None
+    if apply:
+        try:
+            with operation_lock(settings.data_dir, "knowledge move"):
+                saved = save_knowledge_move(settings, plan, as_of=as_of)
+        except (BrainError, ConcurrentChangeError, LockError, OSError, ValueError) as exc:
+            typer.echo(f"Move could not be saved: {exc}", err=True)
+            raise typer.Exit(1) from None
+    payload = saved.as_dict() if saved is not None else plan.as_dict(applied=False)
+    if saved is not None:
+        for action in ("get_command", "reindex_command"):
+            if config_path is not None:
+                payload[action].extend(["--config", str(config_path)])
+            if as_of is not None:
+                payload[action].extend(["--as-of", as_of])
+    if json_output:
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    elif saved is not None:
+        typer.echo("◆ Move saved")
+        typer.echo(f"◇ Item: {payload['item_id']} → {payload['path']}")
         typer.echo("◇ Ready for complete-item retrieval")
         typer.echo(f"◇ Search needs an index rebuild: {shlex.join(payload['reindex_command'])}")
         typer.echo("◇ Not shared with the organization")
@@ -1235,10 +1331,7 @@ def search_query(
         return
     for item in result["results"]:
         typer.echo(f"{item['rank']:>2}. {item['score']:.2f}  {item['title']}")
-        typer.echo(
-            f"    {item['path']} · {item['item_id']} · "
-            f"{result['brain']['commit'][:12]}"
-        )
+        typer.echo(f"    {item['path']} · {item['item_id']} · {result['brain']['commit'][:12]}")
         if item.get("snippet"):
             typer.echo(f"    {item['snippet']}")
 
@@ -1248,13 +1341,16 @@ def search_evaluate(
     labels: Annotated[Path, typer.Argument(help="Version-1 JSON relevance labels.")],
     as_of: Annotated[str, typer.Option("--as-of", help="Required ISO validation date.")],
     slug: Annotated[
-        str | None, typer.Option("--brain", help="Installed brain; defaults to the active brain."),
+        str | None,
+        typer.Option("--brain", help="Installed brain; defaults to the active brain."),
     ] = None,
     config_path: Annotated[
-        Path | None, typer.Option("--config", help="Override the user configuration path."),
+        Path | None,
+        typer.Option("--config", help="Override the user configuration path."),
     ] = None,
     repeat: Annotated[
-        int, typer.Option("--repeat", min=1, max=20, help="Runs per query; checks ranking stability."),
+        int,
+        typer.Option("--repeat", min=1, max=20, help="Runs per query; checks ranking stability."),
     ] = 2,
 ) -> None:
     """Emit a JSON relevance/latency report for the existing keyword index."""
@@ -1407,7 +1503,10 @@ def _persist(settings: Settings, target: Path, *, overwrite: bool) -> None:
     typer.echo(f"Portable KB configured: {saved}")
     typer.echo(f"Search mode: {settings.search_mode.value}")
     typer.echo(f"Search provider: {settings.search_provider.value}")
-    if settings.search_provider is SearchProvider.QMD and shutil.which(settings.qmd_command) is None:
+    if (
+        settings.search_provider is SearchProvider.QMD
+        and shutil.which(settings.qmd_command) is None
+    ):
         typer.echo("QMD is not installed yet; setup was saved without downloading anything.")
 
 
@@ -1445,8 +1544,12 @@ def _doctor_index_status(
         result = {"path": str(path), "present": (path / "CURRENT.json").exists(), "current": False}
         try:
             payload = get_search_provider(settings).load_metadata(brain_slug)
-            result.update(provider="builtin", commit=payload["commit"],
-                          current=(payload["brain_id"], payload["brain_slug"], payload["commit"]) == (brain_id, brain_slug, commit))
+            result.update(
+                provider="builtin",
+                commit=payload["commit"],
+                current=(payload["brain_id"], payload["brain_slug"], payload["commit"])
+                == (brain_id, brain_slug, commit),
+            )
         except SearchError as exc:
             result["error"] = str(exc)
         return result
@@ -1493,8 +1596,12 @@ def _doctor_output(result: dict[str, object], json_output: bool) -> None:
         qmd = result.get("search_tool", result.get("qmd"))
         assert isinstance(qmd, dict)
         qmd_label = qmd.get("version") or qmd.get("path") or "not found"
-        typer.echo(f"{'✓' if qmd.get('ok') else '✗'} {result.get('search_provider', 'qmd')}: {qmd_label}")
-        typer.echo(f"{'✓' if result.get('git_path') else '✗'} Git: {result.get('git_path') or 'not found'}")
+        typer.echo(
+            f"{'✓' if qmd.get('ok') else '✗'} {result.get('search_provider', 'qmd')}: {qmd_label}"
+        )
+        typer.echo(
+            f"{'✓' if result.get('git_path') else '✗'} Git: {result.get('git_path') or 'not found'}"
+        )
         typer.echo(f"  Search mode: {result['search_mode']}")
         typer.echo(f"  Installed brains: {result['brain_count']}")
         typer.echo(f"  Active brain: {result['active_brain'] or 'none'}")
