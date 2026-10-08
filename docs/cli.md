@@ -484,9 +484,32 @@ pkb get <item-id-or-path> [--brain <slug>] [--json]
 
 The command first rechecks that the installed brain is clean, identity-matched,
 catalog-pinned, and valid. It rejects absolute paths, traversal, symbolic links,
-non-Markdown files, and reserved OKF indexes/logs. JSON output includes parsed
+and non-Markdown files. Concept JSON output includes parsed
 metadata, Markdown body, complete source text, validation warnings, and an
 immutable citation containing brain ID/slug, commit, item ID, and path.
+
+Reserved navigation and history documents are retrieved by explicit bundle path:
+
+```console
+pkb get index.md --brain team --json
+pkb get log.md --brain team --json
+pkb get inbox/procedures/index.md --brain team --json
+```
+
+These responses contain `document: {kind, path, content}` instead of `item`.
+`kind` is `index` or `log`; `content` is the complete saved UTF-8 Git blob, including
+frontmatter or generated regions where present. The citation contains brain
+ID/slug, full saved commit and bundle-relative path, without an invented item ID
+or lifecycle metadata. Plain terminal output prints that citation and content.
+`--markdown-links` remains concept-only and is refused for reserved documents.
+
+Document reads use the same selected-brain health checks, need no keyword index,
+and leave the authoring repository, installed checkout, catalog and active
+selection unchanged. Only visible bundle-relative paths named `index.md` or
+`log.md` qualify; arbitrary files, hidden paths, traversal and symlinks are
+refused. Missing documents are reported explicitly. After a move, retrieve the
+changed index/log paths from `changes[]` and check their citation against the
+move's saved commit. A historical log entry may retain an earlier item path.
 
 ## Agent skill distribution
 

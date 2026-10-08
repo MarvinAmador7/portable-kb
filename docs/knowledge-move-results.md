@@ -1,5 +1,9 @@
 # CLI move follow-up
 
+This report preserves the original targeted move results. The index/log read
+limitation recorded here was subsequently addressed and tested in
+[the document retrieval follow-up](document-retrieval-results.md).
+
 The missing CLI move identified in the [first workplace comparison](agentic-workflow-results.md)
 is implemented as `pkb knowledge move`. On 2026-10-08, four fresh foreground
 agent trials repeated only the runbook-move workflow: two with the standalone

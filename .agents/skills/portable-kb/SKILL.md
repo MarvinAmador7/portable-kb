@@ -85,7 +85,21 @@ complete items, create honest drafts, and keep authority separate from relevance
    supplies context; evidence and lifecycle remain properties of each item.
    Unique slugs, qualified paths, UUIDs and `[[wikilinks]]` are accepted by `get`.
    `get --markdown-links --json` adds a rendered view while retaining canonical
-   content and citation. Do not traverse unrelated links merely to increase reads.
+   content and citation. To inspect navigation or change history, retrieve its
+   explicit bundle path with the same scope:
+
+   ```console
+   pkb get index.md --brain <slug> --json
+   pkb get log.md --brain <slug> --json
+   pkb get procedures/index.md --brain <slug> --json
+   ```
+
+   Use the actual directory path, including `inbox/` when present. Reserved
+   documents return `document.kind`, `document.path`, complete `document.content`
+   and a brain/path/commit citation, without a concept UUID or lifecycle status.
+   Use their references to locate items, then retrieve those items for substantive
+   claims. Historical log paths can reflect earlier names. `--markdown-links`
+   applies to concepts only. Do not traverse unrelated links merely to increase reads.
 
 5. Answer only from the retrieved items. Distinguish quoted knowledge,
    reasonable synthesis, and gaps. Cite material claims using:
@@ -234,7 +248,10 @@ request a future supersession workflow when identity or scope materially changes
 4. Retrieve the saved UUID using `get_command`; check its new path and saved
    citation. Inspect links/backlinks and completely retrieve affected callers
    from the saved snapshot. Follow `reindex_command` before another search;
-   old keyword indexes are stale after a move.
+   old keyword indexes are stale after a move. Also retrieve each changed
+   `index.md` and `log.md` path from `changes[]` using scoped `pkb get <path> --json`.
+   Read the complete saved `document.content` and confirm its citation matches
+   the move's saved commit; a preview diff does not replace this saved read.
 5. Report the original lifecycle state and that the move remains local. A move
    preserves existing verification without claiming any new human review.
    Sharing still requires the separate publishing workflow.

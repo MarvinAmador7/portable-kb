@@ -98,7 +98,10 @@ Every successful native save needs an earlier completed preview with the same
 substantive arguments and input-file digests. Preview IDs do not count as saved
 create IDs. The final saved body must correspond to a successful supported CLI
 save. Indirect move repairs must match the recorded CLI diff applied to the
-initial caller content and the saved citation commit. Native correction trials must rebuild keyword search after saving and
+initial caller content and the saved citation commit. Native move trials also
+require complete retrieval of every changed index/log document at the final
+saved commit after apply. Native correction trials must rebuild keyword search
+after saving and
 query it successfully; wiki correction trials must search the updated text.
 
 Metrics include observed shell/CLI calls and failures, captured output
@@ -123,6 +126,8 @@ tracker, or inspect production systems.
 Results from the matched run and retained pilot diagnostics are recorded in
 [the results note](agentic-workflow-results.md). A targeted
 [move follow-up](knowledge-move-results.md) verifies the new supported CLI move.
+[Reserved document verification](document-retrieval-results.md) checks complete
+saved navigation/history reads with the updated CLI and installed skill.
 Future scenarios can add staged
 sessions, noisy evidence volumes, sync conflicts, authorized publication and
 recovery once their interfaces and independent checks are available. Extend
