@@ -19,9 +19,12 @@ static void boundary(const char *path, int result) {
     if (fd < 0) return;
     char value[80];
     int length = snprintf(value, sizeof(value), "%ld\n", (long)getpid());
-    write(fd, value, length);
-    fsync(fd);
+    int saved = write(fd, value, (size_t)length) == length && fsync(fd) == 0;
     close(fd);
+    if (!saved) {
+        unlink(marker);
+        return;
+    }
     raise(SIGSTOP);
 }
 int rename(const char *old, const char *next) {

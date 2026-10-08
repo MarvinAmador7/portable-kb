@@ -1,6 +1,7 @@
 {
   "baseline": {
     "grader_sha256": "b8cd46823aaf0aa72511ee57323708920626dffe57473e424382b65e06b2587d",
+    "grading_source_commit": "932f6adb14e9b69867c218fd0ebeb3f448fd698b",
     "implementation_commit": "ed80afad59e2943e33e2d2d032518060925305e0",
     "inputs": {
       "cli_sha256": "5d54f982379037556801f1dd710382f6efe980ca0b3d9065e50699c5db987c18",
@@ -1346,6 +1347,7 @@
       }
     ],
     "grader_sha256": "b8cd46823aaf0aa72511ee57323708920626dffe57473e424382b65e06b2587d",
+    "grading_source_commit": "932f6adb14e9b69867c218fd0ebeb3f448fd698b",
     "implementation_commit": "fcbc3f610c0ac14d2ca4759abec733daac3d7a5e",
     "inputs": {
       "cli_sha256": "9a5d10b778bdad511817a2a8483995f591c36afef1e620214035011c33b1ffd4",
@@ -2210,6 +2212,10 @@
       "real_qmd": true,
       "real_tantivy": true,
       "tests": 459
+    },
+    "fortified_compiler_repair": {
+      "scope": "Future fault-helper compilation checks marker write/fsync results; historical frozen fault libraries, recorded trials and original grader fingerprints remain unchanged.",
+      "verification": "Compile with -O2 -Wall -Werror -D_FORTIFY_SOURCE=3 and existing real hard-kill tests."
     },
     "production_fix_suite": {
       "coverage_percent": 87.07,

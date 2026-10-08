@@ -175,6 +175,13 @@ author; its helper now supplies a synthetic test identity. The affected tests
 pass with global/system Git configuration disabled. This test-only correction
 does not change the measured executables or agent outcomes.
 
+The hardened Linux CI compiler also rejected an ignored marker `write` result
+in the development fault helper. Future builds check the write and sync results
+before stopping the process. The original frozen fault libraries, trials and
+grader fingerprints remain unchanged; the public result pins their grading
+source commit so the historical checks can be reproduced. No agent was rerun
+for this compiler correction.
+
 This is one mostly templated synthetic world, two repetitions, one Linux host
 and its process supervisor. Execution order was not randomized, and agents
 shared the host. Completed-task medians have different coverage because two
