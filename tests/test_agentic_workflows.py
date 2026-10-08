@@ -339,6 +339,7 @@ def test_missing_input_or_malformed_final_fails_without_grader_crash(tmp_path):
 
 @pytest.mark.parametrize("attached", [False, True])
 def test_actual_trace_shim_records_content_digest_for_attached_file_options(tmp_path, attached):
+    import shutil
     import subprocess
 
     from evals.agent_cli.harness import install_shim
@@ -348,7 +349,9 @@ def test_actual_trace_shim_records_content_digest_for_attached_file_options(tmp_
     (directory / "gitconfig").write_text("")
     body_file = directory / "work/body.md"
     body_file.write_text("A reviewed draft\n")
-    shim = install_shim(directory, Path("/bin/true"), 10)
+    executable = shutil.which("true")
+    assert executable is not None
+    shim = install_shim(directory, Path(executable), 10)
     args = ["--body-file=" + str(body_file)] if attached else ["--body-file", str(body_file)]
     subprocess.run([str(shim), "knowledge", "create", *args], check=True)
     trace = json.loads(next((directory / "trace").glob("*.json")).read_text())
