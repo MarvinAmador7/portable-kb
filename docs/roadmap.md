@@ -210,7 +210,8 @@ search is the default setup tier and requires no model download.
   (implemented for keyword queries and complete-item retrieval);
 - keyword/semantic/hybrid retrieval evaluations (item-level keyword harness,
   reference section judgments, shared QMD/SQLite/Tantivy comparison, and synthetic
-  scale runs implemented; representative domain and semantic/hybrid evaluation
+  scale runs and a 220-page fictional logistics agent benchmark implemented;
+  representative real-domain and semantic/hybrid evaluation
   pending); and
 - machine-readable output for agent skills and future native clients
   (implemented for search, retrieval, and skill installation).
@@ -233,7 +234,9 @@ MCP publication, and serving APIs.
 
 See [the built-in search plan](pkb-search.md) for the provider sequence and
 [retrieval evaluation](retrieval-evaluation.md) for labels, metrics, and the
-starter baseline's limits.
+starter baseline's limits. See [Atlas Logistics](logistics-benchmark.md) for the
+larger matched wiki/Portable KB corpus, actual-agent workflows and independent
+outcome checks.
 
 ## Phase 6 — External integrations (high level only)
 

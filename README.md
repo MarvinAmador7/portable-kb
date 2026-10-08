@@ -291,6 +291,9 @@ To compare a Markdown wiki and its skill with Portable KB on the same captured
 knowledge, use the [matched-content agent benchmark](docs/wiki-comparison.md).
 It checks migration fidelity, independently grounded answers and observed effort,
 with private corpora and reports kept outside the repository.
+The [Atlas Logistics benchmark](docs/logistics-benchmark.md) adds a matched
+220-page synthetic world and eight agent workflows with independent saved-state
+checks, including scoped amendments and a runbook move.
 For agents correcting requirements, handling conflicts, isolating clients, and
 maintaining links, use the [workplace workflow suite](docs/agentic-workflows.md).
 

@@ -1,0 +1,1358 @@
+{
+  "cli": {
+    "implementation_base": "ed80afad59e2943e33e2d2d032518060925305e0",
+    "sha256": "5d54f982379037556801f1dd710382f6efe980ca0b3d9065e50699c5db987c18"
+  },
+  "corpus": {
+    "characters": 391017,
+    "documents": 220,
+    "families": {
+      "carriers": 12,
+      "changes": 20,
+      "concepts": 24,
+      "contracts": 20,
+      "decisions": 24,
+      "incidents": 24,
+      "merchants": 24,
+      "policies": 12,
+      "regions": 8,
+      "runbooks": 24,
+      "systems": 16,
+      "warehouses": 12
+    },
+    "labels_sha256": "67ad0245180da63d1dd718a170fdb404081119e4a291366e3de65ad41072a505",
+    "links": 975,
+    "move_callers": 10,
+    "native_sha256": "10106ae08f5f1a4e8c434c5a26cc6a14cc23b46d20ade671289a7369f0e51552",
+    "oracle_sha256": "7b45c7b9cb100191e41ffd65ac14d7ddeaf3c45b0951d91cb0462e2180c2a1b2",
+    "seed": 20261008,
+    "version": 1,
+    "warnings": 0,
+    "wiki_sha256": "84f641f86510bca5a5dcdf343ad0a97f761fad521efc9d7c3bec825c86ba09e4",
+    "words": 51832,
+    "world_sha256": "ba6b27e49819403774a09a888c2121c47d746f2cfa6a273a1a27c1450676ea62"
+  },
+  "date": "2026-10-08",
+  "experiment": "Atlas Logistics v1",
+  "future_preparation_protocol_version": 2,
+  "future_protocol_change": "Clarifies that global doctor takes no --brain selector; published trial prompts and results remain unchanged.",
+  "grader_sha256": "9a34c63200a380f1c1351e2bf7267750d12cae4198a6ad98cca08185805d77ad",
+  "limitations": [
+    "One fictional world and declared deterministic checks; not a universal prose judge.",
+    "No model identity, reasoning/token/cost telemetry or live operating actions.",
+    "Failures remain retained; preparation and independent grading excluded from foreground timing.",
+    "One repetition per task/arm, one mostly templated fictional company, no randomized crossover ordering; no statistical reliability or universal winner claim.",
+    "Elapsed times are observer wall times for complete tasks under shared-host concurrency, including deliberation and CLI validation/startup, not isolated engine benchmarks.",
+    "Raw shell/CLI outputs contain the supplied private wiki skill and stay local; this summary publishes only synthetic outcomes, counts and fingerprints.",
+    "A single broad keyword query is only a retrieval diagnostic; agent tasks can use multiple queries and links. Retrieval recall and task success measure different things.",
+    "Current seed variation affects background warehouse capacities while task anchors remain fixed; different seeds alone are not independent task worlds."
+  ],
+  "observed_friction": [
+    {
+      "arm": "portable-kb",
+      "count": 4,
+      "note": "Recovered. The blanket brain-scope instruction in trial prompts contributed; doctor is a global diagnostic. No scoped-doctor feature is implied.",
+      "pattern": "doctor --brain is unsupported"
+    },
+    {
+      "arm": "portable-kb",
+      "count": 1,
+      "note": "Rejected during planning without a write. Agent retained original production history in prose before a new successful plan/apply.",
+      "pattern": "KB-E124A on nested timestamp in proposed x-production-history JSON metadata"
+    },
+    {
+      "arm": "wiki",
+      "note": "Recovered; full emitted evidence still credited. Error counts are retained.",
+      "pattern": "Missing guessed paths, no-match searches, and unsuccessful optional wiki-command discovery",
+      "shell_errors": 5
+    }
+  ],
+  "paired_success_median_time_ratio": 1.6710790072036925,
+  "pairs": [
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "demand_minutes": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "existing_minutes": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "supported_minutes": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 1,
+          "cli_calls": 20,
+          "cli_errors": 1,
+          "complete_final_pages_read": 3,
+          "elapsed_seconds": 147.474526916,
+          "output_characters": 103550,
+          "shell_calls": 9,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": [
+            "@git_head",
+            "knowledge/inbox/index.md",
+            "knowledge/inbox/questions/horizon-feed-discrepancy.md",
+            "knowledge/inbox/questions/index.md",
+            "knowledge/log.md"
+          ],
+          "primary-checkout": [
+            "@git_head",
+            "knowledge/inbox/index.md",
+            "knowledge/inbox/questions/horizon-feed-discrepancy.md",
+            "knowledge/inbox/questions/index.md",
+            "knowledge/log.md"
+          ]
+        },
+        "outcomes": {
+          "attributed_open_question_saved": true,
+          "change_logged": true,
+          "complete_input_read": true,
+          "complete_saved_read:questions/horizon-feed-discrepancy.md": true,
+          "final_response_recorded": true,
+          "input_source_recorded": true,
+          "installed_skill_read": true,
+          "question_context_links": true,
+          "question_in_navigation": true,
+          "question_type": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "carrier-conflict",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "carrier-conflict",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "demand_minutes": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "existing_minutes": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "supported_minutes": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "honest_draft_status": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 1,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 5,
+          "elapsed_seconds": 82.901551191,
+          "output_characters": 44740,
+          "shell_calls": 9,
+          "shell_errors": 1
+        },
+        "mutations": {
+          "primary": [
+            "index.md",
+            "log.md",
+            "questions/horizon-feed-discrepancy.md",
+            "questions/index.md",
+            "raw/partner-mail.md"
+          ]
+        },
+        "outcomes": {
+          "attributed_open_question_saved": true,
+          "change_logged": true,
+          "complete_input_read": true,
+          "complete_saved_read:questions/horizon-feed-discrepancy.md": true,
+          "final_response_recorded": true,
+          "input_source_recorded": true,
+          "installed_skill_read": true,
+          "question_context_links": true,
+          "question_in_navigation": true,
+          "question_type": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "carrier-conflict",
+        "task_status": "completed"
+      }
+    },
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "lumen_days": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "northwind_days": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 1,
+          "cli_calls": 25,
+          "cli_errors": 1,
+          "complete_final_pages_read": 5,
+          "elapsed_seconds": 191.489159816,
+          "output_characters": 140913,
+          "shell_calls": 13,
+          "shell_errors": 1
+        },
+        "mutations": {
+          "primary": [
+            "@git_head",
+            "knowledge/inbox/merchants/lumen/account.md",
+            "knowledge/log.md"
+          ],
+          "primary-checkout": [
+            "@git_head",
+            "knowledge/inbox/merchants/lumen/account.md",
+            "knowledge/log.md"
+          ]
+        },
+        "outcomes": {
+          "change_logged": true,
+          "complete_input_read": true,
+          "complete_saved_read:merchants/lumen/account.md": true,
+          "current_and_historical_duration_saved": true,
+          "final_response_recorded": true,
+          "input_source_recorded": true,
+          "installed_skill_read": true,
+          "saved_amendment_searchable": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "client-correction",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "client-correction",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "lumen_days": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "northwind_days": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "honest_draft_status": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 1,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 6,
+          "elapsed_seconds": 108.05891231,
+          "output_characters": 83707,
+          "shell_calls": 10,
+          "shell_errors": 2
+        },
+        "mutations": {
+          "primary": [
+            "index.md",
+            "log.md",
+            "merchants/index.md",
+            "merchants/lumen/account.md",
+            "merchants/lumen/index.md",
+            "raw/retention-amendment.md"
+          ]
+        },
+        "outcomes": {
+          "change_logged": true,
+          "complete_input_read": true,
+          "complete_saved_read:merchants/lumen/account.md": true,
+          "current_and_historical_duration_saved": true,
+          "final_response_recorded": true,
+          "input_source_recorded": true,
+          "installed_skill_read": true,
+          "saved_amendment_searchable": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "client-correction",
+        "task_status": "completed"
+      }
+    },
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "decision_open": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "pr": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "production_verified": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "retry_minutes": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "tracker_state": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 10,
+          "cli_errors": 0,
+          "complete_final_pages_read": 5,
+          "elapsed_seconds": 114.158179099,
+          "output_characters": 68251,
+          "shell_calls": 7,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": [],
+          "primary-checkout": []
+        },
+        "outcomes": {
+          "complete_input_read": true,
+          "final_response_recorded": true,
+          "handoff_contains_actual_incident_citation": true,
+          "installed_skill_read": true,
+          "qualified_handoff_written": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "incident-handoff",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "incident-handoff",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "decision_open": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "pr": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "production_verified": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "retry_minutes": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "tracker_state": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "honest_draft_status": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 7,
+          "elapsed_seconds": 68.891418162,
+          "output_characters": 56535,
+          "shell_calls": 7,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": []
+        },
+        "outcomes": {
+          "complete_input_read": true,
+          "final_response_recorded": true,
+          "handoff_contains_actual_incident_citation": true,
+          "installed_skill_read": true,
+          "qualified_handoff_written": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "incident-handoff",
+        "task_status": "completed"
+      }
+    },
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "consumers": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "deployed": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "proposed_date": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 17,
+          "cli_errors": 1,
+          "complete_final_pages_read": 7,
+          "elapsed_seconds": 114.415624008,
+          "output_characters": 114265,
+          "shell_calls": 20,
+          "shell_errors": 1
+        },
+        "mutations": {
+          "primary": [],
+          "primary-checkout": []
+        },
+        "outcomes": {
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "release-impact",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "release-impact",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "consumers": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "deployed": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "proposed_date": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "honest_draft_status": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 7,
+          "elapsed_seconds": 55.047546961,
+          "output_characters": 47035,
+          "shell_calls": 8,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": []
+        },
+        "outcomes": {
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "release-impact",
+        "task_status": "completed"
+      }
+    },
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "lumen_days": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "northwind_days": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 13,
+          "cli_errors": 0,
+          "complete_final_pages_read": 5,
+          "elapsed_seconds": 79.130275866,
+          "output_characters": 80098,
+          "shell_calls": 16,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": [],
+          "primary-checkout": []
+        },
+        "outcomes": {
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "retention-exception",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "retention-exception",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "lumen_days": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "northwind_days": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "honest_draft_status": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 8,
+          "elapsed_seconds": 63.102805083,
+          "output_characters": 132609,
+          "shell_calls": 8,
+          "shell_errors": 1
+        },
+        "mutations": {
+          "primary": []
+        },
+        "outcomes": {
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "retention-exception",
+        "task_status": "completed"
+      }
+    },
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "units": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 11,
+          "cli_calls": 39,
+          "cli_errors": 1,
+          "complete_final_pages_read": 11,
+          "elapsed_seconds": 166.87863611,
+          "output_characters": 276825,
+          "shell_calls": 42,
+          "shell_errors": 1
+        },
+        "mutations": {
+          "primary": [
+            "@git_head",
+            "knowledge/inbox/incidents/inc-005.md",
+            "knowledge/inbox/incidents/inc-017.md",
+            "knowledge/inbox/merchants/cedar-market/account.md",
+            "knowledge/inbox/merchants/northwind/account.md",
+            "knowledge/inbox/runbooks/cold-chain-dispatch.md",
+            "knowledge/inbox/runbooks/index.md",
+            "knowledge/inbox/runbooks/temperature-dispatch.md",
+            "knowledge/inbox/warehouses/cedar.md",
+            "knowledge/inbox/warehouses/harbor.md",
+            "knowledge/inbox/warehouses/maple.md",
+            "knowledge/inbox/warehouses/quartz.md",
+            "knowledge/inbox/warehouses/ridge.md",
+            "knowledge/inbox/warehouses/tundra.md",
+            "knowledge/log.md"
+          ],
+          "primary-checkout": [
+            "@git_head",
+            "knowledge/inbox/incidents/inc-005.md",
+            "knowledge/inbox/incidents/inc-017.md",
+            "knowledge/inbox/merchants/cedar-market/account.md",
+            "knowledge/inbox/merchants/northwind/account.md",
+            "knowledge/inbox/runbooks/cold-chain-dispatch.md",
+            "knowledge/inbox/runbooks/index.md",
+            "knowledge/inbox/runbooks/temperature-dispatch.md",
+            "knowledge/inbox/warehouses/cedar.md",
+            "knowledge/inbox/warehouses/harbor.md",
+            "knowledge/inbox/warehouses/maple.md",
+            "knowledge/inbox/warehouses/quartz.md",
+            "knowledge/inbox/warehouses/ridge.md",
+            "knowledge/inbox/warehouses/tundra.md",
+            "knowledge/log.md"
+          ]
+        },
+        "outcomes": {
+          "all_affected_callers_read": true,
+          "all_inbound_links_repaired": true,
+          "change_logged": true,
+          "complete_saved_navigation_and_history_read": true,
+          "complete_saved_read:incidents/inc-005.md": true,
+          "complete_saved_read:incidents/inc-017.md": true,
+          "complete_saved_read:merchants/cedar-market/account.md": true,
+          "complete_saved_read:merchants/northwind/account.md": true,
+          "complete_saved_read:runbooks/cold-chain-dispatch.md": true,
+          "complete_saved_read:warehouses/cedar.md": true,
+          "complete_saved_read:warehouses/harbor.md": true,
+          "complete_saved_read:warehouses/maple.md": true,
+          "complete_saved_read:warehouses/quartz.md": true,
+          "complete_saved_read:warehouses/ridge.md": true,
+          "complete_saved_read:warehouses/tundra.md": true,
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "move_preserves_original": true,
+          "original_removed_new_path_saved": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "runbook-move",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "runbook-move",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "units": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "honest_draft_status": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 11,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 11,
+          "elapsed_seconds": 99.0328295,
+          "output_characters": 71614,
+          "shell_calls": 8,
+          "shell_errors": 1
+        },
+        "mutations": {
+          "primary": [
+            "incidents/inc-005.md",
+            "incidents/inc-017.md",
+            "log.md",
+            "merchants/cedar-market/account.md",
+            "merchants/northwind/account.md",
+            "runbooks/cold-chain-dispatch.md",
+            "runbooks/index.md",
+            "runbooks/temperature-dispatch.md",
+            "warehouses/cedar.md",
+            "warehouses/harbor.md",
+            "warehouses/maple.md",
+            "warehouses/quartz.md",
+            "warehouses/ridge.md",
+            "warehouses/tundra.md"
+          ]
+        },
+        "outcomes": {
+          "all_affected_callers_read": true,
+          "all_inbound_links_repaired": true,
+          "change_logged": true,
+          "complete_saved_navigation_and_history_read": true,
+          "complete_saved_read:incidents/inc-005.md": true,
+          "complete_saved_read:incidents/inc-017.md": true,
+          "complete_saved_read:merchants/cedar-market/account.md": true,
+          "complete_saved_read:merchants/northwind/account.md": true,
+          "complete_saved_read:runbooks/cold-chain-dispatch.md": true,
+          "complete_saved_read:warehouses/cedar.md": true,
+          "complete_saved_read:warehouses/harbor.md": true,
+          "complete_saved_read:warehouses/maple.md": true,
+          "complete_saved_read:warehouses/quartz.md": true,
+          "complete_saved_read:warehouses/ridge.md": true,
+          "complete_saved_read:warehouses/tundra.md": true,
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "move_preserves_original": true,
+          "original_removed_new_path_saved": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "runbook-move",
+        "task_status": "completed"
+      }
+    },
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "budget_approved": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "confirmed_launch": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "proposed_launch": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 6,
+          "cli_errors": 1,
+          "complete_final_pages_read": 2,
+          "elapsed_seconds": 53.647258644,
+          "output_characters": 41885,
+          "shell_calls": 6,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": [],
+          "primary-checkout": []
+        },
+        "outcomes": {
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "unknown-launch",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "unknown-launch",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "budget_approved": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "confirmed_launch": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "proposed_launch": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "honest_draft_status": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 3,
+          "elapsed_seconds": 38.07786135,
+          "output_characters": 32384,
+          "shell_calls": 7,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": []
+        },
+        "outcomes": {
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "unknown-launch",
+        "task_status": "completed"
+      }
+    },
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "cutoff": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "pickup": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "primary_capacity": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "warehouse": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "plans_before_successful_saves": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 14,
+          "cli_errors": 0,
+          "complete_final_pages_read": 8,
+          "elapsed_seconds": 85.868293923,
+          "output_characters": 97386,
+          "shell_calls": 17,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": [],
+          "primary-checkout": []
+        },
+        "outcomes": {
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "warehouse-routing",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "warehouse-routing",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "cutoff": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "pickup": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "primary_capacity": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          },
+          "warehouse": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "honest_draft_status": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_review": true,
+          "original_metadata_and_sources_preserved": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 0,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 10,
+          "elapsed_seconds": 58.706615594,
+          "output_characters": 60697,
+          "shell_calls": 7,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": []
+        },
+        "outcomes": {
+          "final_response_recorded": true,
+          "installed_skill_read": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "warehouse-routing",
+        "task_status": "completed"
+      }
+    }
+  ],
+  "preparation_protocol_version": 1,
+  "retained_original_retrieval": {
+    "issue": "Initial labels incorrectly treated the pre-move query as a negative because the final moved path did not yet exist. Corrected initial labels use the original preserved item ID; reran only independent read-only retrieval.",
+    "labels_sha256": "67ad0245180da63d1dd718a170fdb404081119e4a291366e3de65ad41072a505",
+    "metrics": {
+      "ndcg_at_10": 0.25312587707451,
+      "no_result_accuracy": 0,
+      "precision_at_5": 0.08571428571428572,
+      "recall_at_10": 0.21428571428571427,
+      "reciprocal_rank_at_10": 0.42857142857142855
+    },
+    "positive_queries": 7
+  },
+  "retrieval": {
+    "checked_results": 10,
+    "citation_correctness": 1.0,
+    "labels_sha256": "d050992637d9f26205cc9141b294179fbe2bcf2e13795b7187d6f865aac90966",
+    "latency": {
+      "first_pass_ms": {
+        "count": 8,
+        "p50": 1580.2989679941675,
+        "p95": 2028.4752859879518,
+        "p99": 2028.4752859879518
+      },
+      "repeat_pass_ms": {
+        "count": 8,
+        "p50": 1592.1815050096484,
+        "p95": 1768.2614240038674,
+        "p99": 1768.2614240038674
+      },
+      "scope": "end-to-end CLI library query including governance and provider process startup"
+    },
+    "metrics": {
+      "ndcg_at_10": 0.34648514244019624,
+      "no_result_accuracy": null,
+      "precision_at_5": 0.1,
+      "recall_at_10": 0.3125,
+      "reciprocal_rank_at_10": 0.5
+    },
+    "per_query": [
+      {
+        "id": "retention-exception",
+        "latency_ms": [
+          1821.125034999568,
+          1666.655595996417
+        ],
+        "metrics": {
+          "ndcg_at_10": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_10": 0.0,
+          "reciprocal_rank_at_10": 0.0
+        },
+        "query": "Northwind Lumen retention regional cap"
+      },
+      {
+        "id": "warehouse-routing",
+        "latency_ms": [
+          1958.667594997678,
+          1753.5686019982677
+        ],
+        "metrics": {
+          "ndcg_at_10": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_10": 0.0,
+          "reciprocal_rank_at_10": 0.0
+        },
+        "query": "Northwind cold shipment warehouse capacity"
+      },
+      {
+        "id": "incident-handoff",
+        "latency_ms": [
+          2028.4752859879518,
+          1768.2614240038674
+        ],
+        "metrics": {
+          "ndcg_at_10": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_10": 0.0,
+          "reciprocal_rank_at_10": 0.0
+        },
+        "query": "INC-005 production QA retry"
+      },
+      {
+        "id": "release-impact",
+        "latency_ms": [
+          1618.9052649860969,
+          1593.6934980127262
+        ],
+        "metrics": {
+          "ndcg_at_10": 0.3026024134988135,
+          "precision_at_5": 0.2,
+          "recall_at_10": 0.16666666666666666,
+          "reciprocal_rank_at_10": 1.0
+        },
+        "query": "CHG-008 export-service dependencies"
+      },
+      {
+        "id": "unknown-launch",
+        "latency_ms": [
+          1361.8001260038,
+          1572.5406069977907
+        ],
+        "metrics": {
+          "ndcg_at_10": 1.0,
+          "precision_at_5": 0.2,
+          "recall_at_10": 1.0,
+          "reciprocal_rank_at_10": 1.0
+        },
+        "query": "Solstice launch budget approved"
+      },
+      {
+        "id": "carrier-conflict",
+        "latency_ms": [
+          1542.9833560046973,
+          1592.1815050096484
+        ],
+        "metrics": {
+          "ndcg_at_10": 0.0,
+          "precision_at_5": 0.0,
+          "recall_at_10": 0.0,
+          "reciprocal_rank_at_10": 0.0
+        },
+        "query": "Horizon feed cadence Northwind"
+      },
+      {
+        "id": "client-correction",
+        "latency_ms": [
+          1580.2989679941675,
+          1385.1791390043218
+        ],
+        "metrics": {
+          "ndcg_at_10": 0.4692787260227565,
+          "precision_at_5": 0.2,
+          "recall_at_10": 0.3333333333333333,
+          "reciprocal_rank_at_10": 1.0
+        },
+        "query": "Lumen merchant retention"
+      },
+      {
+        "id": "runbook-move",
+        "latency_ms": [
+          1564.535743003944,
+          1528.0808709940175
+        ],
+        "metrics": {
+          "ndcg_at_10": 1.0,
+          "precision_at_5": 0.2,
+          "recall_at_10": 1.0,
+          "reciprocal_rank_at_10": 1.0
+        },
+        "query": "temperature dispatch cold shipment"
+      }
+    ],
+    "positive_queries": 8,
+    "queries": 8,
+    "ranking_stable": true
+  },
+  "rubric_corrections": [
+    "Credit complete canonical wiki bytes actually printed even if the multi-file command failed for a different missing file; retain command error counts.",
+    "Recognize historical-duration qualification at the containing section heading, rather than only within the same paragraph.",
+    "Accept an observed post-save, post-index amendment-section search hit with the final canonical citation and 14-day text. Independently require the saved definition to state current 14 days; do not require search to return the entire definition line.",
+    "No agent was rerun and no final response or saved knowledge was edited by the evaluator."
+  ],
+  "runner": {
+    "adapter": "recorded-shell-observer",
+    "foreground_concurrency_max": 6,
+    "fresh_context": true,
+    "model": "inherited/unknown",
+    "name": "codex-chat-subagent",
+    "repetitions": 1,
+    "seeded_worlds": 1
+  },
+  "schema_version": 1,
+  "totals": {
+    "portable-kb": {
+      "blocked": 0,
+      "cli_errors": 5,
+      "completed": 8,
+      "completed_median_seconds": 114.2869015535,
+      "completed_with_constraints": 8,
+      "constraint_passes": 8,
+      "facts": 23,
+      "failed": 0,
+      "grounded_accurate_facts": 23,
+      "incomplete": 0,
+      "shell_errors": 3,
+      "trials": 8
+    },
+    "wiki": {
+      "blocked": 0,
+      "cli_errors": 0,
+      "completed": 8,
+      "completed_median_seconds": 65.9971116225,
+      "completed_with_constraints": 8,
+      "constraint_passes": 8,
+      "facts": 23,
+      "failed": 0,
+      "grounded_accurate_facts": 23,
+      "incomplete": 0,
+      "shell_errors": 5,
+      "trials": 8
+    }
+  },
+  "validation": {
+    "coverage_percent": 87.1,
+    "full_linux_tests": 451,
+    "latest_protocol_targeted_tests": 17,
+    "real_qmd": true,
+    "real_tantivy": true
+  },
+  "wiki_skill_sha256": "0229e37c1783fcac5b77cfb3242703666cf4aa472d2ae85b6bd5279756b515b6"
+}
