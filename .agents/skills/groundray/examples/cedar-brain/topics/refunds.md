@@ -4,7 +4,8 @@
 
 ## Standard refund window
 
-- Claim: The supplied Cedar policy states 30 calendar days for standard online orders.
+- Claim: The supplied Cedar policy accepts refund requests for standard online orders
+  within 30 calendar days of purchase.
 - Kind and basis: Decision supported by the supplied policy/approval assertion.
 - Scope and applicable period: Cedar Commerce; standard online orders; effective
   September 1, 2026 in the captured record. Later amendments are unestablished.

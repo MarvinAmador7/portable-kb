@@ -28,7 +28,7 @@ Plain Markdown is sufficient:
 - Company and scope: Cedar Commerce; standard online orders.
 - Kind and basis: Decision supported by the supplied approved policy record.
 - Applicable period: From 2026-09-01; current beyond the captured record is unconfirmed.
-- Claim: The supplied policy permits refunds within 30 days.
+- Claim: The supplied policy accepts refund requests within 30 calendar days of purchase.
 - Evidence: [Policy, section 4](../sources/refund-policy.md#section-4).
 - Authority: [Commercial-policy authority](../brain.md#commercial-policy-authority).
 - Limits: The supplied copy was inspected; authenticity was not independently certified.
@@ -59,7 +59,8 @@ unqualified assertion about what is true now.
 Keep the presentation proportionate to the question. For a disputed policy:
 
 > **Current documented rule for Cedar's standard online orders:** The supplied
-> policy states 30 days, effective September 1. [Policy, section 4]
+> policy accepts refund requests within 30 calendar days of purchase, effective
+> September 1 in that record. [Policy, section 4]
 >
 > **Reported exception/change:** A staff conversation tentatively mentions 60 days.
 > Its summary supplies no applicable approval record. [Conversation, message 2]

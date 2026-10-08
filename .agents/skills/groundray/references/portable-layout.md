@@ -35,6 +35,10 @@ where evidence was not supplied. Creation by an agent is not approval by a perso
 Capture actual inputs using [source notes](../templates/source-note.md). Link
 substantive understanding using [topic sections](../templates/topic.md). File
 material unanswered questions using [question notes](../templates/question.md).
+For a decision that creates commitments or work, use ordinary linked sections or
+the optional [decision](../templates/decision.md) and
+[definition](../templates/definition.md) templates. Describe why each dependency
+matters; merely linking two pages does not establish an impact.
 Remove placeholder sections that do not apply; never invent values to fill them.
 If YAML frontmatter is used, quote date/datetime strings.
 
@@ -61,7 +65,7 @@ or establish that a source is a real corporate record.
 When the selected brain already uses Portable KB, its installed skill and supported
 CLI remain the storage interface. Groundray's distinctions can be represented in
 body claim sections and existing source records. Preserve its schema, immutable
-identity and lifecycle; do not add required fields, change approval states, or
+identity and lifecycle; do not add required fields, manually change approval states, or
 write managed files directly. Cite both the saved topic snapshot and the original
 source actually inspected. A missing source access capability remains a limitation.
 

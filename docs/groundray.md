@@ -11,7 +11,10 @@ several agents summarize and reuse it.
 The [skill](../.agents/skills/groundray/SKILL.md) implements workflows for capturing
 sources, preserving evidence per claim, answering with original-source citations,
 reconciling disagreements, reviewing changed sources and keeping company scopes
-separate. Each company supplies its own authority rules; the skill does not invent
+separate. It also preserves company-specific definitions and the reasoning from
+evidence through assumptions to decisions, commitments and resulting work. New
+evidence can flag dependent work for review without silently changing an approved
+promise. Each company supplies its own authority rules; the skill does not invent
 who can approve policy changes. It distinguishes evidence for what happened from
 authority to decide what should happen.
 
@@ -47,7 +50,8 @@ explicitly fictional and are not independently authenticated.
 
 For "What is Cedar's standard refund window?", the intended answer is:
 
-> The supplied Cedar policy states **30 days** for standard online orders,
+> The supplied Cedar policy accepts refund requests for standard online orders
+> **within 30 calendar days of purchase**,
 > effective September 1 in that record. A staff conversation tentatively mentions
 > a possible 60-day campaign exception, but I could not establish an applicable
 > Cedar approval from the supplied evidence. The two summaries share that one
@@ -67,8 +71,10 @@ and imported instructions. Compare the Groundray skill with a plain wiki skill
 on the same sources and score observed evidence reads, answer scope, preserved
 qualifications and authorized mutations. File-format compliance is insufficient.
 
-This first draft has structural/reference checks and a fictional walkthrough;
-no fresh agent benchmark or improvement over the existing wiki skill is claimed.
+The [Cedar decision pilot](groundray-evaluation.md) now exercises capture and
+changed-evidence review in eight fresh agent sessions. Both skills preserved the
+core decision and evidence distinctions; this small test establishes no general
+advantage over the original wiki skill. The other proposed cases remain untested.
 Groundray is not an independent truth verifier: it makes an answer's inspected
 evidence and limits legible. Source authenticity, source completeness and actual
 human approval cannot be established solely by their Markdown labels.

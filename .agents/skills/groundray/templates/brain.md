@@ -16,6 +16,12 @@
 Authority to establish a company decision is separate from permission to access
 systems, edit files or publish this brain. Preserve unknown authority as unknown.
 
+## Company definitions
+
+| Term and scope | Meaning, calculation or completion condition | Source and applicability | Exclusions/unknowns |
+| --- | --- | --- | --- |
+| {{business term}} | Unknown until established | No applicable definition inspected | Do not silently borrow another company's meaning |
+
 ## Evidence conventions
 
 - Sources preserve actual supplied records and statements with separate capture notes.

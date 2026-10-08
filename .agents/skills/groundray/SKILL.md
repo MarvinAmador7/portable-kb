@@ -70,6 +70,45 @@ score does not qualify every sentence on that page.
 Read [claim and evidence examples](references/claim-evidence.md) when deciding
 whether a report, record or decision supports a proposed answer.
 
+## Company definitions and decision reasoning
+
+Business terms belong to the company and context that define them. Before using
+terms such as revenue, active customer, delivered, approved or complete, inspect
+the company's applicable definition and its source, metric/population, period
+and exclusions. Keep operational dashboard labels distinct from contractual
+completion. When a definition is absent, explain the ambiguity rather than
+silently supplying an industry default. A term in another company is not its
+local definition. Preserve authorized local definitions with linked evidence;
+changes to them require their own scope and authority, not a convenient rewrite.
+
+For decision capture or review, retain the chain from source passages to claims,
+interpretations, assumptions, decision, commitments and resulting work. Use
+ordinary Markdown sections and labelled links; a database or universal type
+system is not required. Distinguish supporting, challenging and contextual
+relationships; a generic link does not show which applies. Record whether the
+source observed, reported or inferred the linked assertion. Do not make every
+citation supporting evidence or treat an inference as a measured outcome.
+
+A decision note should preserve what was decided, who is recorded as approving
+it under the company rule, its scope/date, the evidence and assumptions used,
+and the commitments/work depending on it. Mark estimates and uncertain
+assumptions explicitly. A claimed customer condition is not an accepted company
+promise until applicable acceptance/approval evidence establishes that step.
+
+When new evidence challenges an assumption, follow its dependents and identify
+what needs review. Preserve the original decision and reasoning, append the new
+assessment, and distinguish risk or a forecast from an actual failed commitment.
+A new estimate does not itself authorize changing an approved deadline, cancelling
+work, or telling the customer anything. Record unresolved choices or recommended
+next checks within the authorized scope. Do not infer every connected item is
+impacted; explain the actual dependency and exclusion of unrelated work.
+
+For a fresh session, recover the decision's sources, definitions, assumptions
+and open questions from the brain; do not depend on the previous agent's chat.
+Trace authorship separately from business evidence: an agent trace can explain
+how a statement entered the brain but does not establish the statement's truth.
+See [decision review](references/decision-review.md) and its optional templates.
+
 ## Capture and ingest
 
 1. Inspect the complete relevant input and search the selected brain for the same
@@ -138,7 +177,8 @@ No human approval or verification event may be fabricated by filling a template.
    or "I could not establish…". Cite the original source passage for each
    consequential assertion and its company/period. A wiki topic link can supplement
    the original citation. Do not use a generic "business fact" badge to replace
-   the evidence and limits.
+   the evidence and limits. When the original is unavailable, cite the surviving
+   summary actually inspected and make that missing-origin limitation explicit.
 6. Separate material deductions and gaps visibly, with brief explanation of what
    would settle a gap. Never turn absence from a search into proof that something
    does not exist, an event did not happen, or approval was never given. Answering
