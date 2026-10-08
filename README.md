@@ -205,6 +205,16 @@ reviewed change. Creation also supports `--body-file` and `--sources-file`.
 Saved results include the actual item ID, citation, and scoped follow-up commands;
 `needs_reindex` makes search readiness explicit.
 
+Rename or relocate an existing item with the same preview/apply workflow:
+
+```sh
+pkb knowledge move "urn:uuid:..." "procedures/client-export-runbook.md" \
+  --brain team --json
+```
+
+Moves preserve identity, provenance and review status, and repair affected links
+and indexes in one local commit. Repeat with `--apply` after inspecting the diff.
+
 New agent-authored knowledge remains draft. Material updates preserve `id` and
 `created_at`, update provenance, and invalidate prior verification. Human review
 and authority are separate from search relevance or confidence. See the

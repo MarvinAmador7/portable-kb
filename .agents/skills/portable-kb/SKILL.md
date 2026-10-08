@@ -1,6 +1,6 @@
 ---
 name: portable-kb
-description: Search, retrieve, create, and update governed organizational knowledge in an installed Portable KB brain, then share it when explicitly authorized. Use when answering from a business worldview, locating decisions or procedures, capturing or revising reusable knowledge, checking what the organization knows, comparing explicitly named brains, or grounding work in Portable KB citations with lifecycle and provenance signals.
+description: Search, retrieve, create, update, and move governed organizational knowledge in an installed Portable KB brain, then share it when explicitly authorized. Use when answering from a business worldview, locating decisions or procedures, capturing or revising reusable knowledge, checking what the organization knows, comparing explicitly named brains, or grounding work in Portable KB citations with lifecycle and provenance signals.
 ---
 
 # Portable KB
@@ -15,6 +15,8 @@ complete items, create honest drafts, and keep authority separate from relevance
   knowledge, use the creation workflow.
 - When the user asks to correct, revise, clarify, or extend an existing item,
   use the update workflow and preserve its immutable identity.
+- When the user asks to rename or relocate an existing item, use the move
+  workflow and preserve its identity and substantive content.
 - Share saved knowledge only when the user explicitly asks to publish, push,
   share, or distribute it to the organization.
 
@@ -208,6 +210,35 @@ Never lower sensitivity as an agent, claim human verification, use update to
 revive deprecated knowledge, or bypass a validation refusal. Use a new item or
 request a future supersession workflow when identity or scope materially changes.
 
+## Move workflow
+
+1. Retrieve the complete existing item and inspect `pkb links` and `pkb backlinks`
+   in the same explicit brain. A rename or relocation preserves this item's UUID,
+   creation time, sources, producer, lifecycle and existing verification. It is
+   a mechanical change, not a new draft, material rewrite or duplicate.
+2. Plan the destination as a bundle-relative `.md` path:
+
+   ```console
+   pkb knowledge move "urn:uuid:..." "procedures/client-export-runbook.md" \
+     --brain <slug> --json
+   ```
+
+3. Inspect `previous_path`, `path`, `item_id`, `proposed_item`, every affected
+   `changes[].diff` and validation warning. Confirm that substantive content,
+   provenance, display meaning and brain scope survive. If it matches the
+   authorized request, repeat the same command with `--apply`. The command
+   versions the move, required link repairs, indexes and log in one local commit.
+   It refuses existing destinations, invalid/dirty brains and changes that would
+   retarget local source provenance. Report a refusal; do not overwrite, create
+   a duplicate, delete, or edit raw managed files to simulate the operation.
+4. Retrieve the saved UUID using `get_command`; check its new path and saved
+   citation. Inspect links/backlinks and completely retrieve affected callers
+   from the saved snapshot. Follow `reindex_command` before another search;
+   old keyword indexes are stale after a move.
+5. Report the original lifecycle state and that the move remains local. A move
+   preserves existing verification without claiming any new human review.
+   Sharing still requires the separate publishing workflow.
+
 ## Sharing and synchronization
 
 Saving locally and sharing with the organization are separate authority
@@ -242,7 +273,7 @@ pkb search index <slug> --json
 ```
 
 The slug is a positional argument for `index`, `brain status`, `brain push`,
-and `brain sync`; `query`, `get`, `create`, and `update` use `--brain <slug>`.
+and `brain sync`; `query`, `get`, `create`, `update`, and `move` use `--brain <slug>`.
 A bare `pkb search index` targets the active brain and may rebuild the wrong
 index during a named-brain request. Then retry the same scoped query. Do not install models, run semantic/hybrid retrieval, or
 synchronize the Git brain unless the user separately requests it.

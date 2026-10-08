@@ -12,16 +12,18 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .brains import (
+    BrainError,
     BrainManifest,
     InstalledBrain,
     authoring_repository,
+    brain_status,
     clean_repository_head,
     commit_authoring_changes,
     refresh_brain_from_authoring,
 )
 from .changes import ChangeSet
 from .models import KnowledgeItem
-from .operations import OperationError, plan_create, plan_update
+from .operations import OperationError, plan_create, plan_move, plan_update
 from .parsing import RESERVED_NAMES, discover_concepts, parse_concept, parse_concept_bytes
 from .settings import Settings
 
@@ -173,6 +175,59 @@ class KnowledgeUpdateResult:
         payload["saved_version"] = self.commit
         payload["active_brain_updated"] = True
         payload["previous_version"] = self.refresh["previous_commit"]
+        payload.update(
+            _saved_item_actions(self.plan.brain, payload["item_id"], payload["path"], self.commit)
+        )
+        return payload
+
+
+@dataclass(frozen=True, slots=True)
+class KnowledgeMovePlan:
+    """A mechanical move with identity, provenance and lifecycle preserved."""
+
+    brain: InstalledBrain
+    repository: Path
+    manifest: BrainManifest
+    item: KnowledgeItem
+    destination: str
+    base_commit: str
+    change_set: ChangeSet
+
+    def as_dict(self, *, applied: bool) -> dict[str, Any]:
+        return {
+            "brain": self.brain.slug,
+            "repository": str(self.repository),
+            "item_id": self.item.id,
+            "previous_path": self.item.relative_path,
+            "path": self.destination,
+            "title": self.item.metadata.get("title"),
+            "proposed_item": _item_preview(self.change_set, self.destination),
+            "operation": "move",
+            "identity_preserved": True,
+            "previous_status": self.item.status,
+            "resulting_status": self.item.status,
+            "verification_invalidated": False,
+            "applied": applied,
+            "saved_version": None,
+            "active_brain_updated": False,
+            "changes": _change_previews(self.change_set),
+            "validation_warnings": [f.as_dict() for f in self.change_set.validation.warnings],
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class KnowledgeMoveResult:
+    plan: KnowledgeMovePlan
+    commit: str
+    refresh: Mapping[str, Any]
+
+    def as_dict(self) -> dict[str, Any]:
+        payload = self.plan.as_dict(applied=True)
+        payload.update(
+            saved_version=self.commit,
+            active_brain_updated=True,
+            previous_version=self.refresh["previous_commit"],
+        )
         payload.update(
             _saved_item_actions(self.plan.brain, payload["item_id"], payload["path"], self.commit)
         )
@@ -417,6 +472,66 @@ def save_knowledge_update(
         as_of=as_of,
     )
     return KnowledgeUpdateResult(plan=plan, commit=commit, refresh=refresh)
+
+
+def plan_knowledge_move(
+    settings: Settings,
+    reference: str,
+    destination: str,
+    *,
+    timestamp: str | None = None,
+    slug: str | None = None,
+    as_of: str | None = None,
+) -> KnowledgeMovePlan:
+    """Preview a scoped, validated move without rewriting substantive knowledge."""
+    brain, repository, manifest = authoring_repository(settings, slug)
+    base_commit = clean_repository_head(repository)
+    if not brain_status(settings, brain.slug, as_of=as_of)["ok"]:
+        raise BrainError("Move requires a clean, valid installed brain at its pinned commit.")
+    item = _resolve_authoring_item(repository / manifest.bundle, reference)
+    destination = destination.strip().removeprefix("knowledge/")
+    change_set = plan_move(
+        repository / manifest.bundle,
+        item.relative_path,
+        destination,
+        timestamp=timestamp or utc_timestamp(),
+        as_of=as_of,
+    )
+    return KnowledgeMovePlan(
+        brain,
+        repository,
+        manifest,
+        item,
+        PurePosixPath(destination).as_posix(),
+        base_commit,
+        change_set,
+    )
+
+
+def save_knowledge_move(
+    settings: Settings, plan: KnowledgeMovePlan, *, as_of: str | None = None
+) -> KnowledgeMoveResult:
+    """Save all move repairs in one local commit and refresh the pinned brain."""
+    current_brain, repository, manifest = authoring_repository(settings, plan.brain.slug)
+    if (
+        current_brain != plan.brain
+        or repository != plan.repository
+        or manifest != plan.manifest
+        or clean_repository_head(repository) != plan.base_commit
+    ):
+        raise ValueError("The brain changed while this move was being prepared.")
+    if not brain_status(settings, plan.brain.slug, as_of=as_of)["ok"]:
+        raise BrainError("Move requires a clean, valid installed brain at its pinned commit.")
+    plan.change_set.apply()
+    paths = tuple(f"{plan.manifest.bundle}/{c.relative_path}" for c in plan.change_set.changes)
+    commit = commit_authoring_changes(
+        repository,
+        paths,
+        expected_head=plan.base_commit,
+        message=f"Move {plan.item.relative_path} to {plan.destination}",
+    )
+    refresh = refresh_brain_from_authoring(settings, plan.brain.slug, commit, as_of=as_of)
+    return KnowledgeMoveResult(plan, commit, refresh)
 
 
 def _resolve_authoring_item(bundle: Path, reference: str) -> KnowledgeItem:

@@ -25,7 +25,7 @@ These are multi-step single-request workflows, not a multi-turn user simulator.
 The matching unit is the requested outcome and evidence. Wiki agents use ordinary
 file tools and their native schema/index/log/source conventions. Portable KB
 agents use the packaged CLI, staged previews/applies, generated indexes and
-honest draft metadata. The suite does not add a production move/import command.
+honest draft metadata. The move scenario exercises `pkb knowledge move` when available; older CLI artifacts are scored as blocked only after observed help and an unchanged brain. Whole-wiki import remains outside the production CLI.
 
 ## Prepare, run and compare
 
@@ -97,7 +97,8 @@ clients, active selection, skill/prompt/input integrity, and honest draft state.
 Every successful native save needs an earlier completed preview with the same
 substantive arguments and input-file digests. Preview IDs do not count as saved
 create IDs. The final saved body must correspond to a successful supported CLI
-save. Native correction trials must rebuild keyword search after saving and
+save. Indirect move repairs must match the recorded CLI diff applied to the
+initial caller content and the saved citation commit. Native correction trials must rebuild keyword search after saving and
 query it successfully; wiki correction trials must search the updated text.
 
 Metrics include observed shell/CLI calls and failures, captured output
@@ -120,7 +121,9 @@ tracker, or inspect production systems.
 ## First measured run
 
 Results from the matched run and retained pilot diagnostics are recorded in
-[the results note](agentic-workflow-results.md). Future scenarios can add staged
+[the results note](agentic-workflow-results.md). A targeted
+[move follow-up](knowledge-move-results.md) verifies the new supported CLI move.
+Future scenarios can add staged
 sessions, noisy evidence volumes, sync conflicts, authorized publication and
 recovery once their interfaces and independent checks are available. Extend
 `TASKS`, fixture evidence, grading and regression tests together; do not substitute

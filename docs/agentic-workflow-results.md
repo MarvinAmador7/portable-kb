@@ -1,5 +1,8 @@
 # First workplace workflow comparison
 
+This report preserves the original baseline. A later targeted run verifies the
+implemented CLI move in [the move follow-up](knowledge-move-results.md).
+
 On 2026-10-08 (America/Costa_Rica), 24 fresh foreground agent trials ran six
 fictional workplace workflows twice against each interface. The wiki completed
 12/12 tasks. Portable KB completed 10/12 and truthfully blocked the two runbook

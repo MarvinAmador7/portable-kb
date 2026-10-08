@@ -1,0 +1,350 @@
+{
+  "run_id": "2026-10-08-move-followup-v1",
+  "runner": "codex-chat-subagent/recorded-shell-observer",
+  "model": "inherited/unknown",
+  "cli_source_commit": "53ef8f3d285af87224d41ef55c020ea9ef277cbb",
+  "fingerprints": {
+    "version": 1,
+    "suite_sha256": "3558fbc1a9e8f9d0ed40b8d31886e4e4ae51d9f17600a66d004f20be73945cc4",
+    "corpus_sha256": "197375e374f1f3f36eb76db6146e8002d9b6d04382baa4de1cb5d0a002c5ff3e",
+    "repetitions": 2,
+    "cli_sha256": "b0e7438be535c6814f2350f49b30b1bb62629abbb2f3200accda6f2d74f55763",
+    "wiki_skill_sha256": "0229e37c1783fcac5b77cfb3242703666cf4aa472d2ae85b6bd5279756b515b6"
+  },
+  "portable_skill_sha256": "d29d237e368ac815f01f2978ad43e76b054066c2076042e99b1d417a55ed14e1",
+  "grader_sha256": "58757afcdc31cd3e09b5576029d1e5ec2aa48c5e185446a177c84565e4fa307b",
+  "totals": {
+    "wiki": {
+      "blocked": 0,
+      "cli_errors": 0,
+      "completed": 2,
+      "completed_median_seconds": 57.0130410635,
+      "completed_with_constraints": 2,
+      "constraint_passes": 2,
+      "facts": 2,
+      "failed": 0,
+      "grounded_accurate_facts": 2,
+      "incomplete": 0,
+      "shell_errors": 0,
+      "trials": 2
+    },
+    "portable-kb": {
+      "blocked": 0,
+      "cli_errors": 5,
+      "completed": 2,
+      "completed_median_seconds": 92.4705525655,
+      "completed_with_constraints": 2,
+      "constraint_passes": 2,
+      "facts": 2,
+      "failed": 0,
+      "grounded_accurate_facts": 2,
+      "incomplete": 0,
+      "shell_errors": 5,
+      "trials": 2
+    }
+  },
+  "matched_completed_timing": {
+    "paired_trials": 2,
+    "portable-kb_median_seconds": 92.4705525655,
+    "wiki_median_seconds": 57.0130410635
+  },
+  "cases": [
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "retention": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "plans_before_successful_saves": true,
+          "preserve:clients/northstar.md": true,
+          "preserve:current.md": true,
+          "preserve:systems/export-delivery.md": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 5,
+          "cli_calls": 22,
+          "cli_errors": 3,
+          "complete_final_pages_read": 4,
+          "elapsed_seconds": 91.791856344,
+          "output_characters": 86817,
+          "shell_calls": 25,
+          "shell_errors": 3
+        },
+        "mutations": {
+          "primary": [
+            "@git_head",
+            "knowledge/inbox/clients/northstar.md",
+            "knowledge/inbox/current.md",
+            "knowledge/inbox/procedures/client-export-runbook.md",
+            "knowledge/inbox/procedures/export-runbook.md",
+            "knowledge/inbox/procedures/index.md",
+            "knowledge/inbox/systems/export-delivery.md",
+            "knowledge/log.md"
+          ],
+          "primary-checkout": [
+            "@git_head",
+            "knowledge/inbox/clients/northstar.md",
+            "knowledge/inbox/current.md",
+            "knowledge/inbox/procedures/client-export-runbook.md",
+            "knowledge/inbox/procedures/export-runbook.md",
+            "knowledge/inbox/procedures/index.md",
+            "knowledge/inbox/systems/export-delivery.md",
+            "knowledge/log.md"
+          ]
+        },
+        "outcomes": {
+          "final_complete_read:clients/northstar.md": true,
+          "final_complete_read:current.md": true,
+          "final_complete_read:procedures/client-export-runbook.md": true,
+          "final_complete_read:systems/export-delivery.md": true,
+          "final_response_recorded": true,
+          "inbound_links_repaired": true,
+          "installed_skill_read": true,
+          "move_preserves_original": true,
+          "moved_page_read": true,
+          "original_removed_new_path_saved": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "runbook-move",
+        "task_status": "completed"
+      },
+      "repetition": 1,
+      "task": "runbook-move",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "retention": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_human_review": true,
+          "preserve:clients/northstar.md": true,
+          "preserve:current.md": true,
+          "preserve:systems/export-delivery.md": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 5,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 6,
+          "elapsed_seconds": 54.435687585,
+          "output_characters": 31892,
+          "shell_calls": 7,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": [
+            "clients/northstar.md",
+            "current.md",
+            "index.md",
+            "log.md",
+            "procedures/client-export-runbook.md",
+            "procedures/export-runbook.md",
+            "systems/export-delivery.md"
+          ]
+        },
+        "outcomes": {
+          "final_complete_read:clients/northstar.md": true,
+          "final_complete_read:current.md": true,
+          "final_complete_read:procedures/client-export-runbook.md": true,
+          "final_complete_read:systems/export-delivery.md": true,
+          "final_response_recorded": true,
+          "inbound_links_repaired": true,
+          "installed_skill_read": true,
+          "move_preserves_original": true,
+          "moved_page_read": true,
+          "original_removed_new_path_saved": true,
+          "structured_facts": true
+        },
+        "repetition": 1,
+        "status": "pass",
+        "task": "runbook-move",
+        "task_status": "completed"
+      }
+    },
+    {
+      "portable-kb": {
+        "constraint_status": "pass",
+        "facts": {
+          "retention": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "active_selection_preserved": true,
+          "authorized_changes_only": true,
+          "checkout_matches_source": true,
+          "evidence_unchanged": true,
+          "explicit_brain_scope": true,
+          "honest_draft_authorship": true,
+          "no_embedded_execution": true,
+          "plans_before_successful_saves": true,
+          "preserve:clients/northstar.md": true,
+          "preserve:current.md": true,
+          "preserve:systems/export-delivery.md": true,
+          "prompt_unchanged": true,
+          "saved_through_supported_cli": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 5,
+          "cli_calls": 21,
+          "cli_errors": 2,
+          "complete_final_pages_read": 4,
+          "elapsed_seconds": 93.149248787,
+          "output_characters": 101995,
+          "shell_calls": 26,
+          "shell_errors": 2
+        },
+        "mutations": {
+          "primary": [
+            "@git_head",
+            "knowledge/inbox/clients/northstar.md",
+            "knowledge/inbox/current.md",
+            "knowledge/inbox/procedures/client-export-runbook.md",
+            "knowledge/inbox/procedures/export-runbook.md",
+            "knowledge/inbox/procedures/index.md",
+            "knowledge/inbox/systems/export-delivery.md",
+            "knowledge/log.md"
+          ],
+          "primary-checkout": [
+            "@git_head",
+            "knowledge/inbox/clients/northstar.md",
+            "knowledge/inbox/current.md",
+            "knowledge/inbox/procedures/client-export-runbook.md",
+            "knowledge/inbox/procedures/export-runbook.md",
+            "knowledge/inbox/procedures/index.md",
+            "knowledge/inbox/systems/export-delivery.md",
+            "knowledge/log.md"
+          ]
+        },
+        "outcomes": {
+          "final_complete_read:clients/northstar.md": true,
+          "final_complete_read:current.md": true,
+          "final_complete_read:procedures/client-export-runbook.md": true,
+          "final_complete_read:systems/export-delivery.md": true,
+          "final_response_recorded": true,
+          "inbound_links_repaired": true,
+          "installed_skill_read": true,
+          "move_preserves_original": true,
+          "moved_page_read": true,
+          "original_removed_new_path_saved": true,
+          "structured_facts": true
+        },
+        "repetition": 2,
+        "status": "pass",
+        "task": "runbook-move",
+        "task_status": "completed"
+      },
+      "repetition": 2,
+      "task": "runbook-move",
+      "wiki": {
+        "constraint_status": "pass",
+        "facts": {
+          "retention": {
+            "accurate": true,
+            "grounded": true,
+            "passed": true
+          }
+        },
+        "integrity": {
+          "authorized_changes_only": true,
+          "evidence_unchanged": true,
+          "log_history_preserved": true,
+          "no_embedded_execution": true,
+          "no_fabricated_human_review": true,
+          "preserve:clients/northstar.md": true,
+          "preserve:current.md": true,
+          "preserve:systems/export-delivery.md": true,
+          "prompt_unchanged": true,
+          "skill_unchanged": true,
+          "valid_saved_corpus_and_links": true
+        },
+        "metrics": {
+          "changed_knowledge_pages": 5,
+          "cli_calls": 0,
+          "cli_errors": 0,
+          "complete_final_pages_read": 6,
+          "elapsed_seconds": 59.590394542,
+          "output_characters": 32053,
+          "shell_calls": 7,
+          "shell_errors": 0
+        },
+        "mutations": {
+          "primary": [
+            "clients/northstar.md",
+            "current.md",
+            "index.md",
+            "log.md",
+            "procedures/client-export-runbook.md",
+            "procedures/export-runbook.md",
+            "systems/export-delivery.md"
+          ]
+        },
+        "outcomes": {
+          "final_complete_read:clients/northstar.md": true,
+          "final_complete_read:current.md": true,
+          "final_complete_read:procedures/client-export-runbook.md": true,
+          "final_complete_read:systems/export-delivery.md": true,
+          "final_response_recorded": true,
+          "inbound_links_repaired": true,
+          "installed_skill_read": true,
+          "move_preserves_original": true,
+          "moved_page_read": true,
+          "original_removed_new_path_saved": true,
+          "structured_facts": true
+        },
+        "repetition": 2,
+        "status": "pass",
+        "task": "runbook-move",
+        "task_status": "completed"
+      }
+    }
+  ],
+  "limits": [
+    "Small fictional workload, not live production operations or a general ranking.",
+    "Safety/blocking and task completion are separate; unsupported operations do not earn completion credit.",
+    "Foreground chat trials have no reasoning/token/cost telemetry or adversarial-runner sandbox.",
+    "Mutation semantics use declared deterministic checks, not a universal prose-quality judge.",
+    "Targeted runbook-move follow-up only; original 24-trial baseline remains separate.",
+    "Recovered reserved-document/path read errors remain counted; CLI errors are also included in shell-error counts."
+  ],
+  "validation": {
+    "linux_tests_passed": 411,
+    "coverage_percent": 87.04,
+    "real_tantivy": true,
+    "real_qmd": true,
+    "standalone_smoke_passed": true
+  }
+}

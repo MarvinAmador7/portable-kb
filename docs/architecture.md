@@ -340,7 +340,7 @@ The CLI consumer phase has started without changing the canonical model.
 QMD BM25 indexing and cited keyword queries are implemented as isolated,
 deletable consumer state. Detailed implementation is still deferred for model
 installation, semantic/hybrid retrieval, embeddings, vector databases, graph
-databases, lifecycle CLI commands beyond creation and material update, MCP,
+databases, lifecycle CLI commands beyond creation, material update, and mechanical moves, MCP,
 APIs, web/native UI, hosted services,
 authentication, authorization, multitenancy, background agents, production
 infrastructure, and third-party connectors. See [cli.md](cli.md) for the active

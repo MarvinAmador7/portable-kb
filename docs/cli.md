@@ -345,6 +345,38 @@ The result exposes previous/resulting lifecycle status, whether verification
 was invalidated, the exact affected paths, validation warnings, and the saved
 version. Updating locally never authorizes organization publication.
 
+## Knowledge moves
+
+Rename or relocate one existing item by UUID or bundle-relative path:
+
+```console
+pkb knowledge move "urn:uuid:..." "procedures/client-export-runbook.md" \
+  --brain team --json
+```
+
+Inspect the proposed item and `changes[].diff`, then repeat with `--apply`.
+The move preserves UUID, creation and production metadata, sources, lifecycle
+status, existing verification, and unknown fields. It repairs affected inbound
+and outbound Markdown links and wikilinks, preserves their display labels,
+updates authored index references, regenerates navigation, and appends a log
+entry. Unrelated link spelling and code examples remain unchanged. Historical
+log entries retain their original paths.
+
+The source and installed checkout must be clean and valid. Existing destinations,
+unsafe paths, and changes detected between planning and saving are refused.
+Moves that would retarget a local `sources[].resource` are refused: review that
+source metadata change separately before attempting the move. A move does not
+perform a material content revision or record new human review.
+
+All planned files are saved in one local Git commit, and the selected installed
+brain is refreshed without switching the active brain or sharing upstream.
+File replacements use the core's optimistic preflight and best-effort rollback;
+a process crash is not a filesystem-wide transaction. The applied JSON includes
+`previous_path`, the new citation, scoped `get_command` and `reindex_command`,
+and `needs_reindex: true`. Retrieve by UUID immediately; rebuild the selected
+brain's keyword index before searching. `--timestamp` sets the move log time;
+`--config` and `--as-of` work as for other authoring commands.
+
 ## Organization publication
 
 After an initialized brain has been published once, an explicitly authorized

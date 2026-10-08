@@ -3,25 +3,25 @@
 from __future__ import annotations
 
 import posixpath
-import re
 import shutil
 import tempfile
 from collections.abc import Callable, Mapping, MutableMapping, Sequence
+from dataclasses import replace
 from datetime import date, datetime, timedelta
 from pathlib import Path, PurePosixPath
 from typing import Any
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import quote, unquote, urlsplit, urlunsplit
 from uuid import uuid4
 
 from ruamel.yaml import YAML
 
 from .changes import ChangeSet, diff_trees
 from .indexes import generate_indexes
-from .links import LinkIndex
+from .links import LinkIndex, extract_links
 from .models import ValidationReport
 from .parsing import RESERVED_NAMES, discover_concepts, parse_concept
 from .serialization import load_editable, quoted, render_concept
-from .validation import MARKDOWN_LINK, UTC_DATETIME, validate_bundle, validate_transition
+from .validation import UTC_DATETIME, validate_bundle, validate_transition
 
 
 class OperationError(RuntimeError):
@@ -452,6 +452,8 @@ def _validate_concept_path(value: str) -> str:
     path = PurePosixPath(value)
     if (
         path.is_absolute()
+        or "\\" in value
+        or "\x00" in value
         or ".." in path.parts
         or path.suffix != ".md"
         or path.name in RESERVED_NAMES
@@ -556,14 +558,67 @@ def _move_and_rewrite(root: Path, source: str, destination: str) -> None:
             raise OperationError(f"Cannot move while a concept is unparseable: {path}")
         parsed_items.append(result.item)
     link_index = LinkIndex(parsed_items, root)
-    rewritten_wiki = {item.relative_path: link_index.rewrite_wiki_move(item, source, destination)
-                      for item in parsed_items}
+    proposed_index = LinkIndex(
+        [
+            replace(item, relative_path=destination, path=destination_file)
+            if item.relative_path == source
+            else item
+            for item in parsed_items
+        ],
+        root,
+    )
+    # Relative source URIs are evidence, not merely presentation links. Do not
+    # silently retarget them or turn a verified item's source edit into a move.
+    for item in parsed_items:
+        new_path = destination if item.relative_path == source else item.relative_path
+        for entry in item.metadata.get("sources", []):
+            resource = entry.get("resource", "")
+            parsed = urlsplit(resource)
+            if parsed.scheme or parsed.netloc or not parsed.path:
+                continue
+            path = unquote(parsed.path)
+            old_target = posixpath.normpath(
+                path.lstrip("/")
+                if path.startswith("/")
+                else posixpath.join(posixpath.dirname(item.relative_path), path)
+            )
+            expected = destination if old_target == source else old_target
+            new_target = posixpath.normpath(
+                path.lstrip("/")
+                if path.startswith("/")
+                else posixpath.join(posixpath.dirname(new_path), path)
+            )
+            if new_target != expected:
+                raise OperationError(
+                    f"Move would change local source provenance in {item.relative_path}: {resource}. Review a source update first."
+                )
+    rewritten_wiki = {
+        item.relative_path: link_index.rewrite_wiki_move(
+            item, source, destination, proposed=proposed_index
+        )
+        for item in parsed_items
+    }
+    # Generated navigation will be regenerated; authored index prose must also
+    # retain its targets and labels. Logs are historical and remain unchanged.
+    for path in root.rglob("index.md"):
+        relative = path.relative_to(root).as_posix()
+        navigation = replace(
+            parsed_items[0], path=path, relative_path=relative, body=path.read_text()
+        )
+        text = link_index.rewrite_wiki_move(
+            navigation, source, destination, proposed=proposed_index
+        )
+        text = _rewrite_links(text, relative, relative, source, destination)
+        if text != navigation.body:
+            path.write_text(text, encoding="utf-8", newline="\n")
     destination_file.parent.mkdir(parents=True, exist_ok=True)
     source_file.replace(destination_file)
     for item in parsed_items:
         old_item_path = item.relative_path
         new_item_path = destination if old_item_path == source else old_item_path
-        rewritten = _rewrite_links(rewritten_wiki[old_item_path], old_item_path, new_item_path, source, destination)
+        rewritten = _rewrite_links(
+            rewritten_wiki[old_item_path], old_item_path, new_item_path, source, destination
+        )
         target_path = root / new_item_path
         if rewritten != item.body or old_item_path == source:
             metadata, _body = load_editable(target_path, root)
@@ -573,25 +628,39 @@ def _move_and_rewrite(root: Path, source: str, destination: str) -> None:
 
 
 def _rewrite_links(body: str, old_item: str, new_item: str, moved_from: str, moved_to: str) -> str:
-    def replace(match: re.Match[str]) -> str:
-        target = match.group(1)
+    for reference in reversed(extract_links(body)):
+        if reference.kind != "markdown":
+            continue
+        target = reference.target
         parsed = urlsplit(target)
-        if parsed.scheme or target.startswith(("#", "mailto:")) or not parsed.path.endswith(".md"):
-            return match.group(0)
-        if parsed.path.startswith("/"):
-            resolved = posixpath.normpath(parsed.path.lstrip("/"))
+        if parsed.scheme or parsed.netloc or not parsed.path:
+            continue
+        path = unquote(parsed.path)
+        if path.startswith("/"):
+            resolved = posixpath.normpath(path.lstrip("/"))
         else:
-            resolved = posixpath.normpath(posixpath.join(posixpath.dirname(old_item), parsed.path))
+            resolved = posixpath.normpath(posixpath.join(posixpath.dirname(old_item), path))
         if resolved == moved_from:
             resolved = moved_to
-        if parsed.path.startswith("/"):
+        current_target = posixpath.normpath(
+            path.lstrip("/")
+            if path.startswith("/")
+            else posixpath.join(posixpath.dirname(new_item), path)
+        )
+        if current_target == resolved:
+            continue
+        if path.startswith("/"):
             new_path = "/" + resolved
         else:
             new_path = posixpath.relpath(resolved, posixpath.dirname(new_item) or ".")
-        rewritten_target = urlunsplit(("", "", new_path, parsed.query, parsed.fragment))
-        return match.group(0).replace(target, rewritten_target, 1)
-
-    return MARKDOWN_LINK.sub(replace, body)
+        rewritten_target = urlunsplit(
+            ("", "", quote(new_path, safe="/.-_"), parsed.query, parsed.fragment)
+        )
+        segment = body[reference.start : reference.end]
+        offset = segment.index("](") + 2
+        replacement = segment[:offset] + segment[offset:].replace(target, rewritten_target, 1)
+        body = body[: reference.start] + replacement + body[reference.end :]
+    return body
 
 
 def _relative_link(from_path: str, to_path: str) -> str:

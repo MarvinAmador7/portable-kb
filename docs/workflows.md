@@ -2,9 +2,9 @@
 
 The workflows operate on files and reviewed changes. “Agent” means a tool or AI
 acting as an assistant, not an autonomous authority. The CLI implements
-none-to-draft creation and material item updates through the existing validated
+none-to-draft creation, material item updates, and identity-preserving moves through the existing validated
 change-plan API. After explicit apply intent, it versions only planned files
-and refreshes the active local brain without exposing Git commands; it does not
+and refreshes the selected local brain without exposing Git commands; it does not
 push the result. A separately authorized `brain push` validates and shares the
 active saved version only as a fast-forward, without exposing Git commands or
 force-pushing. Other lifecycle commands, background agents, external
