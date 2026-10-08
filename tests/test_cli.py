@@ -816,6 +816,14 @@ This definition gives product and customer-success teams a shared milestone.
     plan_payload = json.loads(planned.output)
     assert plan_payload["applied"] is False
     assert plan_payload["path"] == "inbox/customer-activation.md"
+    proposed = plan_payload["proposed_item"]
+    assert proposed["id"] == plan_payload["item_id"]
+    assert proposed["status"] == "draft"
+    assert proposed["metadata"]["generated"]["by"] == "human:marvin"
+    assert proposed["body"].strip() == body.read_text().strip()
+    item_diff = next(change["diff"] for change in plan_payload["changes"] if change["path"] == proposed["path"])
+    assert "+status: draft" in item_diff
+    assert "+Activation is the first customer realization" in item_diff
     target = repository / "knowledge/inbox/customer-activation.md"
     assert not target.exists()
 
@@ -825,6 +833,17 @@ This definition gives product and customer-success teams a shared milestone.
     assert applied_payload["applied"] is True
     assert applied_payload["active_brain_updated"] is True
     assert len(applied_payload["saved_version"]) == 40
+    assert applied_payload["needs_reindex"] is True
+    assert applied_payload["search_ready"] is False
+    assert applied_payload["retrieval_ready"] is True
+    assert applied_payload["citation"]["item_id"] == applied_payload["item_id"]
+    assert applied_payload["citation"]["commit"] == applied_payload["saved_version"]
+    assert applied_payload["reindex_command"] == ["pkb", "search", "index", "authoring-brain", "--json", "--config", str(config), "--as-of", "2026-08-13"]
+    retrieved = runner.invoke(app, applied_payload["get_command"][1:])
+    assert retrieved.exit_code == 0, retrieved.output
+    retrieved_payload = json.loads(retrieved.output)
+    assert retrieved_payload["citation"] == applied_payload["citation"]
+    assert retrieved_payload["item"] == applied_payload["proposed_item"] | {"stale_after": applied_payload["proposed_item"]["metadata"].get("stale_after")}
     assert target.is_file()
     assert "status: draft" in target.read_text(encoding="utf-8")
     assert "customer-activation.md" in (
@@ -938,6 +957,11 @@ def test_knowledge_update_cli_plans_then_saves_by_path(tmp_path: Path) -> None:
     assert plan["operation"] == "update"
     assert plan["applied"] is False
     assert plan["previous_status"] == "draft"
+    assert "Keep records for 45 days." in plan["proposed_item"]["body"]
+    assert plan["proposed_item"]["metadata"]["description"] == "Defines the revised 45-day record retention window."
+    diff = next(change["diff"] for change in plan["changes"] if change["path"] == plan["path"])
+    assert "-Keep records for 30 days." in diff
+    assert "+Keep records for 45 days." in diff
     assert target.read_text(encoding="utf-8") == original
 
     applied = runner.invoke(app, [*arguments, "--apply"])
@@ -964,7 +988,8 @@ def test_knowledge_update_cli_plans_then_saves_by_path(tmp_path: Path) -> None:
     assert human_apply.exit_code == 0, human_apply.output
     assert "◆ Update saved" in human_apply.output
     assert "Active brain updated: Update Brain" in human_apply.output
-    assert "Ready for local search and agent retrieval" in human_apply.output
+    assert "Ready for complete-item retrieval" in human_apply.output
+    assert "Search needs an index rebuild: pkb search index update-brain" in human_apply.output
     assert "Not shared with the organization" in human_apply.output
 
     missing_change = runner.invoke(
@@ -1127,7 +1152,10 @@ The answer changes how the team measures onboarding.
     assert result.exit_code == 0, result.output
     assert "Validated draft plan: inbox/onboarding-checkpoint.md" in result.output
     assert "◆ Draft saved" in result.output
-    assert "Ready for local search and agent retrieval" in result.output
+    assert "Ready for complete-item retrieval" in result.output
+    assert "Search needs an index rebuild: pkb search index interactive-authoring" in result.output
+    assert "+Which checkpoint best predicts activation?" in result.output
+    assert "+status: draft" in result.output
     assert "Not shared with the organization" in result.output
     assert (repository / "knowledge/inbox/onboarding-checkpoint.md").is_file()
 

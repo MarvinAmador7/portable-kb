@@ -8,7 +8,11 @@ setup, inline terminal prompts, an installable brain manifest, and safe Git-back
 installation, catalog, selection, status, and explicit fast-forward
 synchronization, plus isolated QMD BM25 indexing and cited keyword queries.
 The keyword provider boundary and read-only labeled retrieval evaluation with
-a real-QMD baseline are also authorized. Production Tantivy keyword integration
+a real-QMD baseline are also authorized. Development evaluation of the actual
+CLI and bundled skill with foreground agents, isolated synthetic brains,
+command traces, canonical outcome checks, and baseline/candidate reports is
+authorized. Agent/model runs are opt-in and do not publish knowledge or repair
+user brains implicitly. Production Tantivy keyword integration
 and native distribution are now authorized; existing QMD configurations must
 be preserved.
 Development-only normalized section export, SQLite FTS5 and Rust/Tantivy

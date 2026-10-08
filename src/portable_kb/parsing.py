@@ -73,9 +73,14 @@ def _field_lines(mapping: Mapping[str, Any]) -> dict[str, int]:
 def parse_concept(path: Path, bundle: Path) -> ParseResult:
     """Parse one concept without altering its source representation."""
 
+    return parse_concept_bytes(path, bundle, path.read_bytes())
+
+
+def parse_concept_bytes(path: Path, bundle: Path, raw: bytes) -> ParseResult:
+    """Parse an in-memory proposal through the same canonical parser."""
+
     relative = path.relative_to(bundle).as_posix()
     findings: list[Finding] = []
-    raw = path.read_bytes()
     if raw.startswith(b"\xef\xbb\xbf"):
         findings.append(
             Finding(

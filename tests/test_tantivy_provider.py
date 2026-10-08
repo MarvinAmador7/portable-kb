@@ -336,3 +336,53 @@ def test_native_setup_defaults_and_explicit_qmd_preserve_configuration(tmp_path,
     preserved = runner.invoke(app, ["setup", "--non-interactive", "--config", str(config), "--force"])
     assert preserved.exit_code == 0, preserved.output
     assert load_settings(config) == qmd
+
+
+def test_named_brain_recovery_and_saved_item_actions_preserve_scope(
+    native_brain, brain_repo_factory,
+):
+    from portable_kb.authoring import (
+        GenerationMethod,
+        plan_knowledge_update,
+        save_knowledge_update,
+    )
+    from portable_kb.brains import load_catalog
+    from portable_kb.search import get_knowledge_item
+
+    settings, primary = native_brain
+    source = brain_repo_factory("alternate", "urn:uuid:99999999-9999-4999-8999-999999999999")
+    alternate, _, _ = add_brain(str(source), settings, as_of="2026-08-17")
+    identity = "urn:uuid:0adaf3c7-c3e0-4cdc-85f4-90438dd72020"
+    original = get_knowledge_item(settings, identity, as_of="2026-08-17")
+    update = plan_knowledge_update(
+        settings, identity, slug=alternate.slug, actor="openai/codex",
+        method=GenerationMethod.AGENT_GENERATED,
+        body="# Review stale knowledge\n\n## Steps\n\nUse the alternate quarantine queue.\n",
+        timestamp="2026-08-17T12:00:00Z", as_of="2026-08-17",
+    )
+    saved = save_knowledge_update(settings, update, as_of="2026-08-17").as_dict()
+    assert saved["citation"]["brain_slug"] == alternate.slug
+    assert saved["get_command"] == ["pkb", "get", identity, "--brain", alternate.slug, "--json"]
+    assert saved["reindex_command"] == ["pkb", "search", "index", alternate.slug, "--json"]
+    assert saved["needs_reindex"] is True and saved["search_ready"] is False
+    selected = get_knowledge_item(settings, identity, alternate.slug, as_of="2026-08-17")
+    assert selected["citation"] == saved["citation"]
+    assert "quarantine queue" in selected["item"]["body"]
+    assert get_knowledge_item(settings, identity, as_of="2026-08-17")["item"]["body"] == original["item"]["body"]
+    assert load_catalog(settings).active == primary.slug
+
+    with pytest.raises(SearchError, match="pkb search index alternate"):
+        search_keyword(settings, "quarantine", alternate.slug, as_of="2026-08-17")
+    index_keyword_brain(settings, alternate.slug, as_of="2026-08-17")
+    found = search_keyword(settings, "quarantine", alternate.slug, as_of="2026-08-17")
+    assert found["results"][0]["citation"] == saved["citation"]
+    update = plan_knowledge_update(
+        settings, identity, slug=alternate.slug, actor="openai/codex",
+        method=GenerationMethod.AGENT_GENERATED,
+        body="# Review stale knowledge\n\n## Steps\n\nUse the alternate quarantine queue and notify its owner.\n",
+        timestamp="2026-08-17T13:00:00Z", as_of="2026-08-17",
+    )
+    save_knowledge_update(settings, update, as_of="2026-08-17")
+    with pytest.raises(SearchError, match="stale.*pkb search index alternate"):
+        search_keyword(settings, "quarantine", alternate.slug, as_of="2026-08-17")
+    assert load_catalog(settings).active == primary.slug

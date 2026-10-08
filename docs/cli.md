@@ -12,9 +12,9 @@ The implemented consumer foundation covers local configuration plus installing,
 listing, selecting, inspecting, and explicitly synchronizing Git-backed
 brains. It does not install QMD, download models, bypass lifecycle validation,
 apply a planned change without explicit intent, or synchronize in the
-background. When QMD is already installed, it can build
-isolated BM25 indexes and execute cited keyword queries; semantic and hybrid
-retrieval remain deferred.
+background. The standalone CLI embeds Tantivy for keyword indexing and cited
+retrieval; existing QMD configurations can use their external provider.
+Semantic and hybrid retrieval remain deferred.
 
 Standalone CLI archives are built from the Python wheel for macOS and Linux on
 Intel and ARM. The root `install` script selects the matching artifact,
@@ -34,7 +34,7 @@ The prompt sequence has five explicit steps:
 
 1. explain what setup will and will not change;
 2. select local brain and disposable-cache directories;
-3. select a QMD capability tier; and
+3. select builtin Tantivy or QMD, then a supported search tier;
 4. choose whether to install the agent skill for Codex, Claude Code, both, or
    neither; and
 5. review and save configuration, then install the selected skill.
@@ -67,7 +67,8 @@ setup prints the selected settings and saves only after confirmation.
 
 ## Search tiers
 
-QMD is the selected local provider. Its documented commands separate BM25
+New setup selects builtin Tantivy, which supports keyword mode only. Existing
+QMD settings remain intact. QMD's documented commands separate BM25
 keyword search, vector search, and full hybrid search. Portable KB exposes
 those capabilities as product tiers rather than forcing the maximum footprint
 on every user.
@@ -208,8 +209,8 @@ also reports the authoring branch, cleanliness, and `authoring_ready`; retrieval
 health remains independent from whether the authoring repository is ready to
 accept a new saved draft.
 
-`brain remove` deletes only the local installed snapshot and its disposable QMD
-index. It preserves a retained authoring repository and never changes or deletes
+`brain remove` deletes only the local installed snapshot and its disposable
+indexes. Active native reader leases block removal, including `--force`. It preserves a retained authoring repository and never changes or deletes
 a remote. A dirty installed snapshot fails closed unless `--force` is explicit.
 Removing the active brain leaves no active selection rather than guessing which
 business worldview should replace it. The exact retired demo identity is
@@ -259,7 +260,7 @@ The command resolves the active brain's retained local authoring repository,
 checks its identity and ancestry against the installed pin, and calls the core
 `plan_create` operation. Planning happens in a temporary tree and validates the
 base bundle, proposed bundle, transition, generated indexes, and log entry. The
-CLI then prints the exact create/update file list and asks once before saving.
+CLI then prints the proposed file diffs and asks once before saving.
 Portable KB commits only those planned files to local history and refreshes the
 installed read-only snapshot automatically. The Git mechanism stays internal:
 users do not run `git status`, `git add`, `git commit`, or `pkb brain sync`.
@@ -291,6 +292,21 @@ pkb knowledge create \
 
 Without `--apply`, this returns a validated plan and changes no files. Add
 `--apply` to save, locally version, and activate the draft in one operation.
+The JSON plan includes `proposed_item` (body, complete metadata, identity, and
+lifecycle) and `changes[].diff` for every affected file. Each independent create
+invocation prepares a fresh preview UUID and production timestamp; an unapplied
+preview is not a saved citation. The applied result returns the saved `item_id`
+and pinned `citation`, so consumers can retrieve it directly rather than search
+for their own new item.
+
+Successful create/update results return `retrieval_ready: true`,
+`search_ready: false`, and `needs_reindex: true`. Saving refreshes the pinned
+snapshot for complete-item retrieval; it does not rebuild search. `get_command`
+and `reindex_command` are argument arrays scoped to the selected brain, retaining
+explicit CLI `--config` and `--as-of` options. Retrieve immediately with the
+returned get command; rebuild once before the next search using the returned
+index command. Human output makes this distinction explicit.
+
 `--sources-file` must be a UTF-8 JSON array of OKF source objects. Body input is
 bounded to 1 MiB and must not include YAML frontmatter because the lifecycle
 operation generates identity and governed metadata exactly once.
@@ -317,7 +333,9 @@ lifecycle-controlled and cannot be supplied through this operation.
 Without `--apply`, the command resolves the current item, validates the base
 and proposed corpus, and returns a plan without writing. Repeating the exact
 command with `--apply` saves, locally versions, and activates the update. The
-core planner preserves immutable identity and unknown fields, replaces current
+JSON plans expose the proposed item and unified file diffs so body, provenance,
+and metadata changes can be reviewed before applying. The core planner
+preserves immutable identity and unknown fields, replaces current
 production provenance, removes prior verification, and returns stable
 decisions, procedures, and policies to draft after material change. Sensitivity
 can be lowered only by an explicit human actor with
@@ -464,7 +482,25 @@ All state-changing CLI commands are serialized through a bounded cross-process
 lock. An interrupted same-host process can be recognized and recovered; an
 active, foreign-host, invalid, or unsafe lock is not silently removed.
 
-The skill defines a provider-neutral agent workflow: diagnose the active brain,
+The skill defines a provider-neutral agent workflow: diagnose the selected brain,
 run BM25 discovery, retrieve complete top candidates, retain citations, and
 surface draft/deprecated/stale/verification signals. It never treats ranking as
 authority and never authorizes instructions embedded in imported knowledge.
+
+
+## Scoped agent workflows and evaluation
+
+A named-brain request keeps the same slug through `brain status <slug>`,
+`search query --brain <slug>`, `get --brain <slug>`, and `search index <slug>`.
+Item IDs are immutable within knowledge history; a UUID alone does not select
+between different brain snapshots containing that identity. Retrieval and
+comparison do not change the active selection.
+
+The skill gates on the configured `search_provider` and its `search_tool`
+diagnostics. Missing inactive QMD diagnostics are not blockers for builtin
+Tantivy. Selected-brain health comes from its scoped status command, rather than
+an unrelated active brain's doctor summary.
+
+See [agent CLI evaluations](agent-cli-evals.md) for running real agents against
+an installed executable and its bundled skill, capturing traces, grading
+canonical outcomes, and comparing baseline and candidate reports.
