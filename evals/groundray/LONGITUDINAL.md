@@ -1,7 +1,7 @@
 # Longitudinal business brains
 
 Opt-in development experiment, comparing the user-supplied original wiki skill,
-that exact skill plus a 78-word grounding policy, and the frozen Groundray skill.
+that exact skill plus a 64-word grounding policy, and the frozen Groundray skill.
 The policy text is in `longitudinal_scenarios.py`; the original private skill is
 not redistributed. No production CLI, schema or installed skill is changed.
 
