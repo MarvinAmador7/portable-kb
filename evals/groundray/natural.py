@@ -9,6 +9,9 @@ import re
 import shutil
 from pathlib import Path
 
+from ruamel.yaml import YAML
+from ruamel.yaml.error import YAMLError
+
 from evals.agent_cli.harness import digest, write_json
 from evals.wiki_compare.harness import complete_text_seen, load_json
 
@@ -19,6 +22,7 @@ from .natural_scenarios import (
     REQUIRED_READS,
     RUBRICS,
     SOURCES,
+    TOPICS,
     checksum,
     corpus,
 )
@@ -125,6 +129,41 @@ def saved_records(brain: Path, records: dict[str, str]) -> dict[str, list[str]]:
     return captures
 
 
+def record_parts(text: str) -> tuple[dict, str] | None:
+    """Parse source metadata safely; keep the business body byte-equivalent."""
+    if not text.startswith("---\n") or "\n---\n" not in text[4:]:
+        return None
+    header, body = text[4:].split("\n---\n", 1)
+    try:
+        metadata = YAML(typ="safe").load(header)
+    except YAMLError:
+        return None
+    return (metadata, body) if isinstance(metadata, dict) else None
+
+
+def content_preserving_records(brain: Path, records: dict[str, str]) -> dict[str, list[str]]:
+    """Allow additional capture metadata without crediting changed original fields."""
+    result = {name: [] for name in records}
+    originals = {name: record_parts(text) for name, text in records.items()}
+    for path in sorted(brain.rglob("*.md")):
+        if path.is_symlink():
+            continue
+        text = path.read_text()
+        candidate = record_parts(text)
+        for name, original in originals.items():
+            if records[name] in text or (
+                original is not None
+                and candidate is not None
+                and candidate[1] == original[1]
+                and all(
+                    key in candidate[0] and candidate[0][key] == value
+                    for key, value in original[0].items()
+                )
+            ):
+                result[name].append(str(path.relative_to(brain)))
+    return result
+
+
 def audit(root: Path) -> dict:
     manifest = load_json(root / "manifest.json")
     rows = []
@@ -173,6 +212,7 @@ def audit(root: Path) -> dict:
                 "sources_observed": exposed,
                 "old_source_bytes_preserved": preserved,
                 "captures": sources,
+                "content_preserving_captures": content_preserving_records(brain, expected),
                 "skills_unchanged": all(
                     tree_fingerprint(case / f"session-{p}/work/skill") == metadata["skill_sha256"]
                     for p in range(1, number + 1)
@@ -205,6 +245,7 @@ def blind_packet(root: Path) -> None:
     packet = {
         "rubric": RUBRICS,
         "source_records": SOURCES,
+        "derived_seed_pages": {f"topics/{name}": text for name, text in TOPICS.items()},
         "handoff_records": HANDOFF_UPDATES,
         "items": [],
     }

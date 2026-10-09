@@ -70,7 +70,12 @@ that a passage supports the claim; qualitative citation review remains necessary
 
 Audit old raw source bytes, current source captures, unchanged skills and saved
 decision reasoning. New captures may have a metadata envelope if their supplied
-payload remains unchanged. Derived pages can be revised by an authorized ingest;
+payload remains unchanged. The audit distinguishes literal document preservation
+from added YAML capture fields that preserve every original field and the exact
+business body. The latter is not lost evidence. Both measurements remain visible.
+The blinded packet includes retained derived pages as well as primary records;
+otherwise a valid date or lineage assertion may appear unsupported to the judge.
+Derived pages can be revised by an authorized ingest;
 there is no artificial append-only instruction in these ordinary maintenance tasks.
 Judge whether original approval and forecast chronology remain recoverable, not
 whether every derived byte is unchanged. Question-session filing/logging is recorded

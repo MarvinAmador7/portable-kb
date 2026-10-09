@@ -99,7 +99,10 @@ request provenance and history, so this does not test spontaneous behavior on
 brief business questions. One scenario and two repetitions per arm cannot establish
 reliability across companies. Missing originals, genuine authority conflicts,
 causal explanations, source withdrawal and hostile imported instructions remain
-future cases. No real company records or Portable KB CLI operations were tested.
+future cases for this initial pilot. The later
+[natural-question evaluation](groundray-natural-evaluation.md) tests missing
+originals, causal explanations and scope without evidence instructions in the user
+question. No real company records or Portable KB CLI operations were tested.
 
 Reproduction instructions and the fictional corpus are in
 [the development harness](../evals/groundray/README.md). Private supplied skill

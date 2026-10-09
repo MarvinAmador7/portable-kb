@@ -6,7 +6,14 @@ from pathlib import Path
 import pytest
 
 from evals.agent_cli.harness import write_json
-from evals.groundray.natural import advance, audit, blind_packet, prepare, saved_records
+from evals.groundray.natural import (
+    advance,
+    audit,
+    blind_packet,
+    content_preserving_records,
+    prepare,
+    saved_records,
+)
 from evals.groundray.natural_scenarios import HANDOFF_UPDATES, QUESTIONS, SOURCES, corpus
 
 
@@ -104,3 +111,18 @@ def test_blind_packet_excludes_arm_labels_and_keeps_missing_origin_limit(tmp_pat
     assert "Original unavailable" in packet
     assert "board-memo.md" in packet
     assert len(json.loads(packet)["items"]) == 10
+    assert "October 22" in json.loads(packet)["derived_seed_pages"]["topics/monthly-sales.md"]
+
+
+def test_added_capture_fields_preserve_original_metadata_and_body(tmp_path):
+    body = HANDOFF_UPDATES[0]["estimate-e2.md"]
+    original_header, rest = body[4:].split("\n---\n", 1)
+    capture = "---\n" + original_header + '\ningested: "2026-10-20"\n---\n' + rest
+    path = tmp_path / "capture.md"
+    path.write_text(capture)
+    assert not saved_records(tmp_path, {"e2": body})["e2"]
+    assert content_preserving_records(tmp_path, {"e2": body})["e2"] == ["capture.md"]
+    path.write_text(capture.replace('record_date: "2026-10-20"', 'record_date: "2026-10-21"'))
+    assert not content_preserving_records(tmp_path, {"e2": body})["e2"]
+    path.write_text(capture.replace("November 25", "November 20"))
+    assert not content_preserving_records(tmp_path, {"e2": body})["e2"]

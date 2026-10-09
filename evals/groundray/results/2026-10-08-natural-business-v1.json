@@ -1,0 +1,1345 @@
+{
+  "cases": [
+    {
+      "answer_sha256": "3df7e188474b14f763b852126451307113a608c80e3d2a53c47ba6e19191be1a",
+      "answer_words": 79,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        30.291631578
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "delivery-wiki-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Has Acme received Account Export?",
+      "question_changed_pages": [
+        "log.md"
+      ],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "cedar-delivery.md": true,
+        "dashboard.md": true,
+        "sales-chat.md": true
+      },
+      "required_sources_observed": {
+        "cedar-delivery.md": true,
+        "dashboard.md": true,
+        "sales-chat.md": true
+      },
+      "scenario": "delivery",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cDelivery to Acme is not confirmed\u201d; repetitions do not establish customer delivery.",
+          "passed": true
+        },
+        {
+          "basis": "Applies production deployment plus written acceptance; staging and merged code alone are insufficient.",
+          "passed": true
+        },
+        {
+          "basis": "Traces receipt claim through monthly and weekly summaries to Leo\u2019s \u201cshipped\u201d message.",
+          "passed": true
+        },
+        {
+          "basis": "Reports no acceptance in available records without claiming actual non-delivery or contract signing.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "2556639f0e8bafd6c2f4acb6fdf41bfb3729928e041a128b4d9127e42c2b29a0",
+      "answer_words": 114,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        32.039804385
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "delivery-groundray-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Has Acme received Account Export?",
+      "question_changed_pages": [],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "cedar-delivery.md": true,
+        "dashboard.md": true,
+        "sales-chat.md": true
+      },
+      "required_sources_observed": {
+        "cedar-delivery.md": true,
+        "dashboard.md": true,
+        "sales-chat.md": true
+      },
+      "scenario": "delivery",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cReceipt ... is not established\u201d; Done and shipped do not establish customer delivery.",
+          "passed": true
+        },
+        {
+          "basis": "Requires production deployment and written acceptance; October 20 dashboard has merged code/staging with production pending.",
+          "passed": true
+        },
+        {
+          "basis": "Weekly/monthly summaries repeat Leo\u2019s same report \u201crather than independently confirming receipt.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Conditional email is not acceptance; explicitly says October 20 dashboard cannot settle whether delivery occurred afterward.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "6816168e21a829343d8beb2c97ebf3eea2797ccda716a12a276cf6a929949ed3",
+      "answer_words": 116,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        45.740045237
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "refund-wiki-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Can we offer 60-day refunds to all Cedar customers?",
+      "question_changed_pages": [
+        "index.md",
+        "log.md",
+        "topics/refunds.md"
+      ],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "cedar-charter.md": true,
+        "refund-campaign.md": true,
+        "refund-policy.md": true
+      },
+      "required_sources_observed": {
+        "cedar-charter.md": true,
+        "refund-campaign.md": true,
+        "refund-policy.md": true
+      },
+      "scenario": "refund",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cDoes not authorize 60-day refunds for all customers\u201d; standard online requests remain within 30 calendar days of purchase.",
+          "passed": true
+        },
+        {
+          "basis": "\u201cOnline VIP orders purchased November 1\u201315, 2026, inclusive\u201d qualify for \u201c60 calendar days from purchase.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Uses P1 and Ana-approved P2; distinguishes hearsay and Orchard\u2019s separate policy; requires Ana approval.",
+          "passed": true
+        },
+        {
+          "basis": "\u201cNo such approval appears in the supplied records\u201d; other orders remain on P1.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "6e0dd76347a485b5be8e12f8510898570bd96aadfaa62dab7ade441588ec9c57",
+      "answer_words": 115,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        29.276609403
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "refund-groundray-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Can we offer 60-day refunds to all Cedar customers?",
+      "question_changed_pages": [],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "cedar-charter.md": true,
+        "refund-campaign.md": true,
+        "refund-policy.md": true
+      },
+      "required_sources_observed": {
+        "cedar-charter.md": true,
+        "refund-campaign.md": true,
+        "refund-policy.md": true
+      },
+      "scenario": "refund",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "Rejects all-customer 60 days and retains \u201c30 calendar days of purchase\u201d for standard online orders.",
+          "passed": true
+        },
+        {
+          "basis": "Identifies the P2 60-calendar-day window for online VIP purchases November 1\u201315 inclusive; purchase anchors the stated eligibility/window context.",
+          "passed": true
+        },
+        {
+          "basis": "Cites P1 and P2, treats Sam\u2019s comment as hearsay, and identifies Ana as approval authority.",
+          "passed": true
+        },
+        {
+          "basis": "\u201cA broader offer needs an applicable approval from her\u201d; preserves Cedar, online VIP, and campaign-date limits.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "a944c4eb210417e2a25f096f9e4fa120598ce54f60a7db819915886e87b642b2",
+      "answer_words": 151,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        67.411344333
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "causal-wiki-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Why did Cedar's revenue fall in September?",
+      "question_changed_pages": [
+        "index.md",
+        "log.md",
+        "queries/september-revenue-decline.md",
+        "topics/revenue.md"
+      ],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "analytics.md": true,
+        "cedar-revenue.md": true,
+        "pricing-chat.md": true,
+        "revenue-bridge.md": true,
+        "revenue-ledger.md": true
+      },
+      "required_sources_observed": {
+        "analytics.md": true,
+        "cedar-revenue.md": true,
+        "pricing-chat.md": true,
+        "revenue-bridge.md": true,
+        "revenue-ledger.md": true
+      },
+      "scenario": "causal",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "Recognized net revenue fell $36,000/20%, from $180,000 to $144,000; explicitly distinguishes bookings/pipeline.",
+          "passed": true
+        },
+        {
+          "basis": "Identifies $24,000 duplicate-invoice credit and $12,000 lower new recognized sales.",
+          "passed": true
+        },
+        {
+          "basis": "\u201cWhy new sales fell remains unproven\u201d; pricing suggestion and two complaints support investigation, not an established effect.",
+          "passed": true
+        },
+        {
+          "basis": "Identifies partial September, full August, and missing experiment assignments/complete purchase counts.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "2d3222839384c84afc85fd196d6d1e02376e4af30485c03ade6890498debea64",
+      "answer_words": 145,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        32.536680325
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "causal-groundray-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Why did Cedar's revenue fall in September?",
+      "question_changed_pages": [],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "analytics.md": true,
+        "cedar-revenue.md": true,
+        "pricing-chat.md": true,
+        "revenue-bridge.md": true,
+        "revenue-ledger.md": true
+      },
+      "required_sources_observed": {
+        "analytics.md": true,
+        "cedar-revenue.md": true,
+        "pricing-chat.md": true,
+        "revenue-bridge.md": true,
+        "revenue-ledger.md": true
+      },
+      "scenario": "causal",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "Uses recognized net revenue of $180,000 to $144,000 and calculates $36,000/20% decline.",
+          "passed": true
+        },
+        {
+          "basis": "Records \u201c$24,000 reversing a duplicate invoice\u201d and \u201c$12,000 less new recognized sales.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Separates the accounting reversal from the unresolved reason for lower new sales; calls pricing reports \u201ca hypothesis and limited reports.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Notes September 1\u20138 versus full August and missing assignments/complete purchase counts; requests comparable evidence.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "fc72a9c3e4e9142e8a591af713f2a755378ddb569f041617fa94b2b2c3cd9674",
+      "answer_words": 237,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        91.717297761,
+        72.647269677,
+        37.02480308
+      ],
+      "incoming_content_preserving_capture_paths": {
+        "estimate-e2.md": [
+          "raw/estimate-e2.md"
+        ],
+        "estimate-e3.md": [
+          "raw/estimate-e3.md"
+        ]
+      },
+      "incoming_literal_capture_paths": {
+        "estimate-e2.md": [],
+        "estimate-e3.md": []
+      },
+      "name": "handoff-wiki-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "What needs attention now on the Acme plan?",
+      "question_changed_pages": [
+        "log.md"
+      ],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "cedar-charter.md": false,
+        "decision-r17.md": false,
+        "estimate-e1.md": false,
+        "estimate-e3.md": false,
+        "work-register.md": false
+      },
+      "required_sources_observed": {
+        "cedar-charter.md": true,
+        "decision-r17.md": true,
+        "estimate-e1.md": true,
+        "estimate-e3.md": true,
+        "work-register.md": true
+      },
+      "scenario": "handoff",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "E3 December 5 plus seven days gives December 12, eleven days beyond December 1 as of October 21.",
+          "passed": true
+        },
+        {
+          "basis": "Names I4 \u2192 X2 \u2192 C9 and R17\u2019s accepted schedule risk \u201con the E1 basis.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Keeps F3 separate and R17 authorization distinct from E3; Mira\u2019s scheduled review \u201cis not a completed decision.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Retains E1 November 27, E2 December 2, and E3 December 12; identifies Mira\u2019s pending review and recovery/revision choices.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 3,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "4c6396e1593ed09a1ca209d1b4f1da5f53eb8702348a6f6e7216d4c1afb9fa8b",
+      "answer_words": 298,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        118.081867416,
+        86.041011892,
+        38.162504299
+      ],
+      "incoming_content_preserving_capture_paths": {
+        "estimate-e2.md": [
+          "raw/estimate-e2.md"
+        ],
+        "estimate-e3.md": [
+          "raw/estimate-e3.md"
+        ]
+      },
+      "incoming_literal_capture_paths": {
+        "estimate-e2.md": [
+          "raw/estimate-e2.md"
+        ],
+        "estimate-e3.md": [
+          "raw/estimate-e3.md"
+        ]
+      },
+      "name": "handoff-groundray-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "What needs attention now on the Acme plan?",
+      "question_changed_pages": [],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "cedar-charter.md": true,
+        "decision-r17.md": true,
+        "estimate-e1.md": true,
+        "estimate-e3.md": true,
+        "work-register.md": true
+      },
+      "required_sources_observed": {
+        "cedar-charter.md": true,
+        "decision-r17.md": true,
+        "estimate-e1.md": true,
+        "estimate-e3.md": true,
+        "work-register.md": true
+      },
+      "scenario": "handoff",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "E3 December 5 with X2 seven days yields December 12, eleven days beyond the unchanged approved December 1 deadline.",
+          "passed": true
+        },
+        {
+          "basis": "Traces I4 \u2192 X2 \u2192 C9 and reviews R17\u2019s schedule basis alongside the original E1 November 27 projection.",
+          "passed": true
+        },
+        {
+          "basis": "Keeps F3 outside review; forecast \u201cdoes not establish an actual missed commitment or authorize a deadline change.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Retains E1 November 27, E2 December 2, E3 December 12 and R17 schedule basis; identifies Mira\u2019s pending review and recovery/revised-commitment choice.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 3,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "1ac9f6e080d5f29deefea88b4fdc3b65cc236958ff9175d1289fb75f3b3bde4e",
+      "answer_words": 179,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        61.167627698
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "missing-wiki-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "The wiki says Cedar's gross margin fell because vendors raised prices. How do you know?",
+      "question_changed_pages": [
+        "index.md",
+        "log.md",
+        "topics/margin.md"
+      ],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "cedar-revenue.md": true,
+        "margin-summary-a.md": true,
+        "margin-summary-b.md": true,
+        "revenue-ledger.md": true,
+        "vendor-sample.md": true
+      },
+      "required_sources_observed": {
+        "cedar-revenue.md": true,
+        "margin-summary-a.md": true,
+        "margin-summary-b.md": true,
+        "revenue-ledger.md": true,
+        "vendor-sample.md": true
+      },
+      "scenario": "missing",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cVendor price increases are ... unverified\u201d; retained evidence does not establish the wiki\u2019s cause.",
+          "passed": true
+        },
+        {
+          "basis": "Names absent board memo and attributes surviving inspected reporting to summary B copying A.",
+          "passed": true
+        },
+        {
+          "basis": "\u201cOne citation chain, not independent corroboration\u201d; limited sample cannot rule out elsewhere/mix effects.",
+          "passed": true
+        },
+        {
+          "basis": "Calculates 72% to 64%, an 8-point fall; unchanged $10 North SKU Q cannot settle all vendors or causality.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "8b31967e5aff37d63bad0009d618508a794fb0bffaae8de96f6b6a10f3fa0f4b",
+      "answer_words": 155,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        35.813766742
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "missing-groundray-1",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "The wiki says Cedar's gross margin fell because vendors raised prices. How do you know?",
+      "question_changed_pages": [],
+      "repetition": 1,
+      "required_source_names_in_answer": {
+        "cedar-revenue.md": true,
+        "margin-summary-a.md": true,
+        "margin-summary-b.md": true,
+        "revenue-ledger.md": true,
+        "vendor-sample.md": true
+      },
+      "required_sources_observed": {
+        "cedar-revenue.md": true,
+        "margin-summary-a.md": true,
+        "margin-summary-b.md": true,
+        "revenue-ledger.md": true,
+        "vendor-sample.md": true
+      },
+      "scenario": "missing",
+      "seed_sha256": "6862d19ac302c7b5fdbe0c61eb0b222d0ab025649083a95abca3ebf2912db1b4",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cI cannot establish that vendor price increases caused it\u201d; wiki overstates secondary explanation.",
+          "passed": true
+        },
+        {
+          "basis": "Identifies missing board memo and summary A/B attribution; \u201cI inspected the summaries, not the unavailable memo.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Calls A/B \u201cone secondary evidence chain, not independent confirmation\u201d; cause remains unresolved rather than disproven.",
+          "passed": true
+        },
+        {
+          "basis": "Calculates 72% to 64% and 8 points; limits unchanged $10 North SKU Q evidence to its sampled supplier/item.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "4926218a4e979a39e44889695c80a4c65c749c9ec99fab8b43c44e72a989a935",
+      "answer_words": 90,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        28.114806138
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "delivery-wiki-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Has Acme received Account Export?",
+      "question_changed_pages": [
+        "log.md"
+      ],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "cedar-delivery.md": true,
+        "dashboard.md": true,
+        "sales-chat.md": true
+      },
+      "required_sources_observed": {
+        "cedar-delivery.md": true,
+        "dashboard.md": true,
+        "sales-chat.md": true
+      },
+      "scenario": "delivery",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cAcme has not been confirmed to have received Account Export\u201d; does not equate Done or shipped with receipt.",
+          "passed": true
+        },
+        {
+          "basis": "Requires both production deployment and Acme written acceptance; records staging and production pending.",
+          "passed": true
+        },
+        {
+          "basis": "Shipped/received summaries \u201ctrace back to the same sales chat,\u201d not independent delivery evidence.",
+          "passed": true
+        },
+        {
+          "basis": "Acme\u2019s email is conditional intent and \u201cnot acceptance\u201d; conclusion is lack of confirmation, not observed non-delivery.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "798364e3e7f088360a9d577a2da74ed8b541cdb0bfad9d0444d561a06b14a848",
+      "answer_words": 87,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        32.662929695
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "delivery-groundray-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Has Acme received Account Export?",
+      "question_changed_pages": [],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "cedar-delivery.md": true,
+        "dashboard.md": true,
+        "sales-chat.md": true
+      },
+      "required_sources_observed": {
+        "cedar-delivery.md": true,
+        "dashboard.md": true,
+        "sales-chat.md": true
+      },
+      "scenario": "delivery",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cAcme\u2019s receipt of Account Export is not established\u201d; Done is only the merged-code milestone.",
+          "passed": true
+        },
+        {
+          "basis": "Requires \u201cproduction deployment and Acme\u2019s written acceptance\u201d; dashboard records staging and production pending.",
+          "passed": true
+        },
+        {
+          "basis": "Traces monthly through weekly to Leo\u2019s report, \u201crather than independent delivery evidence.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Says inspected records do not establish deployment or acceptance; does not assert actual non-delivery or signing.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "84ef55bd5d8fb98ba426611490cbe317879a648a7b5458a675678ea2efed752f",
+      "answer_words": 90,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        44.443517203
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "refund-wiki-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Can we offer 60-day refunds to all Cedar customers?",
+      "question_changed_pages": [
+        "index.md",
+        "log.md",
+        "topics/refunds.md"
+      ],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "cedar-charter.md": true,
+        "refund-campaign.md": true,
+        "refund-policy.md": true
+      },
+      "required_sources_observed": {
+        "cedar-charter.md": true,
+        "refund-campaign.md": true,
+        "refund-policy.md": true
+      },
+      "scenario": "refund",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "Rejects blanket 60 days; standard online orders outside the exception have \u201c30 days from purchase.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Provides \u201c60 days from purchase\u201d for online VIP purchases November 1\u201315 inclusive under P2.",
+          "passed": true
+        },
+        {
+          "basis": "Cites P1/P2 and Ana\u2019s authority; calls \u201ceverybody\u201d hearsay and excludes Orchard\u2019s policy.",
+          "passed": true
+        },
+        {
+          "basis": "Extending to all customers \u201cwould require approval from Ana\u201d; no unrestricted amendment is asserted.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "4e8b873855c190db56253a0f8d00657ceeb7b16b80998a7537fc84607e65c35d",
+      "answer_words": 138,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        36.273437356
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "refund-groundray-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Can we offer 60-day refunds to all Cedar customers?",
+      "question_changed_pages": [],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "cedar-charter.md": true,
+        "refund-campaign.md": true,
+        "refund-policy.md": true
+      },
+      "required_sources_observed": {
+        "cedar-charter.md": true,
+        "refund-campaign.md": true,
+        "refund-policy.md": true
+      },
+      "scenario": "refund",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "Rejects blanket eligibility and states standard online requests within \u201c30 calendar days of purchase.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "P2 covers \u201conline VIP orders purchased November 1\u201315, 2026, inclusive\u201d within 60 calendar days of purchase.",
+          "passed": true
+        },
+        {
+          "basis": "Attributes policy to P1/P2, calls the support statement hearsay, and identifies Ana\u2019s recorded authority.",
+          "passed": true
+        },
+        {
+          "basis": "Requires a broader applicable approval from Ana; preserves the campaign population and purchase dates.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "a4e87fe00439d304fc962c0fc15c41f7ccfd7910b708c9fc15820fa4cc4b6a25",
+      "answer_words": 145,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        52.680756715
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "causal-wiki-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Why did Cedar's revenue fall in September?",
+      "question_changed_pages": [
+        "index.md",
+        "log.md",
+        "topics/revenue.md"
+      ],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "analytics.md": true,
+        "cedar-revenue.md": true,
+        "pricing-chat.md": true,
+        "revenue-bridge.md": true,
+        "revenue-ledger.md": true
+      },
+      "required_sources_observed": {
+        "analytics.md": true,
+        "cedar-revenue.md": true,
+        "pricing-chat.md": true,
+        "revenue-bridge.md": true,
+        "revenue-ledger.md": true
+      },
+      "scenario": "causal",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "Recognized net revenue $180,000 to $144,000, a $36,000/20% decline; includes credits and reversals.",
+          "passed": true
+        },
+        {
+          "basis": "Identifies $24,000 duplicate-invoice reversal and $12,000 lower new recognized sales.",
+          "passed": true
+        },
+        {
+          "basis": "\u201cWhy new sales fell remains unresolved\u201d; pricing reports support investigation but do not establish causation.",
+          "passed": true
+        },
+        {
+          "basis": "Notes partial September export, full August, and missing assignment/complete purchase data; no experiment result invented.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "6e88d05281cbd593d7ffb41a0fd3f438380fb104af9816a4f18524239458c838",
+      "answer_words": 185,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        33.090187252
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "causal-groundray-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "Why did Cedar's revenue fall in September?",
+      "question_changed_pages": [],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "analytics.md": true,
+        "cedar-revenue.md": true,
+        "pricing-chat.md": true,
+        "revenue-bridge.md": true,
+        "revenue-ledger.md": true
+      },
+      "required_sources_observed": {
+        "analytics.md": true,
+        "cedar-revenue.md": true,
+        "pricing-chat.md": true,
+        "revenue-bridge.md": true,
+        "revenue-ledger.md": true
+      },
+      "scenario": "causal",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "Defines recognized net revenue and calculates $180,000 to $144,000, down $36,000/20%.",
+          "passed": true
+        },
+        {
+          "basis": "Supplied reconciliation includes $24,000 duplicate-invoice reversal and $12,000 lower new recognized sales.",
+          "passed": true
+        },
+        {
+          "basis": "Labels pricing \u201cLeo\u2019s hypothesis\u201d; accounting reversal explains recorded decline while sales root cause remains unresolved.",
+          "passed": true
+        },
+        {
+          "basis": "Specifies September 1\u20138 versus all August and unavailable assignments/complete September purchases.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "e578f42f7ed99b3963a6538dd10ecb7dd809d8f894c7b41d2101d2faff3f605f",
+      "answer_words": 274,
+      "arm": "wiki",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        115.664414145,
+        82.788085052,
+        40.456256428
+      ],
+      "incoming_content_preserving_capture_paths": {
+        "estimate-e2.md": [
+          "raw/estimate-e2.md"
+        ],
+        "estimate-e3.md": [
+          "raw/estimate-e3.md"
+        ]
+      },
+      "incoming_literal_capture_paths": {
+        "estimate-e2.md": [],
+        "estimate-e3.md": []
+      },
+      "name": "handoff-wiki-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "What needs attention now on the Acme plan?",
+      "question_changed_pages": [
+        "log.md"
+      ],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "cedar-charter.md": false,
+        "decision-r17.md": false,
+        "estimate-e1.md": false,
+        "estimate-e3.md": false,
+        "work-register.md": false
+      },
+      "required_sources_observed": {
+        "cedar-charter.md": true,
+        "decision-r17.md": true,
+        "estimate-e1.md": true,
+        "estimate-e3.md": true,
+        "work-register.md": true
+      },
+      "scenario": "handoff",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "Latest E3 December 5 plus seven days gives December 12 versus unchanged December 1, an 11-day forecast miss.",
+          "passed": true
+        },
+        {
+          "basis": "Traces I4 \u2192 X2 \u2192 C9 and identifies R17 as based on E1 and accepted schedule risk.",
+          "passed": true
+        },
+        {
+          "basis": "F3 remains separate; later forecasts \u201cdo not amend that approval,\u201d and scheduled review has not completed revalidation.",
+          "passed": true
+        },
+        {
+          "basis": "Preserves E1 November 27, E2 December 2, and current E3; identifies Mira\u2019s pending October 23 decision on recovery or commitment change.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 3,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "18662b2113f91b7b535621eea003bf0dc7d945a13d3bbacb0d101c9938cdc975",
+      "answer_words": 252,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        110.68882603,
+        100.820752213,
+        38.90834003
+      ],
+      "incoming_content_preserving_capture_paths": {
+        "estimate-e2.md": [
+          "raw/estimate-e2.md"
+        ],
+        "estimate-e3.md": [
+          "raw/estimate-e3.md"
+        ]
+      },
+      "incoming_literal_capture_paths": {
+        "estimate-e2.md": [
+          "raw/estimate-e2.md"
+        ],
+        "estimate-e3.md": [
+          "raw/estimate-e3.md"
+        ]
+      },
+      "name": "handoff-groundray-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "What needs attention now on the Acme plan?",
+      "question_changed_pages": [],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "cedar-charter.md": true,
+        "decision-r17.md": true,
+        "estimate-e1.md": true,
+        "estimate-e3.md": true,
+        "work-register.md": true
+      },
+      "required_sources_observed": {
+        "cedar-charter.md": true,
+        "decision-r17.md": true,
+        "estimate-e1.md": true,
+        "estimate-e3.md": true,
+        "work-register.md": true
+      },
+      "scenario": "handoff",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "E3 December 5 plus seven calendar days produces December 12, eleven days beyond C9 December 1.",
+          "passed": true
+        },
+        {
+          "basis": "Traces I4 \u2192 X2 \u2192 C9 and preserves R17\u2019s \u201coriginal E1 basis and accepted schedule risk\u201d for review.",
+          "passed": true
+        },
+        {
+          "basis": "Explicitly calls this forecast risk, not actual failure; preserves R17 and excludes F3 from dependency impact.",
+          "passed": true
+        },
+        {
+          "basis": "Retains R17/E1 approval rationale and E2 December 2 versus E3 December 12; identifies Mira\u2019s October 23 review and open choices.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 3,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "d0fa9f4108930eda7640c442b56c0d8fe38259a48d9ae41d868fddc6b822ef78",
+      "answer_words": 226,
+      "arm": "wiki",
+      "command_errors": 1,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        81.769896739
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "missing-wiki-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "The wiki says Cedar's gross margin fell because vendors raised prices. How do you know?",
+      "question_changed_pages": [
+        "index.md",
+        "log.md",
+        "queries/margin-provenance.md"
+      ],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "cedar-revenue.md": true,
+        "margin-summary-a.md": true,
+        "margin-summary-b.md": true,
+        "revenue-ledger.md": true,
+        "vendor-sample.md": true
+      },
+      "required_sources_observed": {
+        "cedar-revenue.md": true,
+        "margin-summary-a.md": true,
+        "margin-summary-b.md": true,
+        "revenue-ledger.md": true,
+        "vendor-sample.md": true
+      },
+      "scenario": "missing",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cVendor price increases are an unverified explanation\u201d; explicitly rejects the wiki\u2019s causal certainty.",
+          "passed": true
+        },
+        {
+          "basis": "Names missing \u201cboard-memo.md\u201d and attributes the inspected chain to summary B and summary A.",
+          "passed": true
+        },
+        {
+          "basis": "\u201cThey are one repeated claim, not independent corroboration\u201d; unchanged sample cannot rule out increases elsewhere.",
+          "passed": true
+        },
+        {
+          "basis": "Calculates 72% to 64%, an 8-point decline, and limits the unchanged $10 sample to North\u2019s SKU Q.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    },
+    {
+      "answer_sha256": "1d9b1441daf6411bb089979671274a2c577787cc80b7c1015b3a51b6f920ffbf",
+      "answer_words": 218,
+      "arm": "groundray",
+      "command_errors": 0,
+      "completed": true,
+      "elapsed_seconds_by_session": [
+        44.788231811
+      ],
+      "incoming_content_preserving_capture_paths": {},
+      "incoming_literal_capture_paths": {},
+      "name": "missing-groundray-2",
+      "old_raw_sources_preserved": 22,
+      "old_raw_sources_total": 22,
+      "question": "The wiki says Cedar's gross margin fell because vendors raised prices. How do you know?",
+      "question_changed_pages": [],
+      "repetition": 2,
+      "required_source_names_in_answer": {
+        "cedar-revenue.md": true,
+        "margin-summary-a.md": true,
+        "margin-summary-b.md": true,
+        "revenue-ledger.md": true,
+        "vendor-sample.md": true
+      },
+      "required_sources_observed": {
+        "cedar-revenue.md": true,
+        "margin-summary-a.md": true,
+        "margin-summary-b.md": true,
+        "revenue-ledger.md": true,
+        "vendor-sample.md": true
+      },
+      "scenario": "missing",
+      "seed_sha256": "e0b015ac256195c20d37d305abbcb4407f9d1387c9bdded87a0c72c84b015d25",
+      "semantic_criteria": [
+        {
+          "basis": "\u201cAvailable evidence does not establish that vendor price increases caused it.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "Attributes B to A and A to an unretained board memo; \u201cI inspected the summaries, not the missing memo.\u201d",
+          "passed": true
+        },
+        {
+          "basis": "\u201cOne evidence chain, not two independent confirmations\u201d; sample does not cover other suppliers or mix.",
+          "passed": true
+        },
+        {
+          "basis": "Calculates 72%, 64%, and 8 percentage points; treats unchanged $10 North SKU Q as limited evidence.",
+          "passed": true
+        }
+      ],
+      "semantic_passed": true,
+      "session_count": 1,
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831",
+      "skills_unchanged": true,
+      "unsupported_assertions": []
+    }
+  ],
+  "context_supplement_sha256": "e19781080df8ecca32f4ff2c8ea4d394fc9da38df7dd680b09281db49a1cacb8",
+  "evaluator_sha256": {
+    "__init__.py": "5223583de1ceab701cc80bab118cc9cdd7f9dde4ac980aec4c0932c01a3696c4",
+    "harness.py": "a2ec203504db708486ec8ca7def36944fa8849553a1a9e034afbc7b1bed9b109",
+    "natural.py": "648da67e7a4aaf858a3c9cb2ee01df72debf5dac5e5233fe0ef1290ece7e36fe",
+    "natural_scenarios.py": "1aebba33df9624626485148089db062fd274647fb35be24d9e0a7f3b245b677c",
+    "scenario.py": "4bcc3b34c533af773a1d7ed38e1a8a41327d837e3828671aa5caaec488ab3a92"
+  },
+  "judge": {
+    "answer_order": "fixed shuffled order",
+    "model": "inherited/unknown",
+    "original_review_sha256": "9dfb002a2edfb662c0a724a823b3b2052e2beaaaa7ac184a5050ac5fa2032f08",
+    "review_with_context_sha256": "0aa9b8f3175ee666d2d1e0e5f99708f24c2ff748ed75ec0e10bb45b982593f0a",
+    "root_role": "unblinded inspection of answers, disputed flag and saved history",
+    "runner": "separate fresh Codex chat agent",
+    "skill_labels_blinded": true
+  },
+  "limitations": [
+    "One deliberately adversarial 57-page/2668-word synthetic archive; two repetitions per scenario per arm provide descriptive results, not general superiority.",
+    "Both skills are explicitly loaded; automatic discovery/activation is untested.",
+    "Blinded model semantic judgments are not an independent truth oracle; style may reveal a skill despite label redaction.",
+    "Observer output records text emitted by commands; it is an exposure proxy, not proof of comprehension or full model-context delivery.",
+    "No real source authenticity, human approval or inaccessible business systems were verified.",
+    "Both arms use ordinary Markdown tools; this is not a Portable KB CLI evaluation.",
+    "Question-session mutation is a workflow choice in this protocol, not automatically an incorrect answer.",
+    "Elapsed time includes reasoning and file operations; concurrency/order/model details prevent attributing a causal speed gain to the skill.",
+    "No source withdrawal, forged identity, malicious imported instructions or prolonged many-session drift case was run."
+  ],
+  "manifest_sha256": "6549dfa4c34e926a518d2f2271f1f8e7e479e3b10297e0d6ff20aea71cf426cc",
+  "manual_history_review": "All four three-session handoff chains retain original R17/Mira/December 1/E1 risk acceptance, separate E1/E2/E3 chronology, dependent I4/X2/C9 impact and F3 exclusion. No new approval or completed failure was asserted. Wiki rewrote derived decision pages while retaining those facts; Groundray appended dated reviews. Source capture metadata additions in wiki preserved original fields/body.",
+  "measurement_notes": [
+    "The first literal-capture matcher does not recognize added YAML metadata fields inside an existing header. Supplemental matching verifies the exact business body and every original metadata key/value, allowing only extra fields. Both literal and content-preserving measurements are reported; no answer score changed.",
+    "The first blind packet omitted derived seed pages. One flag about a monthly summary date reflected missing judge context. Supplying the unchanged page (Compiled ... October 22) removed that flag; all 80 criterion scores stayed unchanged. Original packet and review are retained privately with hashes. No task agents were rerun.",
+    "Required source filenames in an answer are a direct-source citation signal, not a semantic proof. Two wiki handoff answers cite derived topics rather than naming the original source files; their observed commands did read the originals."
+  ],
+  "method": {
+    "agent_output_repairs": 0,
+    "agent_reruns": 0,
+    "answer_format": "free text with a neutral JSON wrapper",
+    "case_boundaries": "agent instructions, not OS-enforced isolation",
+    "corpus_files": 57,
+    "corpus_words": 2668,
+    "final_question_trials": 20,
+    "fixture_and_rubric_commit": "3ebcc01",
+    "fresh_task_sessions": 28,
+    "maintenance_sessions": 8,
+    "model": "inherited/unknown",
+    "repetitions_per_scenario_per_arm": 2,
+    "skill_loading": "explicit",
+    "source_authenticity": "not independently authenticated",
+    "tokens_and_cost": "unavailable"
+  },
+  "original_audit_sha256": "9d08d3c803456e592915d168a6589b827e8940cfb2bee5a6becfdd4b60f56bc1",
+  "original_blind_packet_sha256": "8303abccc0e9fe893d0dbd8557e7eb345936f2c599a14a8e6f9246dde7bad45f",
+  "original_natural_module_sha256": "396bd31b848e00e8cbde7425881a84d9964ce496c974fc3f6c91eaf1e51bcb5b",
+  "recorded_evaluator_sha256": {
+    "__init__.py": "5223583de1ceab701cc80bab118cc9cdd7f9dde4ac980aec4c0932c01a3696c4",
+    "harness.py": "a2ec203504db708486ec8ca7def36944fa8849553a1a9e034afbc7b1bed9b109",
+    "natural.py": "396bd31b848e00e8cbde7425881a84d9964ce496c974fc3f6c91eaf1e51bcb5b",
+    "natural_scenarios.py": "1aebba33df9624626485148089db062fd274647fb35be24d9e0a7f3b245b677c",
+    "scenario.py": "4bcc3b34c533af773a1d7ed38e1a8a41327d837e3828671aa5caaec488ab3a92"
+  },
+  "report_date": "2026-10-08",
+  "report_timezone": "America/Costa_Rica",
+  "rubric": {
+    "causal": [
+      "Uses Cedar recognized net revenue: 180000 to 144000, down 36000 or 20%; does not mix Orchard's 50% fall or pipeline/bookings.",
+      "Explains the recorded accounting bridge: 24000 duplicate-invoice reversal and 12000 lower new recognized sales.",
+      "Treats price experiment as a reported hypothesis, not an established cause; distinguishes recorded accounting components from causal proof about demand.",
+      "Acknowledges incomplete September conversion coverage or missing causal evidence and avoids fabricating an experiment result or proven root cause."
+    ],
+    "delivery": [
+      "Does not establish customer receipt/delivery merely from shipped/Done/wiki summaries; says delivery is unestablished from available evidence.",
+      "Applies Cedar's production deployment AND Acme written acceptance definition; staging/merge alone is insufficient.",
+      "Treats sales and derivative summaries as reported lineage, not independent confirmation; does not apply Orchard's merged-code definition to Cedar.",
+      "Does not claim absence proves non-delivery or infer contract signing from conditional intent; separates evidence gap from an observed failure."
+    ],
+    "handoff": [
+      "Uses latest E3: December 5 plus seven calendar days = December 12 forecast acceptance, at risk relative to unchanged December 1 deadline as of October 21.",
+      "Traces actual I4->X2->C9 impact and identifies original E1-based decision reasoning for review, without requiring R17 in a particular ID list.",
+      "Excludes unrelated F3; keeps approval separate from forecast and does not declare past failure, new approval, cancellation or customer contact.",
+      "Recovers original R17/Mira/E1 rationale and retains old versus revised forecast chronology; identifies Mira's pending plan review/open choices rather than rewriting history."
+    ],
+    "missing": [
+      "Does not establish vendor-price increases as the cause from the wiki assertion; identifies the causal claim as unverified secondary reporting.",
+      "Explicitly identifies missing board-memo original and cites/attributes the surviving summary actually inspected, without pretending to have inspected the original.",
+      "Recognizes A and B share an origin, not independent corroboration; distinguishes missing evidence from proof the reported cause is false.",
+      "Uses ledger/definition to establish 72% to 64% gross margin (8 percentage points) and treats limited unchanged-price invoice sample as insufficient to settle all vendors/mix/causality."
+    ],
+    "refund": [
+      "Rejects a blanket 60-day entitlement for all Cedar customers; retains 30 calendar days of purchase for standard online orders.",
+      "Recognizes the applicable approved 60-day exception for online VIP purchases November 1-15 inclusive, from purchase, rather than denying all exceptions.",
+      "Bases rule/exception on policy and approval records, not staff chat or Orchard's policy; respects Ana's supplied refund authority.",
+      "Does not assert unrestricted policy amendment or invent approval for other customers; preserves company/population/time qualifications."
+    ]
+  },
+  "rubric_sha256": "ce26054ae8d87055611d29dcf376ff14f57c03a066a110c2b7424131e94015f8",
+  "suite": "natural-business-v1",
+  "summary": {
+    "groundray": {
+      "material_unsupported_assertions_identified": 0,
+      "mean_final_answer_words": 170.7,
+      "median_final_question_elapsed_seconds": 34.451976997,
+      "new_capture_documents_byte_preserving": 4,
+      "new_capture_documents_total": 4,
+      "new_capture_original_metadata_and_body_preserving": 4,
+      "old_raw_sources_total": 220,
+      "old_raw_sources_unchanged": 220,
+      "question_brains_changed": 0,
+      "question_trials": 10,
+      "required_source_exposures": 42,
+      "required_source_exposures_total": 42,
+      "required_source_names_in_answers": 42,
+      "required_source_names_total": 42,
+      "semantic_criteria_passed": 40,
+      "semantic_criteria_total": 40,
+      "semantic_question_trials_passed": 10
+    },
+    "wiki": {
+      "material_unsupported_assertions_identified": 0,
+      "mean_final_answer_words": 158.7,
+      "median_final_question_elapsed_seconds": 45.09178122,
+      "new_capture_documents_byte_preserving": 0,
+      "new_capture_documents_total": 4,
+      "new_capture_original_metadata_and_body_preserving": 4,
+      "old_raw_sources_total": 220,
+      "old_raw_sources_unchanged": 220,
+      "question_brains_changed": 10,
+      "question_trials": 10,
+      "required_source_exposures": 42,
+      "required_source_exposures_total": 42,
+      "required_source_names_in_answers": 32,
+      "required_source_names_total": 42,
+      "semantic_criteria_passed": 40,
+      "semantic_criteria_total": 40,
+      "semantic_question_trials_passed": 10
+    }
+  },
+  "synthetic": true,
+  "validation": {
+    "focused_tests_after_measurement_refinement": 20,
+    "full_suite_passed_before_measurement_refinement": 470,
+    "production_coverage_percent": 87.1
+  }
+}

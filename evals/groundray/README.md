@@ -1,5 +1,8 @@
 # Company-decision continuity pilot
 
+The later [natural-question suite](NATURAL.md) exercises five ordinary business
+questions without evidence instructions in the user prompts.
+
 Two fresh sessions per case: an agent builds a fictional Cedar Commerce brain;
 a different agent recovers that saved brain and assesses a changed forecast.
 Both the supplied Hermes wiki skill and Groundray receive identical records,

@@ -74,7 +74,13 @@ qualifications and authorized mutations. File-format compliance is insufficient.
 The [Cedar decision pilot](groundray-evaluation.md) now exercises capture and
 changed-evidence review in eight fresh agent sessions. Both skills preserved the
 core decision and evidence distinctions; this small test establishes no general
-advantage over the original wiki skill. The other proposed cases remain untested.
+advantage over the original wiki skill.
+The [natural-question follow-up](groundray-natural-evaluation.md) adds five ordinary
+business questions across 28 fresh sessions without evidence instructions in the
+user prompts. Both skills score 40/40 semantic checks; Groundray consistently keeps
+answers read-only and cites original records directly, while wiki agents also log
+and sometimes repair or file knowledge. Authenticity and hostile-input cases remain
+outside these tests.
 Groundray is not an independent truth verifier: it makes an answer's inspected
 evidence and limits legible. Source authenticity, source completeness and actual
 human approval cannot be established solely by their Markdown labels.
