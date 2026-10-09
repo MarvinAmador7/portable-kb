@@ -14,12 +14,38 @@ def reviews(tmp_path, monkeypatch):
             for round_number in range(1, 7):
                 label = f"{key}-{arm}-{round_number}"
                 mapping[label] = {"name": f"{key}-{arm}", "round": round_number}
-                items.append({"id": label, "criteria": {name: {"passed": True, "reason": "Unit fixture", "quote": "Unit answer"} for name in story(key)["rubrics"][round_number - 1]}, "material_unsupported_claims": ["Invented blanket approval"] if arm == "wiki" and round_number == 1 else []})
+                items.append(
+                    {
+                        "id": label,
+                        "criteria": {
+                            name: {"passed": True, "reason": "Unit fixture", "quote": "Unit answer"}
+                            for name in story(key)["rubrics"][round_number - 1]
+                        },
+                        "material_unsupported_claims": ["Invented blanket approval"]
+                        if arm == "wiki" and round_number == 1
+                        else [],
+                    }
+                )
                 for operation in ("update", "question"):
-                    rows.append({"name": f"{key}-{arm}", "arm": arm, "round": round_number, "operation": operation, "completed": True, "changed_pages": [], "elapsed_seconds": 1, "preexisting_raw_unchanged": True, "incoming_preserved": {}, "skills_unchanged": True})
+                    rows.append(
+                        {
+                            "name": f"{key}-{arm}",
+                            "arm": arm,
+                            "round": round_number,
+                            "operation": operation,
+                            "completed": True,
+                            "changed_pages": [],
+                            "elapsed_seconds": 1,
+                            "preexisting_raw_unchanged": True,
+                            "incoming_preserved": {},
+                            "skills_unchanged": True,
+                        }
+                    )
         write_json(tmp_path / f"review-{key}.json", {"items": items})
     write_json(tmp_path / "blind-map.json", mapping)
-    monkeypatch.setattr(longitudinal_report, "audit", lambda root: {"suite": "unit-fixture", "rows": rows})
+    monkeypatch.setattr(
+        longitudinal_report, "audit", lambda root: {"suite": "unit-fixture", "rows": rows}
+    )
     return tmp_path
 
 
