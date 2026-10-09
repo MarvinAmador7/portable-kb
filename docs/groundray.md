@@ -81,6 +81,12 @@ user prompts. Both skills score 40/40 semantic checks; Groundray consistently ke
 answers read-only and cites original records directly, while wiki agents also log
 and sometimes repair or file knowledge. Authenticity and hostile-input cases remain
 outside these tests.
+The [180-task continuity study](groundray-longitudinal-evaluation.md) compares the
+original wiki, a short grounding-policy ablation and Groundray across repeated
+fresh-agent maintenance. The [108-task product experiment](groundray-product-evaluation.md)
+starts with empty brains, messy records and simulated owner questions for three
+different businesses. Both find no clear accuracy advantage for Groundray; the
+product report separately documents coverage omissions, portability and work burden.
 Groundray is not an independent truth verifier: it makes an answer's inspected
 evidence and limits legible. Source authenticity, source completeness and actual
 human approval cannot be established solely by their Markdown labels.

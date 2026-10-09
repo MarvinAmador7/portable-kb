@@ -31,6 +31,11 @@ all task shell actions through the observer, including failed commands. Timing
 starts at the first observer call, not at dispatch. Model identity is inherited
 and may be unknown; no token/cost or human-time claims.
 
+The final brain is captured after phase 6, including question-time filing if that
+arm chooses it. It is not a measurement of the phase-5 brain before the operator
+arrives. The [completed product experiment](../../docs/groundray-product-evaluation.md)
+records results, routing/review corrections and execution limitations.
+
 ## Preparation and dispatch
 
 ```bash
@@ -60,6 +65,10 @@ rewrite questions. Identify redundancy against supplied records. Save
 Repeat for the other businesses. Malformed question artifacts receive no invented
 questions; over-budget artifacts preserve the violation and answer only the first
 six. Root checks routing consistency without supplying unasked cards.
+Each match returns the whole frozen card, which can contain adjacent details;
+it does not guarantee that the requested original evidence or every part of the
+question is available. Preserve original and applied routing decisions when a
+consistency check changes a match.
 
 ```bash
 python -m evals.groundray.product advance --root /tmp/product-eval \
@@ -72,6 +81,9 @@ interpretation may affect which information each case receives; preserve its
 original decisions and assess that limitation. Owner questions, word counts,
 redundancy and distinct requested topics are effort proxies, not measured human
 review time or a requirement to spend all six questions.
+The report's `owner_questions_answered` counts replies, including unmatched/negative
+replies; `distinct_owner_cards_requested` counts distinct matched cards per case,
+not all topics raised in natural language.
 
 ## Blinded review
 
@@ -88,6 +100,9 @@ brain is before any owner reply; first briefing only has the cards actually
 requested. Do not demand unprovided definitions or independently authenticated
 real-world signatures. Inspect meaningful synthesis and explicit unresolved
 questions; merely copying all raw sources is not compiling company knowledge.
+The four snapshots share one reviewer context, so the phase-boundary instruction
+reduces but cannot eliminate hindsight. Absolute-path masking can also hide a
+portability defect; root must inspect the actual saved link targets separately.
 
 For each facet record `status` (`supported`, `qualified`, `unsupported`, `missing`),
 boolean `provenance_supported`, boolean `useful_for_next_operator`, actual `paths`,

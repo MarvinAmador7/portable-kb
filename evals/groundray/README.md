@@ -3,6 +3,12 @@
 The later [natural-question suite](NATURAL.md) exercises five ordinary business
 questions without evidence instructions in the user prompts.
 
+The [longitudinal study](../../docs/groundray-longitudinal-evaluation.md) runs 180
+fresh-agent tasks across three skill arms. The [product experiment](PRODUCT.md)
+runs 108 tasks starting from empty company brains, with simulated owner review,
+corrections and operator handoffs; its [results](../../docs/groundray-product-evaluation.md)
+separate coverage, usefulness, portability and work burden.
+
 Two fresh sessions per case: an agent builds a fictional Cedar Commerce brain;
 a different agent recovers that saved brain and assesses a changed forecast.
 Both the supplied Hermes wiki skill and Groundray receive identical records,
