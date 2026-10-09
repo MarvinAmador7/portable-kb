@@ -40,8 +40,8 @@ python -m evals.groundray.longitudinal advance --root /tmp/longitudinal \
 
 Repeat with a new agent for every phase through 12. Odd phases ingest; even phases
 answer. Phase 11 simulates archive loss by removing standalone captures with all
-original finance-note metadata and the same body, ignoring only boundary newline characters (added capture fields
-are allowed).
+original finance-note metadata and the same body, ignoring only boundary newline
+characters (added capture fields are allowed).
 It never rewrites derived pages or removes original payloads embedded in larger
 authored pages. Record removed paths. If embedded evidence survives, credit an
 honest agent that inspects it; do not demand a false missing-original assertion.
@@ -51,6 +51,11 @@ python -m evals.groundray.longitudinal audit --root /tmp/longitudinal \
   --output /tmp/longitudinal/audit.json
 python -m evals.groundray.longitudinal blind-packet --root /tmp/longitudinal
 ```
+
+To review one completed story while other chains finish, use `blind-packet
+--root /tmp/longitudinal --story cedar`. Each story requires all 18 answers before
+export. Story exports merge into the private `blind-map.json`; never give that
+map to reviewers. Include explicit as-of dates and each answer's retained archive.
 
 Four semantic criteria per round are frozen before dispatch. Separate blinded
 reviewers receive shuffled answers, questions, rubrics, chronological supplied
@@ -69,3 +74,19 @@ content. Timing is descriptive with an inherited, unknown model and uncontrolled
 host scheduling; no token/cost claims. The short policy ablation tests whether
 Groundray's additional instructions help beyond a few grounding rules; it does
 not isolate every individual rule or establish a general product winner.
+
+Save each review as `review-<story>.json` with an `items` array. Each item has its
+blind `id`, all four exact criterion keys under `criteria` (each with boolean
+`passed`, verbatim `quote` and `reason`), and `material_unsupported_claims` as an
+array of quoted assertions and evidence-specific reasons. A material overclaim
+fails the answer even when all four criteria pass. Join all five unchanged reviews:
+
+```bash
+python -m evals.groundray.longitudinal_report --root /tmp/longitudinal \
+  --output /tmp/longitudinal-result.json
+```
+
+The report rejects incomplete suites, missing/duplicate judgments and nonbinary
+grades. Keep original review and measurement hashes, explain any corrections,
+and inspect quoted support before publication. The completed comparison is in
+[the longitudinal evaluation report](../../docs/groundray-longitudinal-evaluation.md).

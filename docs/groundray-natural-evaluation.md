@@ -116,3 +116,7 @@ command output, not comprehension. Case boundaries are instructions rather than 
 OS-enforced sandbox. Source authenticity and genuine approval were not verified.
 The experiment does not exercise the Portable KB CLI, hostile source instructions,
 forged identity, withdrawal or prolonged session drift.
+
+The subsequent [three-arm longitudinal experiment](groundray-longitudinal-evaluation.md)
+adds a short grounding-policy ablation, six update/question rounds per company,
+prospective withdrawal and source loss. It reports its own results separately.

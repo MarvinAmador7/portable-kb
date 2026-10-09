@@ -55,7 +55,14 @@ def report(root: Path) -> dict:
         row["recorded_commands"] = len(commands)
         row["command_errors"] = sum(c.get("exit_code", 0) != 0 for c in commands)
         key = row["name"].split("-", 1)[0]
-        incoming = story(key)["updates"][row["round"] - 1] if row["operation"] == "update" else {}
+        data = story(key)
+        row["as_of"] = data["dates"][row["round"] - 1]
+        row["task"] = (
+            data["questions"][row["round"] - 1]
+            if row["operation"] == "question"
+            else "Add today's supplied records to the brain."
+        )
+        incoming = data["updates"][row["round"] - 1] if row["operation"] == "update" else {}
         brain = events.parent / "work/brain"
         row["boundary_newline_preserving_captures"] = {
             k: bool(v) for k, v in captures_with_boundary_newlines(brain, incoming).items()
@@ -116,8 +123,15 @@ def report(root: Path) -> dict:
 
         final_sizes = []
         for key, *_ in VARIANTS:
-            initial = story(key)["initial"]
+            data = story(key)
+            initial = data["initial"]
             after = root / f"{key}-{arm}/session-12/work/brain"
+            retained = {name: value for name, value in initial.items() if name.startswith("raw/")}
+            for update in data["updates"]:
+                retained.update(
+                    {name: value for name, value in update.items() if name != "finance-note.md"}
+                )
+            captures = captures_with_boundary_newlines(after, retained)
             final_sizes.append(
                 {
                     "story": key,
@@ -125,6 +139,9 @@ def report(root: Path) -> dict:
                     "final_files": len(hashes(after)),
                     "initial_bytes": sum(len(t.encode()) for t in initial.values()),
                     "final_bytes": sum(p.stat().st_size for p in after.rglob("*") if p.is_file()),
+                    "retained_supplied_records_total": len(retained),
+                    "retained_supplied_records_preserved": sum(bool(v) for v in captures.values()),
+                    "missing_retained_supplied_records": [k for k, v in captures.items() if not v],
                 }
             )
         summary[arm] = {
