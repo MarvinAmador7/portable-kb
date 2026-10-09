@@ -55,9 +55,10 @@ def test_source_loss_removes_intact_capture_not_summary_or_embedded_original(tmp
     (tmp_path / "original.md").write_text(payload)
     header, body = payload[4:].split("\n---\n", 1)
     (tmp_path / "capture.md").write_text("---\n" + header + '\ningested: "2026-11-08"\n---\n' + body)
+    (tmp_path / "formatted.md").write_text("---\n" + header + '\ningested: "2026-11-08"\n---\n' + body.lstrip("\n"))
     (tmp_path / "embedded.md").write_text("# Saved history\n\n" + payload)
     (tmp_path / "summary.md").write_text("Margin declined ten percentage points. Source F1.")
-    assert unavailable(tmp_path, payload) == ["capture.md", "original.md"]
+    assert unavailable(tmp_path, payload) == ["capture.md", "formatted.md", "original.md"]
     assert (tmp_path / "embedded.md").is_file()
     assert (tmp_path / "summary.md").is_file()
 

@@ -26,7 +26,7 @@ def unavailable(brain: Path, payload: str) -> list[str]:
     removed = []
     for path in sorted(brain.rglob("*.md")):
         candidate = record_parts(path.read_text())
-        if original and candidate and candidate[1] == original[1] and all(
+        if original and candidate and candidate[1].strip("\n") == original[1].strip("\n") and all(
             candidate[0].get(k) == v for k, v in original[0].items()
         ):
             removed.append(str(path.relative_to(brain)))

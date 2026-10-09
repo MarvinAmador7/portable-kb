@@ -47,3 +47,17 @@ def test_missing_judgment_or_nonbinary_grade_is_rejected(tmp_path, monkeypatch):
     write_json(path, review)
     with pytest.raises(ValueError, match="missing review items"):
         longitudinal_report.report(root)
+
+
+def test_boundary_newline_measure_rejects_changed_source_fields_or_body(tmp_path):
+    payload = story("cedar")["updates"][3]["finance-note.md"]
+    header, body = payload[4:].split("\n---\n", 1)
+    capture = "---\n" + header + '\ningested: "2026-11-08"\n---\n' + body.lstrip("\n")
+    path = tmp_path / "capture.md"
+    path.write_text(capture)
+    measure = longitudinal_report.captures_with_boundary_newlines
+    assert measure(tmp_path, {"F1": payload})["F1"] == ["capture.md"]
+    path.write_text(capture.replace("8000", "7000"))
+    assert not measure(tmp_path, {"F1": payload})["F1"]
+    path.write_text(capture.replace('record_date: "2026-11-08"', 'record_date: "2026-11-09"'))
+    assert not measure(tmp_path, {"F1": payload})["F1"]

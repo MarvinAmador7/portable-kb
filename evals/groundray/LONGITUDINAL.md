@@ -40,7 +40,8 @@ python -m evals.groundray.longitudinal advance --root /tmp/longitudinal \
 
 Repeat with a new agent for every phase through 12. Odd phases ingest; even phases
 answer. Phase 11 simulates archive loss by removing standalone captures with all
-original finance-note metadata and exact body (added capture fields are allowed).
+original finance-note metadata and the same body, ignoring only boundary newline characters (added capture fields
+are allowed).
 It never rewrites derived pages or removes original payloads embedded in larger
 authored pages. Record removed paths. If embedded evidence survives, credit an
 honest agent that inspects it; do not demand a false missing-original assertion.
