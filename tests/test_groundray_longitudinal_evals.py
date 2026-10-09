@@ -90,6 +90,9 @@ def test_blind_packet_includes_actual_archive_without_case_labels(tmp_path):
     assert "cedar-wiki" not in text
     assert "retained_archive" in text
     assert "brain/raw/standard.md" in text
+    assert '"as_of": "2026-11-03"' in text
+    with pytest.raises(ValueError, match="story incomplete"):
+        blind_packet(root, "cedar")
 
 
 def test_story_oracles_preserve_prospective_scope_and_temporal_causal_limit():

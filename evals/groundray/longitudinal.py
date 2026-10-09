@@ -105,12 +105,18 @@ def audit(root: Path) -> dict:
     return {"suite": manifest["suite"], "manifest_sha256": digest(root / "manifest.json"), "rows": rows}
 
 
-def blind_packet(root: Path) -> None:
+def blind_packet(root: Path, only_story: str | None = None) -> None:
     manifest = load_json(root / "manifest.json")
-    mapping = {}
+    if only_story and only_story not in {v[0] for v in VARIANTS}:
+        raise ValueError("unknown story")
+    mapping = load_json(root / "blind-map.json", {}) if only_story else {}
     for key, *_ in VARIANTS:
+        if only_story and key != only_story:
+            continue
         data = story(key)
         candidates = [(c, r) for c in manifest["cases"] if c["story"] == key for r in range(1, 7)]
+        if only_story and any(not (root / c["name"] / f"session-{r * 2:02}/final.json").exists() for c, r in candidates):
+            raise ValueError("story incomplete; do not grade partial outputs")
         random.Random(803 + len(key)).shuffle(candidates)
         packet = {"story": key, "company": data["company"], "initial_archive": data["initial"], "updates_in_chronological_order": data["updates"], "rubrics": data["rubrics"], "items": []}
         for i, (case, round_number) in enumerate(candidates, 1):
@@ -120,7 +126,7 @@ def blind_packet(root: Path) -> None:
             # All authored pages and actual remaining source captures allow citation
             # and missing-original claims to be assessed without guessing availability.
             pages = {str(p.relative_to(directory / "work/brain")): clean(p.read_text()) for p in sorted((directory / "work/brain").rglob("*.md"))}
-            packet["items"].append({"id": label, "round": round_number, "question": data["questions"][round_number - 1], "answer": clean(final.get("answer", "")), "retained_archive": pages})
+            packet["items"].append({"id": label, "round": round_number, "as_of": data["dates"][round_number - 1], "question": data["questions"][round_number - 1], "answer": clean(final.get("answer", "")), "retained_archive": pages})
             mapping[label] = {"name": case["name"], "round": round_number}
         write_json(root / f"blind-{key}.json", packet)
     write_json(root / "blind-map.json", mapping)
@@ -137,6 +143,7 @@ def main() -> None:
     actions.choices["advance"].add_argument("--case", required=True)
     actions.choices["advance"].add_argument("--phase", type=int, required=True)
     actions.choices["audit"].add_argument("--output", type=Path, required=True)
+    actions.choices["blind-packet"].add_argument("--story")
     args = parser.parse_args()
     if args.action == "prepare":
         prepare(args.root, args.groundray, args.wiki_skill)
@@ -145,7 +152,7 @@ def main() -> None:
     elif args.action == "audit":
         write_json(args.output, audit(args.root))
     else:
-        blind_packet(args.root)
+        blind_packet(args.root, args.story)
 
 
 if __name__ == "__main__":
