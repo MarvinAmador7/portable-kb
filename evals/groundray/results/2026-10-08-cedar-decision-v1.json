@@ -1,0 +1,664 @@
+{
+  "audit_note": "Scenario labels and tasks fixed before dispatch. Evaluator metadata added during capture wave, before any grading; list-type robustness hardened without changing labels.",
+  "cases": [
+    {
+      "arm": "wiki",
+      "name": "wiki-1",
+      "passed": false,
+      "repetition": 1,
+      "sessions": [
+        {
+          "checks": {
+            "answers": true,
+            "decision_history_preserved": true,
+            "incoming_unchanged": true,
+            "original_sources_preserved": true,
+            "original_sources_read": true,
+            "portable_navigation": true,
+            "prior_reasoning_observed": true,
+            "skill_unchanged": true
+          },
+          "elapsed_seconds": 139.757711454,
+          "facts": {
+            "approved_deadline": true,
+            "company": true,
+            "contract_signed": true,
+            "delivered": true,
+            "delivery_requirements": true,
+            "schedule_basis": true,
+            "shipping_report_origins": true
+          },
+          "passed": true,
+          "phase": 1,
+          "sources": {
+            "acme-condition.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "cedar-rules.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "decision-r17.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-estimate.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "sales-report.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-a.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-b.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "work-register.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            }
+          }
+        },
+        {
+          "checks": {
+            "answers": false,
+            "decision_history_preserved": true,
+            "incoming_unchanged": true,
+            "original_sources_preserved": true,
+            "original_sources_read": true,
+            "portable_navigation": true,
+            "prior_reasoning_observed": true,
+            "skill_unchanged": true
+          },
+          "elapsed_seconds": 134.183120903,
+          "facts": {
+            "affected_ids": false,
+            "approved_deadline": true,
+            "commitment_status_as_of_2026_10_21": true,
+            "company": true,
+            "contract_signed": true,
+            "delivered": true,
+            "delivery_requirements": true,
+            "excluded_ids": true,
+            "forecast_acceptance_date": true,
+            "review_approver_in_supplied_rule": true,
+            "schedule_basis": true,
+            "shipping_report_origins": true
+          },
+          "passed": false,
+          "phase": 2,
+          "sources": {
+            "acme-condition.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "cedar-rules.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "decision-r17.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "engineering-dashboard.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-estimate.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-forecast-e2.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "orchard-definitions.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "sales-report.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-a.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-b.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "work-register.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            }
+          }
+        }
+      ],
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929"
+    },
+    {
+      "arm": "wiki",
+      "name": "wiki-2",
+      "passed": true,
+      "repetition": 2,
+      "sessions": [
+        {
+          "checks": {
+            "answers": true,
+            "decision_history_preserved": true,
+            "incoming_unchanged": true,
+            "original_sources_preserved": true,
+            "original_sources_read": true,
+            "portable_navigation": true,
+            "prior_reasoning_observed": true,
+            "skill_unchanged": true
+          },
+          "elapsed_seconds": 166.652345002,
+          "facts": {
+            "approved_deadline": true,
+            "company": true,
+            "contract_signed": true,
+            "delivered": true,
+            "delivery_requirements": true,
+            "schedule_basis": true,
+            "shipping_report_origins": true
+          },
+          "passed": true,
+          "phase": 1,
+          "sources": {
+            "acme-condition.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "cedar-rules.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "decision-r17.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-estimate.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "sales-report.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-a.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-b.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "work-register.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            }
+          }
+        },
+        {
+          "checks": {
+            "answers": true,
+            "decision_history_preserved": true,
+            "incoming_unchanged": true,
+            "original_sources_preserved": true,
+            "original_sources_read": true,
+            "portable_navigation": true,
+            "prior_reasoning_observed": true,
+            "skill_unchanged": true
+          },
+          "elapsed_seconds": 161.674428679,
+          "facts": {
+            "affected_ids": true,
+            "approved_deadline": true,
+            "commitment_status_as_of_2026_10_21": true,
+            "company": true,
+            "contract_signed": true,
+            "delivered": true,
+            "delivery_requirements": true,
+            "excluded_ids": true,
+            "forecast_acceptance_date": true,
+            "review_approver_in_supplied_rule": true,
+            "schedule_basis": true,
+            "shipping_report_origins": true
+          },
+          "passed": true,
+          "phase": 2,
+          "sources": {
+            "acme-condition.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "cedar-rules.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "decision-r17.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "engineering-dashboard.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-estimate.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-forecast-e2.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "orchard-definitions.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "sales-report.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-a.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-b.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "work-register.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            }
+          }
+        }
+      ],
+      "skill_sha256": "bfb29794fb0556146dfdb714c6021e00bcd24291b892eacde536b89fd4e45929"
+    },
+    {
+      "arm": "groundray",
+      "name": "groundray-1",
+      "passed": true,
+      "repetition": 1,
+      "sessions": [
+        {
+          "checks": {
+            "answers": true,
+            "decision_history_preserved": true,
+            "incoming_unchanged": true,
+            "original_sources_preserved": true,
+            "original_sources_read": true,
+            "portable_navigation": true,
+            "prior_reasoning_observed": true,
+            "skill_unchanged": true
+          },
+          "elapsed_seconds": 147.733523586,
+          "facts": {
+            "approved_deadline": true,
+            "company": true,
+            "contract_signed": true,
+            "delivered": true,
+            "delivery_requirements": true,
+            "schedule_basis": true,
+            "shipping_report_origins": true
+          },
+          "passed": true,
+          "phase": 1,
+          "sources": {
+            "acme-condition.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "cedar-rules.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "decision-r17.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-estimate.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "sales-report.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-a.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-b.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "work-register.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            }
+          }
+        },
+        {
+          "checks": {
+            "answers": true,
+            "decision_history_preserved": true,
+            "incoming_unchanged": true,
+            "original_sources_preserved": true,
+            "original_sources_read": true,
+            "portable_navigation": true,
+            "prior_reasoning_observed": true,
+            "skill_unchanged": true
+          },
+          "elapsed_seconds": 146.217752244,
+          "facts": {
+            "affected_ids": true,
+            "approved_deadline": true,
+            "commitment_status_as_of_2026_10_21": true,
+            "company": true,
+            "contract_signed": true,
+            "delivered": true,
+            "delivery_requirements": true,
+            "excluded_ids": true,
+            "forecast_acceptance_date": true,
+            "review_approver_in_supplied_rule": true,
+            "schedule_basis": true,
+            "shipping_report_origins": true
+          },
+          "passed": true,
+          "phase": 2,
+          "sources": {
+            "acme-condition.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "cedar-rules.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "decision-r17.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "engineering-dashboard.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-estimate.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-forecast-e2.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "orchard-definitions.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "sales-report.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-a.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-b.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "work-register.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            }
+          }
+        }
+      ],
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831"
+    },
+    {
+      "arm": "groundray",
+      "name": "groundray-2",
+      "passed": true,
+      "repetition": 2,
+      "sessions": [
+        {
+          "checks": {
+            "answers": true,
+            "decision_history_preserved": true,
+            "incoming_unchanged": true,
+            "original_sources_preserved": true,
+            "original_sources_read": true,
+            "portable_navigation": true,
+            "prior_reasoning_observed": true,
+            "skill_unchanged": true
+          },
+          "elapsed_seconds": 160.695977325,
+          "facts": {
+            "approved_deadline": true,
+            "company": true,
+            "contract_signed": true,
+            "delivered": true,
+            "delivery_requirements": true,
+            "schedule_basis": true,
+            "shipping_report_origins": true
+          },
+          "passed": true,
+          "phase": 1,
+          "sources": {
+            "acme-condition.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "cedar-rules.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "decision-r17.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-estimate.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "sales-report.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-a.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-b.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "work-register.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            }
+          }
+        },
+        {
+          "checks": {
+            "answers": true,
+            "decision_history_preserved": true,
+            "incoming_unchanged": true,
+            "original_sources_preserved": true,
+            "original_sources_read": true,
+            "portable_navigation": true,
+            "prior_reasoning_observed": true,
+            "skill_unchanged": true
+          },
+          "elapsed_seconds": 151.781855048,
+          "facts": {
+            "affected_ids": true,
+            "approved_deadline": true,
+            "commitment_status_as_of_2026_10_21": true,
+            "company": true,
+            "contract_signed": true,
+            "delivered": true,
+            "delivery_requirements": true,
+            "excluded_ids": true,
+            "forecast_acceptance_date": true,
+            "review_approver_in_supplied_rule": true,
+            "schedule_basis": true,
+            "shipping_report_origins": true
+          },
+          "passed": true,
+          "phase": 2,
+          "sources": {
+            "acme-condition.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "cedar-rules.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "decision-r17.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "engineering-dashboard.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-estimate.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "integration-forecast-e2.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "orchard-definitions.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "sales-report.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-a.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "summary-b.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            },
+            "work-register.md": {
+              "observed_complete": true,
+              "saved_unchanged": true
+            }
+          }
+        }
+      ],
+      "skill_sha256": "d6b3850bdfa5c86d27cd16e6896b23eb2c481158f3b9ebb4d89db2474548b831"
+    }
+  ],
+  "date": "2026-10-08",
+  "evaluator_sha256": {
+    "__init__.py": "5223583de1ceab701cc80bab118cc9cdd7f9dde4ac980aec4c0932c01a3696c4",
+    "harness.py": "a2ec203504db708486ec8ca7def36944fa8849553a1a9e034afbc7b1bed9b109",
+    "scenario.py": "4bcc3b34c533af773a1d7ed38e1a8a41327d837e3828671aa5caaec488ab3a92"
+  },
+  "limitations": [
+    "Two repetitions per arm of one fictional scenario; no general winner can be inferred.",
+    "Shared user task requests provenance and history; this tests execution, not spontaneous skill activation.",
+    "Inherited chat model unknown; reasoning, tokens and cost unavailable.",
+    "Observed full text is an exposure proxy, not proof of comprehension.",
+    "Navigation checks link presence, not the meaning of dependency prose; manual review required.",
+    "Sources are supplied fictional records, not authenticated company records.",
+    "Both arms use ordinary Markdown file tools; this does not evaluate the Portable KB CLI.",
+    "The one differing answer field is a decision-ID classification with ambiguous register-ID task wording; do not infer superiority from strict pass counts.",
+    "Case boundaries and observer use are agent instructions, not OS-enforced filesystem isolation; traces cannot prove absence of unobserved actions."
+  ],
+  "manual_review": {
+    "all_four_chains": "Saved pages and reviews retain applicable Cedar definition, approval versus forecast, original E1 rationale, December 12 calculation, December 1 risk, copied S1 lineage, F3 exclusion and unresolved review choices; no new approval or customer contact observed in traces.",
+    "groundray-1": "Explicitly lists R17 reasoning for review. Initial decision page says R17 accepts a commitment in response to Acme condition; supplied record expressly states E1 reliance only. That plausible commercial-context inference should have been labelled adjacent to the sentence; it was retained, not repaired by evaluator.",
+    "groundray-2": "Consolidates decision/assumptions/commitment/work in one linked page; explicit derivations and commercial-context interpretation remain separate from source-stated approval. Separate current review preserves history.",
+    "reviewer": "root assistant; qualitative inspection, not independent blind judging",
+    "wiki-1": "Review recovers R17 and E1 reasoning and preserves original approval, but affected_ids lists I4/X2/C9 only, treating R17 as the historical decision rather than an affected register item. Fixed key required R17. Task wording (register IDs) permits that interpretation, so strict failure is not proof of a business-reasoning failure.",
+    "wiki-2": "Explicitly lists R17 schedule rationale for review with I4/X2/C9 and distinguishes historical approval from current viability."
+  },
+  "measurement_correction": {
+    "agent_sessions_rerun": 0,
+    "changed_check": {
+      "case": "wiki-1",
+      "phase": 2,
+      "portable_navigation_after": true,
+      "portable_navigation_before": false
+    },
+    "corrected_harness_sha256": "a2ec203504db708486ec8ca7def36944fa8849553a1a9e034afbc7b1bed9b109",
+    "end_to_end_outcomes_unchanged": true,
+    "original_harness_sha256": "b5e6dab1feff1cb3de517698db80816a25a203bb2369a5faf8b751b19ed88cd2",
+    "original_report_sha256": "71b043d7c5e46cc9c160293ff8da7dcbd9da8794dcb1a3b6a398e2f794e937bd",
+    "reason": "The original navigation checker resolved basename wikilinks relative to their containing page. Wiki-1 used conventional unique page-name wikilinks; credit root-path and unique-basename wiki resolution, retain ambiguity rejection."
+  },
+  "model": "inherited/unknown",
+  "recorded_evaluator_sha256": {
+    "__init__.py": "5223583de1ceab701cc80bab118cc9cdd7f9dde4ac980aec4c0932c01a3696c4",
+    "harness.py": "b5e6dab1feff1cb3de517698db80816a25a203bb2369a5faf8b751b19ed88cd2",
+    "scenario.py": "4bcc3b34c533af773a1d7ed38e1a8a41327d837e3828671aa5caaec488ab3a92"
+  },
+  "runner": "codex-chat-subagent with recorded-shell observer",
+  "scenario": "cedar-decision-v1",
+  "source_records_sha256": {
+    "initial": {
+      "acme-condition.md": "adab94738fcb490311a0da631c90f909118cc2528dfc8b1dae1d7b0378783f95",
+      "cedar-rules.md": "f89b26e813a9cdcd05b2295e7cefceebe0555154783ba9b36cb700f75c73ba3d",
+      "decision-r17.md": "91b955dcbddf0db526103a2172de1a52c49fb065414eec76bcf7baaa0625a328",
+      "integration-estimate.md": "43ebd1a61d76a87f6674255ae39fc4322873acd8080b3986e79528e92b49ce9f",
+      "sales-report.md": "3804ef3541d5ec33b92a553af7d95874cad756a676324071356cbdcdb72d9965",
+      "summary-a.md": "8dbf97414732793f7c446145541acb3197b40763225468d72b2031daffe757ca",
+      "summary-b.md": "434b6a4f48bcc0dd88a8cfe94c93cba1207d7f8f0a92f613e804a3afedc5c341",
+      "work-register.md": "5b4ec986945a48f6fe6d4275b9e1b195d52a5a2a77eb7614e9c439d6fe0f5ba3"
+    },
+    "update": {
+      "engineering-dashboard.md": "ab70d4fc34e3b3ab5e80a26b327175f75e1762c6b298013be783f34d7204d31e",
+      "integration-forecast-e2.md": "0d0f0468aa82d1ee345fd8d31a27fa80ec430b4ab2d2a98285f455c431a07e90",
+      "orchard-definitions.md": "9ed06a9d7cea95e83ca23746a86839fb95e3db260c4f67cd5fc6db50cf79a91a"
+    }
+  },
+  "summary": {
+    "groundray": {
+      "answer_checks_passed": 38,
+      "answer_checks_total": 38,
+      "chains": 2,
+      "final_source_captures_preserved": 22,
+      "final_source_captures_total": 22,
+      "mean_chain_elapsed_seconds": 303.21455410149997,
+      "strict_chains_passed": 2
+    },
+    "wiki": {
+      "answer_checks_passed": 37,
+      "answer_checks_total": 38,
+      "chains": 2,
+      "final_source_captures_preserved": 22,
+      "final_source_captures_total": 22,
+      "mean_chain_elapsed_seconds": 301.13380301899997,
+      "strict_chains_passed": 1
+    }
+  },
+  "synthetic": true,
+  "validation": {
+    "astra_skill_review": "No actionable findings; static read-only review, not a behavioral judge.",
+    "focused_tests_after_navigation_correction": 14,
+    "full_suite_tests_passed": 464,
+    "production_coverage_percent": 87.1
+  }
+}

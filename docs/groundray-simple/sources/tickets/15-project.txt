@@ -1,0 +1,1 @@
+Lumen board: Design Done = B2 review passed. Accessibility task AX-7 still blocked on screen-reader QA. Publishing task PUB-2 depends on AX-7. Launch plan dated Nov20 assumes AX-7 by Nov17. Tint photo delivery uses PHOTO-8 and is independent of AX-7.
