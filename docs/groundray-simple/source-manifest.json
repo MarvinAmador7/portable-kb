@@ -1,0 +1,64 @@
+{
+  "synthetic": true,
+  "company": "Mosaic Studio",
+  "fictional_as_of": "2026-11-06",
+  "origin": "evals/groundray/product_scenarios.py:mosaic",
+  "initial_records_selected": [
+    "mail/01-context.txt",
+    "docs/02-rate-card.md",
+    "chat/03-sales.txt",
+    "notes/04-team.md",
+    "notes/05-board.md",
+    "contracts/06-lumen.txt",
+    "chat/07-exception.txt",
+    "tables/09-ledger.csv",
+    "tables/10-invoices.csv",
+    "notes/13-close-query.md",
+    "mail/14-client.txt",
+    "tickets/15-project.txt",
+    "chat/16-plan.txt",
+    "notes/18-feedback.md"
+  ],
+  "correction_records": [
+    "owner/2026-11-02-correction.md",
+    "tables/ledger-reconciled.csv"
+  ],
+  "update_records": [
+    "qa/2026-11-06.txt",
+    "mail/2026-11-06-lumen.txt",
+    "notes/2026-11-06-summary.md",
+    "ops/2026-11-06-staffing.txt"
+  ],
+  "owner_cards_supplied": [
+    "metric",
+    "authority",
+    "commercial",
+    "delivery"
+  ],
+  "owner_note": "Whole fixture cards supplied explicitly for this illustration; no owner-routing or actual human approval was performed.",
+  "author": "Codex agent",
+  "kind": "Hand-authored demonstration; not an agent evaluation result.",
+  "source_sha256": {
+    "mail/01-context.txt": "42ed837f5dc826686dcae742cfa43741b253e18a9d287b7ce06dcc6dccc51501",
+    "docs/02-rate-card.md": "b94a158d8e6affd64a13accf3df7031ee0454162c818770091da40edf6c76ef3",
+    "chat/03-sales.txt": "9fce2a6cf355797ced7a6a9417801d689c61d7497974314cfa67d2025917c556",
+    "notes/04-team.md": "9e7cb685f67df4f52d1a6d3a7d9c6185a0f04d7deb827fcae3b84146da6f2b5c",
+    "notes/05-board.md": "6f4a094f1df939826e51478ea66d44ad8c4de60b8892aa1b022e3b72b2cdc4f1",
+    "contracts/06-lumen.txt": "14aad20832ce010945e7c6db61f58cfc09443ddb82a6406d06ca0370caac7b27",
+    "chat/07-exception.txt": "f1e1a637b4345f3271dc704c4898eee59fcf7bbf52ba2896b5fc2344f3cb8d72",
+    "tables/09-ledger.csv": "398a46d6e5ef2baf9e08f49d34f5f98eb5793661a7224a747f8af9d10e17b032",
+    "tables/10-invoices.csv": "cabfaa4e7c9dd33b51b617be565af694e173f11c720c4ca1ab7cd17631c2d642",
+    "notes/13-close-query.md": "4851363b9c67f93080dba730e889e089b6ee0cc11d17549fd6e71cf4cda82687",
+    "mail/14-client.txt": "0e0016ac6e41acd89b6caba9335564e9278c3005ec9a83290ee068570cc0d01e",
+    "tickets/15-project.txt": "2bbd9c64d364e389ec2d8c7c3ad9b42d3bf7f317dd7f43d1e7addd94045a17e9",
+    "chat/16-plan.txt": "70fafaf01d705be420c333b90619090b3923554699fe46634634d58679c2e057",
+    "notes/18-feedback.md": "4c388314a3745edd834e71a1c773d576596d3adab55ab63f0693c69393a48d2e",
+    "owner/2026-11-02-correction.md": "8264e981c1f8c8eb06f2533351d59ef630e6f7c602e77ee3c8c7cc38d286ba68",
+    "tables/ledger-reconciled.csv": "c89a5a0786643df6a55e2d9bf1b6bf23fa09f8775f4bb198a04be7f09b46dd31",
+    "qa/2026-11-06.txt": "94e3a860e8d27cb3055dfdbcfe026b946a1415343aa2eb430ae35c0a291da8fa",
+    "mail/2026-11-06-lumen.txt": "5462e08993c2f8d5dd79438774f8bf27d4efcd4f6a1937b690d1df0676ced844",
+    "notes/2026-11-06-summary.md": "9ae16d29585fb26b64e02559e1cc974da9ac96878c54c66f1cb1fb0f95842ccb",
+    "ops/2026-11-06-staffing.txt": "785bc59a36a76431265cdc4d7698f47d689a37827c79322948f93b2c55c8f3cd",
+    "owner/definitions-and-authority.md": "95196d0b59c7f402f7b3dde30555898cea6146de7eb78ce4e90ed4165cd2ab43"
+  }
+}

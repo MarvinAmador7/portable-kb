@@ -87,6 +87,10 @@ fresh-agent maintenance. The [108-task product experiment](groundray-product-eva
 starts with empty brains, messy records and simulated owner questions for three
 different businesses. Both find no clear accuracy advantage for Groundray; the
 product report separately documents coverage omissions, portability and work burden.
+The [compact candidate and evidence demo](groundray-simple/README.md) now explore
+a smaller workflow: inspect the reason behind a consequential answer using the
+existing wiki, without new mandatory structure. Its owner exercise measures
+decision quality and inspection effort; no human benefit has yet been measured.
 Groundray is not an independent truth verifier: it makes an answer's inspected
 evidence and limits legible. Source authenticity, source completeness and actual
 human approval cannot be established solely by their Markdown labels.
